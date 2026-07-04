@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base app theme - minimal for Compose app -->
+    <style name="Theme.PDFReaderPro" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <!-- Splash screen theme for Android 12+ Splash Screen API -->
+    <style name="Theme.PDFReaderPro.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bgColor</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/img_splash_logo</item>
+        <item name="postSplashScreenTheme">@style/Theme.PDFReaderPro</item>
+    </style>
+
+</resources>
