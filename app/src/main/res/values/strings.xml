@@ -1035,13 +1035,17 @@
     <string name="gpl_derivative">Derivative works must be open source under GPL v3.0</string>
     <string name="gpl_notice">PDF Reader Pro - Open Source PDF Viewer\nCopyright (C) %d K M Rejowan Ahmmed\n\nThis program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.\n\nThis program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</string>
 
+    <!-- Brand tagline (REBRAND R1.2) -->
+    <string name="tagline">Explore. Edit. Organize.</string>
+    <string name="tagline_subline">All your PDF tools in one place.</string>
+
     <!-- Onboarding -->
-    <string name="onboarding_welcome">Welcome to\nPDF Reader Pro</string>
-    <string name="onboarding_welcome_desc">A clean, lightweight PDF reader built for simplicity. Open source, ad-free, and respects your privacy.</string>
-    <string name="onboarding_all_pdfs">All Your PDFs\nin One Place</string>
+    <string name="onboarding_welcome">Welcome to\nPDF Explorer</string>
+    <string name="onboarding_welcome_desc">Explore. Edit. Organize. All your PDF tools in one place — open source, ad-free, and built for your privacy.</string>
+    <string name="onboarding_all_pdfs">Explore Your\nPDF Library</string>
     <string name="onboarding_all_pdfs_desc">Automatically discovers PDFs across your device. Browse by folders, sort by name, date, or size, and find any document instantly with search.</string>
-    <string name="onboarding_powerful">Powerful Reader\n&amp; PDF Tools</string>
-    <string name="onboarding_powerful_desc">Search text, customize themes, and adjust display settings. Plus built-in tools to merge, split, compress, and organize your PDFs.</string>
+    <string name="onboarding_powerful">Edit With\nPowerful Tools</string>
+    <string name="onboarding_powerful_desc">Merge, split, compress, rotate, and more. Search text, customize themes, and adjust display settings while you read.</string>
     <string name="onboarding_storage">Storage Access\nRequired</string>
     <string name="onboarding_storage_desc">Grant access to scan and display your PDF files. Your documents stay private and are never uploaded.</string>
 
