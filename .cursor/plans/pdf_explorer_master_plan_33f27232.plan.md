@@ -14,8 +14,11 @@ todos:
   - id: phase1-remove-update
     content: GitHub update sistemi, ApkDownloadManager, REQUEST_INSTALL_PACKAGES, Ktor update deps kaldır
     status: pending
+  - id: rebrand-track
+    content: SoftCloud rebrand — R0 finalized; follow REBRAND_CHECKLIST R1–R7
+    status: pending
   - id: phase1-branding
-    content: Upstream PdfReaderPro branding ve F-Droid metadata temizliği
+    content: Upstream PdfReaderPro branding temizliği (REBRAND_CHECKLIST Phase R7 ile birleşik)
     status: pending
   - id: phase2-webview-lifecycle
     content: WebView destroy/cleanup, Base64 OOM path, stream leak fixes
@@ -41,9 +44,11 @@ isProject: false
 # PDF Explorer — MASTER TECHNICAL PLAN
 
 **Analiz kapsamı:** Yalnızca yerel repo ([`pdf_explorer/`](c:\Users\faruk\OneDrive\Desktop\Belgeler\project\android\pdf\pdf_explorer))  
-**Hedef:** `com.softcloud.pdfexplorer` üzerine güncelleme (versionCode **4**, versionName **0.4**)  
+**Hedef:** `com.softcloud.pdfexplorer` üzerine güncelleme (versionCode **> Play son sürüm**; master plan varsayımı: **4**, versionName **0.4**)  
+**Resmi repo:** https://github.com/asporkan/softcloud-pdf-explorer  
 **Mevcut repo durumu:** `com.rejowan.pdfreaderpro` v**2.2.0** (versionCode **7**) — upstream: PdfReaderPro  
-**Eski uygulama:** Farklı kod tabanı; depolama formatı bilinmiyor (APK/dump bekleniyor)
+**Eski uygulama:** Farklı kod tabanı; depolama formatı bilinmiyor (APK/dump bekleniyor)  
+**Rebrand:** [REBRAND_CHECKLIST.md](REBRAND_CHECKLIST.md) — Phase R0 devam ediyor
 
 ---
 
