@@ -28,10 +28,6 @@ koinCompose = "4.2.0"
 # Kotlin Serialization
 kotlinxSerialization = "1.10.0"
 
-# Ktor HTTP Client
-ktor = "3.4.2"
-
-
 # Image Loading
 coil = "2.7.0"
 
@@ -99,11 +95,6 @@ koin-compose-navigation = { module = "io.insert-koin:koin-androidx-compose-navig
 
 # Kotlin Serialization
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerialization" }
-
-# Ktor HTTP Client
-ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 # Image Loading
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }

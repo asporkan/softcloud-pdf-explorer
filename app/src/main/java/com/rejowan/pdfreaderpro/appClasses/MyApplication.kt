@@ -6,7 +6,6 @@ import android.os.Looper
 import com.rejowan.pdfreaderpro.BuildConfig
 import com.rejowan.pdfreaderpro.di.dataStoreModule
 import com.rejowan.pdfreaderpro.di.databaseModule
-import com.rejowan.pdfreaderpro.di.networkModule
 import com.rejowan.pdfreaderpro.di.repositoryModule
 import com.rejowan.pdfreaderpro.di.viewModelModule
 import com.rejowan.pdfreaderpro.util.GlobalErrorHandler
@@ -52,7 +51,6 @@ class MyApplication : Application() {
                 // Load modules in dependency order
                 databaseModule,      // Core database (lazy singleton)
                 dataStoreModule,     // Preferences (lazy singleton)
-                networkModule,       // Network client (lazy singleton)
                 repositoryModule,    // Repositories (lazy singletons)
                 viewModelModule      // ViewModels (factory - created on demand)
             )

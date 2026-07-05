@@ -1025,11 +1025,11 @@
     <string name="optional_updates">Optional update checks only</string>
     <string name="local_storage">All data stored locally</string>
     <string name="privacy_no_collection_title">No Data Collection</string>
-    <string name="privacy_no_collection_content">PDF Reader Pro does not collect, store, transmit, or share any personal data. The app operates completely offline and does not require an internet connection. There are no analytics, tracking, or telemetry of any kind.</string>
+    <string name="privacy_no_collection_content">PDF Explorer does not collect, store, transmit, or share any personal data. The app operates completely offline and does not require an internet connection. There are no analytics, tracking, or telemetry of any kind.</string>
     <string name="privacy_local_storage_title">Local Data Storage</string>
     <string name="privacy_local_storage_content">All bookmarks, favorites, and app preferences are stored exclusively on your device. This data never leaves your device and is not accessible to anyone except you. You have complete control and can delete this data at any time.</string>
     <string name="privacy_file_access_title">File Access</string>
-    <string name="privacy_file_access_content">PDF Reader Pro requires storage permission to read PDF files from your device. This access is used solely to display your documents and is never used to collect or transmit any information.</string>
+    <string name="privacy_file_access_content">PDF Explorer requires storage permission to read PDF files from your device. This access is used solely to display your documents and is never used to collect or transmit any information.</string>
     <string name="privacy_password_title">Password Storage</string>
     <string name="privacy_password_content">If you choose to save passwords for protected PDFs, they are stored locally using encrypted storage. Passwords never leave your device.</string>
     <string name="privacy_update_title">Update Checking</string>

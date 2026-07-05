@@ -58,7 +58,6 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Email
 import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material.icons.rounded.InstallMobile
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Link
@@ -74,8 +73,6 @@ import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.ViewDay
 import androidx.compose.material.icons.rounded.VisibilityOff
-import androidx.compose.material.icons.rounded.Schedule
-import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Work
 import androidx.compose.material.icons.rounded.AspectRatio
 import androidx.compose.material.icons.rounded.FitScreen
@@ -95,7 +92,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -125,11 +121,6 @@ import com.rejowan.pdfreaderpro.domain.model.ReadingTheme
 import com.rejowan.pdfreaderpro.domain.model.ScreenOrientation
 import com.rejowan.pdfreaderpro.domain.model.ScrollMode
 import com.rejowan.pdfreaderpro.domain.model.ThemeMode
-import com.rejowan.pdfreaderpro.domain.model.UpdateCheckInterval
-import com.rejowan.pdfreaderpro.domain.model.UpdateState
-import com.rejowan.pdfreaderpro.presentation.components.DownloadProgressSheet
-import com.rejowan.pdfreaderpro.presentation.components.UpdateAvailableSheet
-import com.rejowan.pdfreaderpro.util.ApkDownloadManager
 import com.rejowan.licensy.LicenseContent
 import com.rejowan.licensy.Licenses
 import com.rejowan.licensy.compose.LicensyList
@@ -152,45 +143,10 @@ fun SettingsScreenContent(
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val preferences by viewModel.preferences.collectAsState()
-    val updateState by viewModel.updateState.collectAsState()
-    val downloadState by viewModel.downloadState.collectAsState()
-    val hasPendingApk by viewModel.hasPendingApk.collectAsState()
-    val pendingApkVersion by viewModel.pendingApkVersion.collectAsState()
 
     val context = LocalContext.current
 
-    // Track current release for download
-    var currentRelease by remember { mutableStateOf<com.rejowan.pdfreaderpro.domain.model.GithubRelease?>(null) }
-
     // Sheet visibility states
-    var showDownloadSheet by remember { mutableStateOf(false) }
-
-    // Auto-show download sheet when download starts
-    LaunchedEffect(downloadState) {
-        when (downloadState) {
-            is ApkDownloadManager.DownloadState.Starting,
-            is ApkDownloadManager.DownloadState.Downloading -> {
-                showDownloadSheet = true
-            }
-            else -> {}
-        }
-    }
-
-    // Refresh pending APK state on resume (in case user installed from notification)
-    val lifecycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
-            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
-                viewModel.refreshPendingApkState()
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
-    // Other sheet visibility states
     var showThemeModeSheet by remember { mutableStateOf(false) }
     var showScrollModeSheet by remember { mutableStateOf(false) }
     var showQuickZoomSheet by remember { mutableStateOf(false) }
@@ -205,7 +161,6 @@ fun SettingsScreenContent(
     var showLicensesSheet by remember { mutableStateOf(false) }
     var showCreatorSheet by remember { mutableStateOf(false) }
     var showAppLicenseSheet by remember { mutableStateOf(false) }
-    var showUpdateIntervalSheet by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -366,61 +321,8 @@ fun SettingsScreenContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Updates Section
-        SectionLabel(text = stringResource(R.string.updates), delay = 500)
-        Spacer(modifier = Modifier.height(8.dp))
-
-        SettingsOptionItem(
-            icon = Icons.Rounded.SystemUpdate,
-            title = stringResource(R.string.check_for_updates),
-            subtitle = when (updateState) {
-                is UpdateState.Idle -> stringResource(R.string.tap_to_check)
-                is UpdateState.Checking -> stringResource(R.string.checking)
-                is UpdateState.Available -> stringResource(R.string.update_available_version, (updateState as UpdateState.Available).release.version)
-                is UpdateState.UpToDate -> stringResource(R.string.up_to_date)
-                is UpdateState.Error -> stringResource(R.string.error_message, (updateState as UpdateState.Error).message)
-            },
-            accentColor = AccentAmber,
-            onClick = { viewModel.checkForUpdates() },
-            animationDelay = 550
-        )
-
-        // Show pending install option if APK is downloaded
-        if (hasPendingApk) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            SettingsOptionItem(
-                icon = Icons.Rounded.InstallMobile,
-                title = stringResource(R.string.install_pending_update),
-                subtitle = "v${pendingApkVersion ?: "?"} is ready to install",
-                accentColor = Color(0xFF4CAF50),
-                onClick = {
-                    if (viewModel.canInstallApks()) {
-                        viewModel.installPendingApk()
-                    } else {
-                        // Show download sheet to handle permission
-                        showDownloadSheet = true
-                    }
-                },
-                animationDelay = 560
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        SettingsOptionItem(
-            icon = Icons.Rounded.Schedule,
-            title = stringResource(R.string.auto_check_interval),
-            subtitle = preferences.updateCheckInterval.displayName,
-            accentColor = AccentBlue,
-            onClick = { showUpdateIntervalSheet = true },
-            animationDelay = 600
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
         // About Section
-        SectionLabel(text = stringResource(R.string.about_section), delay = 650)
+        SectionLabel(text = stringResource(R.string.about_section), delay = 500)
         Spacer(modifier = Modifier.height(8.dp))
 
         SettingsOptionItem(
@@ -666,81 +568,6 @@ fun SettingsScreenContent(
         AboutSheet(onDismiss = { showAppLicenseSheet = false }) {
             AppLicenseContent()
         }
-    }
-
-    // Update check interval picker
-    if (showUpdateIntervalSheet) {
-        SettingsPickerSheet(
-            title = stringResource(R.string.update_interval),
-            subtitle = stringResource(R.string.update_interval_desc),
-            icon = Icons.Rounded.Schedule,
-            accentColor = AccentBlue,
-            options = listOf(
-                PickerOption(Icons.Rounded.Schedule, stringResource(R.string.never), stringResource(R.string.manual_check_only)),
-                PickerOption(Icons.Rounded.Schedule, stringResource(R.string.daily), stringResource(R.string.check_every_day)),
-                PickerOption(Icons.Rounded.Schedule, stringResource(R.string.every_3_days), stringResource(R.string.check_every_3_days)),
-                PickerOption(Icons.Rounded.Schedule, stringResource(R.string.weekly), stringResource(R.string.check_once_week)),
-                PickerOption(Icons.Rounded.Schedule, stringResource(R.string.every_2_weeks), stringResource(R.string.check_every_2_weeks)),
-                PickerOption(Icons.Rounded.Schedule, stringResource(R.string.monthly), stringResource(R.string.check_once_month))
-            ),
-            selectedIndex = UpdateCheckInterval.entries.indexOf(preferences.updateCheckInterval),
-            onSelect = { index ->
-                viewModel.setUpdateCheckInterval(UpdateCheckInterval.entries[index])
-                showUpdateIntervalSheet = false
-            },
-            onDismiss = { showUpdateIntervalSheet = false }
-        )
-    }
-
-    // Update available sheet
-    if (updateState is UpdateState.Available) {
-        val availableState = updateState as UpdateState.Available
-        UpdateAvailableSheet(
-            release = availableState.release,
-            currentVersion = availableState.currentVersion,
-            downloadUrl = viewModel.getApkDownloadUrl(availableState.release),
-            onDismiss = { viewModel.dismissUpdateDialog() },
-            onSkipVersion = { viewModel.skipVersion(availableState.release.version) },
-            onDownload = {
-                currentRelease = availableState.release
-                viewModel.startDownload(availableState.release)
-                viewModel.dismissUpdateDialog()
-            }
-        )
-    }
-
-    // Download progress sheet
-    if (showDownloadSheet && downloadState !is ApkDownloadManager.DownloadState.Idle) {
-        DownloadProgressSheet(
-            downloadState = downloadState,
-            versionName = currentRelease?.version ?: "",
-            canInstall = viewModel.canInstallApks(),
-            onDismiss = {
-                showDownloadSheet = false
-                // Reset state if completed/failed/cancelled
-                when (downloadState) {
-                    is ApkDownloadManager.DownloadState.Completed,
-                    is ApkDownloadManager.DownloadState.Failed,
-                    is ApkDownloadManager.DownloadState.Cancelled -> {
-                        viewModel.resetDownloadState()
-                    }
-                    else -> {}
-                }
-            },
-            onCancel = {
-                viewModel.cancelDownload()
-            },
-            onInstall = {
-                viewModel.installDownloadedApk()
-                showDownloadSheet = false
-                viewModel.resetDownloadState()
-            },
-            onRequestPermission = {
-                viewModel.openInstallPermissionSettings()?.let { intent ->
-                    context.startActivity(intent)
-                }
-            }
-        )
     }
 }
 
@@ -1875,101 +1702,55 @@ private fun ChangelogContent() {
                 .verticalScroll(rememberScrollState())
         ) {
             ChangelogVersionItem(
-                version = "2.2.0",
-                date = "April 2026",
+                version = "0.4",
+                date = "July 2026",
                 isLatest = true,
                 changes = listOf(
-                    "AMOLED black theme option",
-                    "Customizable double-tap zoom level (1.1×–5×)",
-                    "Double-tap now zooms toward the tapped location",
-                    "Setting to hide the Tools tab from the bottom navigation",
-                    "Remember Password now auto-fills on reopen",
-                    "Larger typography and looser spacing in reader sheets",
-                    "Reader chrome and home nav follow the selected app theme"
+                    "First public release of PDF Explorer",
+                    "Complete SoftCloud rebranding",
+                    "Modern PDF reader",
+                    "Merge, Split, Compress, Rotate PDFs",
+                    "Add Watermark and Page Numbers",
+                    "Folder browser and file management",
+                    "Favorites and Recent Files",
+                    "Performance and stability improvements"
                 )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             ChangelogVersionItem(
-                version = "2.1.3",
-                date = "March 2026",
+                version = "0.3",
+                date = "June 2026",
                 isLatest = false,
                 changes = listOf(
-                    "F-Droid build compatibility"
+                    "UI improvements",
+                    "Reader enhancements",
+                    "Performance optimizations"
                 )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             ChangelogVersionItem(
-                version = "2.1.2",
-                date = "March 2026",
+                version = "0.2",
+                date = "May 2026",
                 isLatest = false,
                 changes = listOf(
-                    "Fixed build compatibility with standard OpenJDK"
+                    "Added PDF editing tools",
+                    "Improved file management",
+                    "General bug fixes"
                 )
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             ChangelogVersionItem(
-                version = "2.1.1",
-                date = "March 2026",
+                version = "0.1",
+                date = "April 2026",
                 isLatest = false,
                 changes = listOf(
-                    "F-Droid metadata and fastlane structure"
-                )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ChangelogVersionItem(
-                version = "2.1.0",
-                date = "March 2026",
-                isLatest = false,
-                changes = listOf(
-                    "Horizontal page scrubber for horizontal scroll mode",
-                    "Global settings for snap-to-pages preference",
-                    "Global settings for screen orientation lock",
-                    "Simplified view mode options"
-                )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ChangelogVersionItem(
-                version = "2.0.0",
-                date = "March 2026",
-                isLatest = false,
-                changes = listOf(
-                    "Complete UI redesign with Material 3",
-                    "New PDF viewer with PDF.js engine",
-                    "Bookmarks and favorites support",
-                    "Reading themes (Light, Sepia, Dark, Black)",
-                    "Auto-scroll functionality",
-                    "Page jump and search in documents",
-                    "Table of contents with attachments",
-                    "PDF tools (merge, split, compress, rotate, and more)",
-                    "Customizable reader settings",
-                    "Dark mode and system theme support",
-                    "Folder browser with sorting options",
-                    "Recent files tracking",
-                    "Search across all PDFs"
-                )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ChangelogVersionItem(
-                version = "1.0.0",
-                date = "May 2024",
-                isLatest = false,
-                changes = listOf(
-                    "Initial release",
-                    "Basic PDF viewing functionality",
-                    "Light and dark theme support",
-                    "File browser integration"
+                    "Initial internal development build"
                 )
             )
 
@@ -2084,7 +1865,6 @@ private fun PrivacyPolicyContent() {
                 )
                 PrivacyHighlightItem(stringResource(R.string.no_data_collection))
                 PrivacyHighlightItem(stringResource(R.string.no_analytics))
-                PrivacyHighlightItem(stringResource(R.string.optional_updates))
                 PrivacyHighlightItem(stringResource(R.string.local_storage))
             }
         }
@@ -2107,11 +1887,6 @@ private fun PrivacyPolicyContent() {
         PrivacySection(
             title = stringResource(R.string.privacy_password_title),
             content = stringResource(R.string.privacy_password_content)
-        )
-
-        PrivacySection(
-            title = stringResource(R.string.privacy_update_title),
-            content = stringResource(R.string.privacy_update_content)
         )
 
         Text(
@@ -2269,12 +2044,6 @@ private fun LicensesContent() {
                 author = "Google",
                 license = Licenses.APACHE_2_0,
                 url = "https://developer.android.com/jetpack/compose/navigation"
-            ),
-            LicenseContent(
-                title = "Ktor",
-                author = "JetBrains",
-                license = Licenses.APACHE_2_0,
-                url = "https://ktor.io/"
             ),
             LicenseContent(
                 title = "Licensy",

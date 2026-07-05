@@ -13,7 +13,6 @@ import com.rejowan.pdfreaderpro.domain.model.ScreenOrientation
 import com.rejowan.pdfreaderpro.domain.model.ScrollMode
 import com.rejowan.pdfreaderpro.domain.model.SortOption
 import com.rejowan.pdfreaderpro.domain.model.ThemeMode
-import com.rejowan.pdfreaderpro.domain.model.UpdateCheckInterval
 import com.rejowan.pdfreaderpro.domain.model.ViewMode
 import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +31,6 @@ class PreferencesRepositoryImpl(
         val DEFAULT_SORT_OPTION = stringPreferencesKey("default_sort_option")
         val REMEMBER_PASSWORDS = booleanPreferencesKey("remember_passwords")
         val SHOW_TOOLS_TAB = booleanPreferencesKey("show_tools_tab")
-        val UPDATE_CHECK_INTERVAL = stringPreferencesKey("update_check_interval")
 
         // Reader settings
         val READER_BRIGHTNESS = floatPreferencesKey("reader_brightness")
@@ -56,7 +54,6 @@ class PreferencesRepositoryImpl(
             defaultSortOption = prefs[Keys.DEFAULT_SORT_OPTION]?.let { SortOption.valueOf(it) } ?: SortOption.NAME_ASC,
             rememberPasswords = prefs[Keys.REMEMBER_PASSWORDS] ?: true,
             showToolsTab = prefs[Keys.SHOW_TOOLS_TAB] ?: true,
-            updateCheckInterval = prefs[Keys.UPDATE_CHECK_INTERVAL]?.let { UpdateCheckInterval.valueOf(it) } ?: UpdateCheckInterval.WEEKLY,
 
             // Reader settings
             readerBrightness = prefs[Keys.READER_BRIGHTNESS] ?: -1f,
@@ -98,10 +95,6 @@ class PreferencesRepositoryImpl(
 
     override suspend fun setShowToolsTab(enabled: Boolean) {
         dataStore.edit { it[Keys.SHOW_TOOLS_TAB] = enabled }
-    }
-
-    override suspend fun setUpdateCheckInterval(interval: UpdateCheckInterval) {
-        dataStore.edit { it[Keys.UPDATE_CHECK_INTERVAL] = interval.name }
     }
 
     // Reader settings

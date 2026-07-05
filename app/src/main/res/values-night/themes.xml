@@ -11,8 +11,7 @@
     <!-- Splash screen theme for Android 12+ Splash Screen API (night) -->
     <style name="Theme.PdfExplorer.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/bgColor</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/img_splash_logo</item>
-        <item name="windowSplashScreenIconBackgroundColor">@color/splashIconBackground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/img_splash_icon</item>
         <item name="postSplashScreenTheme">@style/Theme.PdfExplorer</item>
     </style>
 

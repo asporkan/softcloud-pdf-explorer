@@ -20,11 +20,11 @@ android {
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.rejowan.pdfreaderpro"
+        applicationId = "com.softcloud.pdfexplorer"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 7
-        versionName = "2.2.0"
+        versionCode = 4
+        versionName = "0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -132,12 +132,6 @@ dependencies {
 
     // Kotlin Serialization (for type-safe navigation)
     implementation(libs.kotlinx.serialization.json)
-
-    // Ktor HTTP Client (for GitHub API)
-    implementation(libs.ktor.client.android)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.json)
-
 
     // Image Loading
     implementation(libs.coil.compose)
