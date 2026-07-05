@@ -107,9 +107,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import androidx.compose.ui.res.stringResource
-import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.Constants
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -770,7 +771,7 @@ private fun MergeBottomSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "Saved to: Documents/PdfReaderPro/",
+                stringResource(R.string.tool_saved_to_documents, Constants.OUTPUT_DIR_NAME),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

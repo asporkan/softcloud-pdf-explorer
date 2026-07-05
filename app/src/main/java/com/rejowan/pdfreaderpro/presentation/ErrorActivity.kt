@@ -33,7 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
-import com.rejowan.pdfreaderpro.presentation.theme.PdfReaderProTheme
+import com.rejowan.pdfreaderpro.presentation.theme.PdfExplorerTheme
 
 class ErrorActivity : ComponentActivity() {
 
@@ -45,7 +45,7 @@ class ErrorActivity : ComponentActivity() {
         val errorDetails = intent.getStringExtra(EXTRA_ERROR_DETAILS)
 
         setContent {
-            PdfReaderProTheme {
+            PdfExplorerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

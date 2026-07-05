@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.FileProvider
@@ -50,6 +51,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.components.pdf.PdfViewer
 import com.rejowan.pdfreaderpro.presentation.components.pdf.print.DefaultPdfPrintAdapter
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.DeleteConfirmDialog
@@ -356,7 +358,7 @@ fun ReaderScreen(
             Box(modifier = Modifier.fillMaxSize()) {
                 // Top bar (auto-hide)
                 ReaderTopBar(
-                    title = state.documentTitle ?: "PDF Reader",
+                    title = state.documentTitle ?: stringResource(R.string.reader_fallback_title),
                     isVisible = state.isToolbarVisible && !state.isSearchActive && !state.isFullScreen,
                     onBackClick = { navController.popBackStack() },
                     onSearchClick = { viewModel.onAction(ReaderAction.ToggleSearch) },

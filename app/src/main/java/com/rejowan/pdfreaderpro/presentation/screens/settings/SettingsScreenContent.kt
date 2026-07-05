@@ -485,8 +485,8 @@ fun SettingsScreenContent(
             accentColor = AccentTeal,
             onClick = {
                 val intent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = "mailto:kmrejowan@gmail.com".toUri()
-                    putExtra(Intent.EXTRA_SUBJECT, "PDF Reader Pro Feedback")
+                    data = "mailto:${context.getString(R.string.creator_email_address)}".toUri()
+                    putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.feedback_email_subject))
                 }
                 context.startActivity(intent)
             },
@@ -503,7 +503,7 @@ fun SettingsScreenContent(
             onClick = {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    "https://github.com/ahmmedrejowan/PdfReaderPro".toUri()
+                    context.getString(R.string.creator_github_url).toUri()
                 )
                 context.startActivity(intent)
             },
@@ -2350,26 +2350,13 @@ private fun CreatorContent() {
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 CreatorLinkItem(
-                    icon = Icons.Rounded.Language,
-                    label = "Website",
-                    value = "rejowan.com",
-                    accentColor = AccentBlue,
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, "https://rejowan.com".toUri())
-                        context.startActivity(intent)
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                CreatorLinkItem(
                     icon = Icons.Rounded.Email,
-                    label = "Email",
-                    value = "kmrejowan@gmail.com",
+                    label = stringResource(R.string.creator_link_email),
+                    value = stringResource(R.string.creator_email_address),
                     accentColor = AccentAmber,
                     onClick = {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = "mailto:kmrejowan@gmail.com".toUri()
+                            data = "mailto:${context.getString(R.string.creator_email_address)}".toUri()
                         }
                         context.startActivity(intent)
                     }
@@ -2379,24 +2366,14 @@ private fun CreatorContent() {
 
                 CreatorLinkItem(
                     icon = Icons.Rounded.Code,
-                    label = "GitHub",
-                    value = "github.com/ahmmedrejowan",
+                    label = stringResource(R.string.creator_link_github),
+                    value = stringResource(R.string.creator_github_display),
                     accentColor = AccentPurple,
                     onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, "https://github.com/ahmmedrejowan".toUri())
-                        context.startActivity(intent)
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                CreatorLinkItem(
-                    icon = Icons.Rounded.Work,
-                    label = "LinkedIn",
-                    value = "linkedin.com/in/ahmmedrejowan",
-                    accentColor = AccentTeal,
-                    onClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, "https://linkedin.com/in/ahmmedrejowan".toUri())
+                        val intent = Intent(
+                            Intent.ACTION_VIEW,
+                            context.getString(R.string.creator_github_url).toUri()
+                        )
                         context.startActivity(intent)
                     }
                 )

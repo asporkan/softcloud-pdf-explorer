@@ -3,49 +3,49 @@ package com.rejowan.pdfreaderpro.presentation.theme
 import androidx.compose.ui.graphics.Color
 
 // ============================================================================
-// DARK THEME - Purple/Violet - Optimized for AMOLED
+// DARK THEME - SoftCloud blue/purple brand palette
 // ============================================================================
 
-val primaryDark = Color(0xFF9181F4)
-val onPrimaryDark = Color(0xFFFFFFFF)
-val primaryContainerDark = Color(0xFF7B6BE0)
-val onPrimaryContainerDark = Color(0xFFFFFFFF)
+val primaryDark = Color(0xFFA78BFA)
+val onPrimaryDark = Color(0xFF1E1B4B)
+val primaryContainerDark = Color(0xFF5B21B6)
+val onPrimaryContainerDark = Color(0xFFEDE9FE)
 
-val secondaryDark = Color(0xFFB8A5E3)
-val onSecondaryDark = Color(0xFF1E1530)
-val secondaryContainerDark = Color(0xFF8B7BC7)
-val onSecondaryContainerDark = Color(0xFFFFFFFF)
+val secondaryDark = Color(0xFF60A5FA)
+val onSecondaryDark = Color(0xFF1E3A8A)
+val secondaryContainerDark = Color(0xFF1D4ED8)
+val onSecondaryContainerDark = Color(0xFFDBEAFE)
 
-val tertiaryDark = Color(0xFF4DB6AC)
-val onTertiaryDark = Color(0xFF003731)
-val tertiaryContainerDark = Color(0xFF00897B)
-val onTertiaryContainerDark = Color(0xFFFFFFFF)
+val tertiaryDark = Color(0xFF4ADE80)
+val onTertiaryDark = Color(0xFF14532D)
+val tertiaryContainerDark = Color(0xFF16A34A)
+val onTertiaryContainerDark = Color(0xFFDCFCE7)
 
-val inversePrimaryDark = Color(0xFF9181F4)
+val inversePrimaryDark = Color(0xFF7C3AED)
 
 // ============================================================================
 // SHARED DARK SURFACE COLORS
 // ============================================================================
 
 object DarkSurfaces {
-    val background = Color(0xFF0A0A0F)
-    val onBackground = Color(0xFFE8E5F0)
-    val surface = Color(0xFF0A0A0F)
-    val onSurface = Color(0xFFE8E5F0)
-    val surfaceVariant = Color(0xFF3D3A47)
-    val onSurfaceVariant = Color(0xFFC9C5D4)
-    val outline = Color(0xFF8C899A)
-    val outlineVariant = Color(0xFF49464F)
+    val background = Color(0xFF0F172A)
+    val onBackground = Color(0xFFE2E8F0)
+    val surface = Color(0xFF0F172A)
+    val onSurface = Color(0xFFE2E8F0)
+    val surfaceVariant = Color(0xFF334155)
+    val onSurfaceVariant = Color(0xFFCBD5E1)
+    val outline = Color(0xFF64748B)
+    val outlineVariant = Color(0xFF475569)
     val scrim = Color(0xFF000000)
-    val inverseSurface = Color(0xFFE8E5F0)
-    val inverseOnSurface = Color(0xFF2E2C35)
-    val surfaceDim = Color(0xFF0A0A0F)
-    val surfaceBright = Color(0xFF35333D)
-    val surfaceContainerLowest = Color(0xFF050508)
-    val surfaceContainerLow = Color(0xFF141318)
-    val surfaceContainer = Color(0xFF1A191F)
-    val surfaceContainerHigh = Color(0xFF242329)
-    val surfaceContainerHighest = Color(0xFF2F2D35)
+    val inverseSurface = Color(0xFFE2E8F0)
+    val inverseOnSurface = Color(0xFF1E293B)
+    val surfaceDim = Color(0xFF0F172A)
+    val surfaceBright = Color(0xFF334155)
+    val surfaceContainerLowest = Color(0xFF0B1120)
+    val surfaceContainerLow = Color(0xFF111827)
+    val surfaceContainer = Color(0xFF1E293B)
+    val surfaceContainerHigh = Color(0xFF273449)
+    val surfaceContainerHighest = Color(0xFF334155)
     val error = Color(0xFFD32F2F)
     val onError = Color(0xFFFFFFFF)
     val errorContainer = Color(0xFFEF5350)
@@ -111,25 +111,25 @@ object LightSurfaces {
 }
 
 // ============================================================================
-// LIGHT THEME - Purple/Violet
+// LIGHT THEME - SoftCloud blue/purple brand palette
 // ============================================================================
 
-val primaryLight = Color(0xFF7B68EE)
+val primaryLight = Color(0xFF7C3AED)
 val onPrimaryLight = Color(0xFFFFFFFF)
-val primaryContainerLight = Color(0xFFEDE7FF)
-val onPrimaryContainerLight = Color(0xFF21005E)
+val primaryContainerLight = Color(0xFFEDE9FE)
+val onPrimaryContainerLight = Color(0xFF4C1D95)
 
-val secondaryLight = Color(0xFF625B71)
+val secondaryLight = Color(0xFF3B82F6)
 val onSecondaryLight = Color(0xFFFFFFFF)
-val secondaryContainerLight = Color(0xFFE8DEF8)
-val onSecondaryContainerLight = Color(0xFF1D192B)
+val secondaryContainerLight = Color(0xFFDBEAFE)
+val onSecondaryContainerLight = Color(0xFF1E3A8A)
 
-val tertiaryLight = Color(0xFF7D5260)
+val tertiaryLight = Color(0xFF22C55E)
 val onTertiaryLight = Color(0xFFFFFFFF)
-val tertiaryContainerLight = Color(0xFFFFD8E4)
-val onTertiaryContainerLight = Color(0xFF31111D)
+val tertiaryContainerLight = Color(0xFFDCFCE7)
+val onTertiaryContainerLight = Color(0xFF14532D)
 
-val inversePrimaryLight = Color(0xFFD0BCFF)
+val inversePrimaryLight = Color(0xFFA78BFA)
 
 // ============================================================================
 // PDF READER THEMES

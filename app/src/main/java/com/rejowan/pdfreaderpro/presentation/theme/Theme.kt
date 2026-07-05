@@ -158,10 +158,10 @@ private val lightColorScheme = lightColorScheme(
 )
 
 /**
- * PDF Reader Pro Theme - Supports dark, light, and system theme modes.
+ * PDF Explorer app theme — supports dark, light, black (AMOLED), and system modes.
  */
 @Composable
-fun PdfReaderProTheme(
+fun PdfExplorerTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit

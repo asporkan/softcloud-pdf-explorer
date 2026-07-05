@@ -89,6 +89,7 @@ import androidx.core.content.FileProvider
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.navigation.NavController
+import com.rejowan.pdfreaderpro.util.Constants
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
@@ -855,7 +856,11 @@ private fun SplitBottomSection(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "Saved to: Documents/PdfReaderPro/split_$outputPrefix/",
+                stringResource(
+                    R.string.tool_saved_to_documents_split,
+                    Constants.OUTPUT_DIR_NAME,
+                    outputPrefix
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,

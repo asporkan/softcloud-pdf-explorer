@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
+import com.rejowan.pdfreaderpro.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -412,7 +413,7 @@ class PageNumbersViewModel(
 
     private fun getOutputDirectory(): String {
         val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, "PdfReaderPro")
+        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
         if (!pdfToolsDir.exists()) {
             pdfToolsDir.mkdirs()
         }

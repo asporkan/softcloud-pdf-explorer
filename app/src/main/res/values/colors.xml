@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Primary brand color for splash screen -->
-    <color name="colorPrimary">#7A59DA</color>
-    <color name="colorAccent">#7A59DA</color>
+    <!-- SoftCloud brand tokens (REBRAND R3 — R0.5) -->
+    <color name="brandBlue">#3B82F6</color>
+    <color name="brandPurple">#7C3AED</color>
+    <color name="brandGreen">#22C55E</color>
+    <color name="brandOrange">#F97316</color>
+
+    <!-- Primary brand colors for splash screen and system chrome -->
+    <color name="colorPrimary">#7C3AED</color>
+    <color name="colorAccent">#3B82F6</color>
     <color name="bgColor">#FFFFFF</color>
+    <color name="splashIconBackground">#7C3AED</color>
 </resources>

@@ -23,7 +23,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:hardwareAccelerated="true"
-        android:theme="@style/Theme.PDFReaderPro"
+        android:theme="@style/Theme.PdfExplorer"
         tools:targetApi="31">
 
         <provider
@@ -41,7 +41,7 @@
             android:exported="true"
             android:configChanges="orientation|screenSize"
             android:screenOrientation="fullUser"
-            android:theme="@style/Theme.PDFReaderPro.Splash">
+            android:theme="@style/Theme.PdfExplorer.Splash">
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -67,7 +67,7 @@
         <activity
             android:name=".presentation.ErrorActivity"
             android:exported="false"
-            android:theme="@style/Theme.PDFReaderPro"
+            android:theme="@style/Theme.PdfExplorer"
             android:configChanges="orientation|screenSize" />
 
     </application>

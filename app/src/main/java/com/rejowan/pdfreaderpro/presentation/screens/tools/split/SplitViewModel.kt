@@ -6,6 +6,7 @@ import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
+import com.rejowan.pdfreaderpro.util.Constants
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -408,7 +409,7 @@ class SplitViewModel(
 
     private fun getOutputDirectory(prefix: String): String {
         val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, "PdfReaderPro/split_$prefix")
+        val pdfToolsDir = File(documentsDir, "${Constants.OUTPUT_DIR_NAME}/split_$prefix")
         if (!pdfToolsDir.exists()) {
             pdfToolsDir.mkdirs()
         }

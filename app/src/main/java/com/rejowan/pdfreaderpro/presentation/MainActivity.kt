@@ -31,7 +31,7 @@ import com.rejowan.pdfreaderpro.presentation.navigation.Home
 import com.rejowan.pdfreaderpro.presentation.navigation.Onboarding
 import com.rejowan.pdfreaderpro.presentation.navigation.PdfReaderNavGraph
 import com.rejowan.pdfreaderpro.presentation.navigation.Reader
-import com.rejowan.pdfreaderpro.presentation.theme.PdfReaderProTheme
+import com.rejowan.pdfreaderpro.presentation.theme.PdfExplorerTheme
 import com.rejowan.pdfreaderpro.presentation.theme.ThemeMode
 import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.Dispatchers
@@ -123,7 +123,7 @@ class MainActivity : ComponentActivity() {
                 com.rejowan.pdfreaderpro.domain.model.ThemeMode.SYSTEM -> ThemeMode.SYSTEM
             }
 
-            PdfReaderProTheme(themeMode = themeMode) {
+            PdfExplorerTheme(themeMode = themeMode) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
