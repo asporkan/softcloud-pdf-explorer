@@ -73,7 +73,7 @@ fun SelectionActionBar(
                 IconButton(onClick = onClose) {
                     Icon(
                         Icons.Default.Close,
-                        contentDescription = "Close selection",
+                        contentDescription = stringResource(R.string.cd_close_selection),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
@@ -81,13 +81,13 @@ fun SelectionActionBar(
                 // Selection count
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "$selectedCount selected",
+                        text = stringResource(R.string.selected_count_format, selectedCount),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         color = SelectionBlue
                     )
                     Text(
-                        text = "of $totalCount files",
+                        text = stringResource(R.string.of_files_count, totalCount),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -111,14 +111,18 @@ fun SelectionActionBar(
                     ) {
                         Icon(
                             Icons.Default.SelectAll,
-                            contentDescription = stringResource(R.string.cd_decorative),
+                            contentDescription = stringResource(R.string.cd_select_all),
                             modifier = Modifier.size(18.dp),
                             tint = if (selectedCount == totalCount) SelectionBlue
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = if (selectedCount == totalCount) "All" else "Select All",
+                            text = if (selectedCount == totalCount) {
+                                stringResource(R.string.quick_select_all)
+                            } else {
+                                stringResource(R.string.select_all)
+                            },
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Medium,
                             color = if (selectedCount == totalCount) SelectionBlue
@@ -138,7 +142,7 @@ fun SelectionActionBar(
                 // Merge button (only enabled with 2+ files)
                 ActionButton(
                     icon = Icons.AutoMirrored.Filled.CallMerge,
-                    label = "Merge",
+                    label = stringResource(R.string.merge),
                     color = AccentPurple,
                     enabled = selectedCount >= 2,
                     onClick = onMerge,
@@ -148,7 +152,7 @@ fun SelectionActionBar(
                 // Share button
                 ActionButton(
                     icon = Icons.Default.Share,
-                    label = "Share",
+                    label = stringResource(R.string.share),
                     color = AccentTeal,
                     enabled = selectedCount > 0,
                     onClick = onShare,
@@ -158,7 +162,7 @@ fun SelectionActionBar(
                 // Delete button
                 ActionButton(
                     icon = Icons.Default.Delete,
-                    label = "Delete",
+                    label = stringResource(R.string.delete),
                     color = AccentRed,
                     enabled = selectedCount > 0,
                     onClick = onDelete,

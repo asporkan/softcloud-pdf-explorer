@@ -41,6 +41,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,6 +65,7 @@ fun RecentListItem(
     onLongClick: () -> Unit = onOptionsClick,
     onSelectionToggle: () -> Unit = {}
 ) {
+    val context = LocalContext.current
     var isVisible by remember { mutableStateOf(animationDelay == 0) }
 
     LaunchedEffect(Unit) {
@@ -144,7 +146,7 @@ fun RecentListItem(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = stringResource(R.string.page_progress_time, recentFile.lastPage + 1, recentFile.totalPages, formatTimeAgo(recentFile.lastOpened)),
+                    text = stringResource(R.string.page_progress_time, recentFile.lastPage + 1, recentFile.totalPages, formatTimeAgo(context, recentFile.lastOpened)),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -207,7 +209,7 @@ fun RecentListItem(
     }
 }
 
-private fun formatTimeAgo(timestamp: Long): String {
+private fun formatTimeAgo(context: android.content.Context, timestamp: Long): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
 
@@ -216,12 +218,12 @@ private fun formatTimeAgo(timestamp: Long): String {
     val days = diff / 86400000
 
     return when {
-        minutes < 1 -> "Just now"
-        minutes < 60 -> "${minutes}m ago"
-        hours < 24 -> "${hours}h ago"
-        days < 7 -> "${days}d ago"
+        minutes < 1 -> context.getString(R.string.just_now)
+        minutes < 60 -> context.getString(R.string.minutes_ago, minutes.toInt())
+        hours < 24 -> context.getString(R.string.hours_ago, hours.toInt())
+        days < 7 -> context.getString(R.string.days_ago, days.toInt())
         else -> {
-            val sdf = java.text.SimpleDateFormat("MMM d", java.util.Locale.US)
+            val sdf = java.text.SimpleDateFormat("MMM d", java.util.Locale.getDefault())
             sdf.format(java.util.Date(timestamp))
         }
     }

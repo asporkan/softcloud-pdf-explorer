@@ -33,12 +33,12 @@ import java.util.Calendar
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
 
-private fun getGreeting(): String {
+private fun getGreetingResId(): Int {
     val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     return when {
-        hour < 12 -> "Good morning"
-        hour < 17 -> "Good afternoon"
-        else -> "Good evening"
+        hour < 12 -> R.string.good_morning
+        hour < 17 -> R.string.good_afternoon
+        else -> R.string.good_evening
     }
 }
 
@@ -59,7 +59,7 @@ fun WelcomeHeader(
     onStatsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val greeting = getGreeting()
+    val greeting = stringResource(getGreetingResId())
     val emoji = getGreetingEmoji()
 
     Column(
@@ -103,7 +103,7 @@ fun WelcomeHeader(
                     IconButton(onClick = onSortClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.Sort,
-                            contentDescription = "Sort files",
+                            contentDescription = stringResource(R.string.sort_files_desc),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -120,7 +120,7 @@ fun WelcomeHeader(
                     IconButton(onClick = onStatsClick) {
                         Icon(
                             imageVector = Icons.Outlined.Analytics,
-                            contentDescription = "Library statistics",
+                            contentDescription = stringResource(R.string.library_stats_desc),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }

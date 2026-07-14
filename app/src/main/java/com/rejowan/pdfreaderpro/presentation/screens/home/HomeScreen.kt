@@ -65,6 +65,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.annotation.StringRes
 import com.rejowan.pdfreaderpro.R
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -106,21 +107,21 @@ import org.koin.androidx.compose.koinViewModel
 
 // Bottom Navigation Items
 enum class BottomNavItem(
-    val label: String,
+    @param:StringRes val labelRes: Int,
     val selectedIcon: ImageVector,
     val unselectedIcon: ImageVector
 ) {
-    HOME("Home", Icons.Filled.Home, Icons.Outlined.Home),
-    FOLDERS("Folders", Icons.Filled.Folder, Icons.Outlined.Folder),
-    TOOLS("Tools", Icons.Outlined.Build, Icons.Outlined.Build),
-    SETTINGS("Settings", Icons.Filled.Settings, Icons.Outlined.Settings)
+    HOME(R.string.home, Icons.Filled.Home, Icons.Outlined.Home),
+    FOLDERS(R.string.folders, Icons.Filled.Folder, Icons.Outlined.Folder),
+    TOOLS(R.string.tools, Icons.Outlined.Build, Icons.Outlined.Build),
+    SETTINGS(R.string.settings, Icons.Filled.Settings, Icons.Outlined.Settings)
 }
 
 // Home Sub-tabs
-enum class HomeSubTab(val title: String) {
-    RECENT("Recent"),
-    FAVORITES("Favorites"),
-    ALL("All Files")
+enum class HomeSubTab(@param:StringRes val titleRes: Int) {
+    RECENT(R.string.recent),
+    FAVORITES(R.string.favorites),
+    ALL(R.string.all_files)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -340,7 +341,7 @@ fun HomeScreen(
 
                             // Compact tabs with view mode toggle
                             CompactTabRow(
-                                tabs = HomeSubTab.entries.map { it.title },
+                                tabs = HomeSubTab.entries.map { stringResource(it.titleRes) },
                                 selectedIndex = homeSubTabPagerState.currentPage,
                                 onTabSelected = { index ->
                                     scope.launch {

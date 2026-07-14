@@ -9,6 +9,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.model.ViewMode
 
 @Composable
@@ -21,7 +23,7 @@ fun ViewModeToggle(
         IconButton(onClick = { onModeChange(ViewMode.LIST) }) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ViewList,
-                contentDescription = "List view",
+                contentDescription = stringResource(R.string.list_view),
                 tint = if (currentMode == ViewMode.LIST) {
                     MaterialTheme.colorScheme.primary
                 } else {
@@ -33,7 +35,7 @@ fun ViewModeToggle(
         IconButton(onClick = { onModeChange(ViewMode.GRID) }) {
             Icon(
                 imageVector = Icons.Default.GridView,
-                contentDescription = "Grid view",
+                contentDescription = stringResource(R.string.grid_view),
                 tint = if (currentMode == ViewMode.GRID) {
                     MaterialTheme.colorScheme.primary
                 } else {

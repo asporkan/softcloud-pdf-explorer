@@ -1334,4 +1334,27 @@
     <string name="validation_color_range">Color value must be 0-255</string>
     <string name="password_min_hint">Minimum 4 characters required</string>
 
+    <!-- P1 App Shell — sort sheet categories & direction chips -->
+    <string name="sort_alphabetical">Alphabetical</string>
+    <string name="sort_by_file_name">Sort by file name</string>
+    <string name="sort_date_modified">Date Modified</string>
+    <string name="sort_by_last_modified">Sort by last modified time</string>
+    <string name="sort_by_storage_size">Sort by storage size</string>
+    <string name="sort_a_to_z">A → Z</string>
+    <string name="sort_z_to_a">Z → A</string>
+    <string name="sort_newest">Newest</string>
+    <string name="sort_oldest">Oldest</string>
+    <string name="sort_largest">Largest</string>
+    <string name="sort_smallest">Smallest</string>
+    <string name="sort_by_folder_name">Sort by folder name</string>
+    <string name="sort_pdf_count">PDF Count</string>
+    <string name="sort_by_pdf_count">Sort by number of PDFs</string>
+    <string name="sort_most">Most</string>
+    <string name="sort_least">Least</string>
+    <string name="folder_label">Folder</string>
+    <string name="grant_access">Grant Access</string>
+    <string name="selected_count_format">%d selected</string>
+    <string name="of_files_count">of %d files</string>
+    <string name="cd_close_selection">Close selection</string>
+
 </resources>

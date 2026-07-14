@@ -217,8 +217,8 @@ private fun SortOptionsContent(
 
         // Sort Categories
         SortCategoryCard(
-            title = "Alphabetical",
-            description = "Sort by file name",
+            title = stringResource(R.string.sort_alphabetical),
+            description = stringResource(R.string.sort_by_file_name),
             icon = Icons.Outlined.SortByAlpha,
             accentColor = AccentPurple,
             options = listOf(SortOption.NAME_ASC, SortOption.NAME_DESC),
@@ -233,8 +233,8 @@ private fun SortOptionsContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         SortCategoryCard(
-            title = "Date Modified",
-            description = "Sort by last modified time",
+            title = stringResource(R.string.sort_date_modified),
+            description = stringResource(R.string.sort_by_last_modified),
             icon = Icons.Outlined.AccessTime,
             accentColor = AccentBlue,
             options = listOf(SortOption.DATE_DESC, SortOption.DATE_ASC),
@@ -249,8 +249,8 @@ private fun SortOptionsContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         SortCategoryCard(
-            title = "File Size",
-            description = "Sort by storage size",
+            title = stringResource(R.string.file_size),
+            description = stringResource(R.string.sort_by_storage_size),
             icon = Icons.Outlined.DataUsage,
             accentColor = AccentTeal,
             options = listOf(SortOption.SIZE_DESC, SortOption.SIZE_ASC),
@@ -391,7 +391,7 @@ private fun SortCategoryCard(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
-                            contentDescription = "Selected",
+                            contentDescription = stringResource(R.string.cd_selected),
                             modifier = Modifier
                                 .padding(4.dp)
                                 .size(14.dp),
@@ -522,7 +522,7 @@ private fun SortOptionChip(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
-                            contentDescription = "Selected",
+                            contentDescription = stringResource(R.string.cd_selected),
                             modifier = Modifier.size(9.dp),
                             tint = Color.White
                         )
@@ -533,13 +533,14 @@ private fun SortOptionChip(
     }
 }
 
+@Composable
 private fun getOptionDetails(option: SortOption): Pair<ImageVector, String> {
     return when (option) {
-        SortOption.NAME_ASC -> Icons.Rounded.ArrowUpward to "A → Z"
-        SortOption.NAME_DESC -> Icons.Rounded.ArrowDownward to "Z → A"
-        SortOption.DATE_DESC -> Icons.Rounded.ArrowDownward to "Newest"
-        SortOption.DATE_ASC -> Icons.Rounded.ArrowUpward to "Oldest"
-        SortOption.SIZE_DESC -> Icons.Rounded.ArrowDownward to "Largest"
-        SortOption.SIZE_ASC -> Icons.Rounded.ArrowUpward to "Smallest"
+        SortOption.NAME_ASC -> Icons.Rounded.ArrowUpward to stringResource(R.string.sort_a_to_z)
+        SortOption.NAME_DESC -> Icons.Rounded.ArrowDownward to stringResource(R.string.sort_z_to_a)
+        SortOption.DATE_DESC -> Icons.Rounded.ArrowDownward to stringResource(R.string.sort_newest)
+        SortOption.DATE_ASC -> Icons.Rounded.ArrowUpward to stringResource(R.string.sort_oldest)
+        SortOption.SIZE_DESC -> Icons.Rounded.ArrowDownward to stringResource(R.string.sort_largest)
+        SortOption.SIZE_ASC -> Icons.Rounded.ArrowUpward to stringResource(R.string.sort_smallest)
     }
 }

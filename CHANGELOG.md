@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.5] - 2026-07-14
+
+### Changed
+- New PDF Explorer app icon and adaptive launcher assets (WebP mipmaps)
+- Added monochrome layer for Android 13+ themed icons
+- Launcher background color updated to SoftCloud branding (`#fafafa`)
+
+---
+
 ## [2.2.0] - 2026-04-23
 
 ### Added

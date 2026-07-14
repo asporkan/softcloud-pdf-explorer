@@ -232,7 +232,7 @@ private fun FileInfoContent(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             StatChip(
-                label = "${pdfFile.pageCount} pages",
+                label = stringResource(R.string.pages_count, pdfFile.pageCount),
                 color = AccentBlue,
                 modifier = Modifier.weight(1f)
             )
@@ -246,22 +246,22 @@ private fun FileInfoContent(
         // Date Section
         Spacer(modifier = Modifier.height(12.dp))
         InfoSection(
-            title = "Dates",
+            title = stringResource(R.string.dates_section),
             icon = Icons.Rounded.Schedule,
             accentColor = AccentTeal
         ) {
-            InfoItem("Modified", formatDate(pdfFile.dateModified))
+            InfoItem(stringResource(R.string.modified_label), formatDate(pdfFile.dateModified))
         }
 
         // Location Section
         Spacer(modifier = Modifier.height(12.dp))
         InfoSection(
-            title = "Location",
+            title = stringResource(R.string.location_section),
             icon = Icons.Rounded.Folder,
             accentColor = Color(0xFF78909C)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                InfoItem("Folder", pdfFile.parentFolder)
+                InfoItem(stringResource(R.string.folder_label), pdfFile.parentFolder)
                 Text(
                     text = pdfFile.path,
                     style = MaterialTheme.typography.labelSmall,

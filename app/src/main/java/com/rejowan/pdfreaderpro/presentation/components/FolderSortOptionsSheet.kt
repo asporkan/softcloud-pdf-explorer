@@ -215,8 +215,8 @@ private fun FolderSortOptionsContent(
 
         // Sort Categories
         FolderSortCategoryCard(
-            title = "Alphabetical",
-            description = "Sort by folder name",
+            title = stringResource(R.string.sort_alphabetical),
+            description = stringResource(R.string.sort_by_folder_name),
             icon = Icons.Outlined.SortByAlpha,
             accentColor = AccentAmber,
             options = listOf(FolderSortOption.NAME_ASC, FolderSortOption.NAME_DESC),
@@ -231,8 +231,8 @@ private fun FolderSortOptionsContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         FolderSortCategoryCard(
-            title = "PDF Count",
-            description = "Sort by number of PDFs",
+            title = stringResource(R.string.sort_pdf_count),
+            description = stringResource(R.string.sort_by_pdf_count),
             icon = Icons.Outlined.Numbers,
             accentColor = AccentTeal,
             options = listOf(FolderSortOption.COUNT_DESC, FolderSortOption.COUNT_ASC),
@@ -373,7 +373,7 @@ private fun FolderSortCategoryCard(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
-                            contentDescription = "Selected",
+                            contentDescription = stringResource(R.string.cd_selected),
                             modifier = Modifier
                                 .padding(4.dp)
                                 .size(14.dp),
@@ -504,7 +504,7 @@ private fun FolderSortOptionChip(
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
-                            contentDescription = "Selected",
+                            contentDescription = stringResource(R.string.cd_selected),
                             modifier = Modifier.size(9.dp),
                             tint = Color.White
                         )
@@ -515,11 +515,12 @@ private fun FolderSortOptionChip(
     }
 }
 
+@Composable
 private fun getFolderOptionDetails(option: FolderSortOption): Pair<ImageVector, String> {
     return when (option) {
-        FolderSortOption.NAME_ASC -> Icons.Rounded.ArrowUpward to "A → Z"
-        FolderSortOption.NAME_DESC -> Icons.Rounded.ArrowDownward to "Z → A"
-        FolderSortOption.COUNT_DESC -> Icons.Rounded.ArrowDownward to "Most"
-        FolderSortOption.COUNT_ASC -> Icons.Rounded.ArrowUpward to "Least"
+        FolderSortOption.NAME_ASC -> Icons.Rounded.ArrowUpward to stringResource(R.string.sort_a_to_z)
+        FolderSortOption.NAME_DESC -> Icons.Rounded.ArrowDownward to stringResource(R.string.sort_z_to_a)
+        FolderSortOption.COUNT_DESC -> Icons.Rounded.ArrowDownward to stringResource(R.string.sort_most)
+        FolderSortOption.COUNT_ASC -> Icons.Rounded.ArrowUpward to stringResource(R.string.sort_least)
     }
 }

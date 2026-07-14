@@ -1188,7 +1188,7 @@ private fun PickerOptionItem(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
-                        contentDescription = "Selected",
+                        contentDescription = stringResource(R.string.cd_selected),
                         modifier = Modifier.size(12.dp),
                         tint = Color.White
                     )
@@ -1416,7 +1416,7 @@ private fun BrightnessContent(
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.BrightnessLow,
-                            contentDescription = "Low",
+                            contentDescription = stringResource(R.string.cd_low),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
@@ -1440,7 +1440,7 @@ private fun BrightnessContent(
 
                         Icon(
                             imageVector = Icons.Rounded.BrightnessHigh,
-                            contentDescription = "High",
+                            contentDescription = stringResource(R.string.cd_high),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
@@ -1559,7 +1559,7 @@ private fun BrightnessOptionItem(
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
-                        contentDescription = "Selected",
+                        contentDescription = stringResource(R.string.cd_selected),
                         modifier = Modifier.size(12.dp),
                         tint = Color.White
                     )
@@ -1651,7 +1651,7 @@ private fun AboutSheet(
                         ) {
                             Icon(
                                 imageVector = Icons.Rounded.Close,
-                                contentDescription = "Close",
+                                contentDescription = stringResource(R.string.cd_close),
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .size(20.dp),
@@ -1702,9 +1702,22 @@ private fun ChangelogContent() {
                 .verticalScroll(rememberScrollState())
         ) {
             ChangelogVersionItem(
-                version = "0.4",
+                version = "0.5",
                 date = "July 2026",
                 isLatest = true,
+                changes = listOf(
+                    "New PDF Explorer app icon and adaptive launcher assets",
+                    "Themed icon support on Android 13+",
+                    "Updated icon background for SoftCloud branding"
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ChangelogVersionItem(
+                version = "0.4",
+                date = "July 2026",
+                isLatest = false,
                 changes = listOf(
                     "First public release of PDF Explorer",
                     "Complete SoftCloud rebranding",

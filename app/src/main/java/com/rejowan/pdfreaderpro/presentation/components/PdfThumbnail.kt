@@ -28,10 +28,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.util.PdfThumbnailManager
 
 private val PdfRed = Color(0xFFE53935)
@@ -67,7 +69,7 @@ fun PdfThumbnail(
                 // Show actual thumbnail
                 Image(
                     bitmap = requireNotNull(thumbnail).asImageBitmap(),
-                    contentDescription = "PDF thumbnail",
+                    contentDescription = stringResource(R.string.pdf_thumbnail),
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(10.dp)),
@@ -155,7 +157,7 @@ fun PdfThumbnailGrid(
                 // Show actual thumbnail
                 Image(
                     bitmap = requireNotNull(thumbnail).asImageBitmap(),
-                    contentDescription = "PDF thumbnail",
+                    contentDescription = stringResource(R.string.pdf_thumbnail),
                     modifier = Modifier
                         .fillMaxSize()
                         .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp)),
