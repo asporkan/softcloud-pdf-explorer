@@ -6,7 +6,7 @@ minSdk = "24"
 
 # Core Android
 agp = "9.1.0"
-kotlin = "2.3.20"
+kotlin = "2.4.0"
 coreKtx = "1.18.0"
 appcompat = "1.7.1"
 documentfile = "1.1.0"
