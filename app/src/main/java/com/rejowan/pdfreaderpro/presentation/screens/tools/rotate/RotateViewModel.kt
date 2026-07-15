@@ -4,14 +4,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,9 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /**
  * Rotation angle options.
@@ -104,39 +101,55 @@ class RotateViewModel(
             _state.update { it.copy(isLoading = true, error = null) }
 
             try {
-                val path = copyUriToCache(uri)
-                if (path != null) {
-                    val file = File(path)
-                    val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
-                    val pages = generatePageThumbnails(path, pageCount)
-
-                    // Select all pages by default
-                    val selectedPages = pages.map { it.copy(isSelected = true) }
-
-                    _state.update {
-                        it.copy(
-                            sourceFile = SourceFile(
-                                uri = uri,
-                                path = path,
-                                name = getFileNameFromUri(uri) ?: file.name,
-                                size = file.length(),
-                                pageCount = pageCount,
-                                pages = selectedPages
-                            ),
-                            selectionMode = PageSelectionMode.ALL_PAGES,
-                            isLoading = false,
-                            error = null,
-                            result = null
-                        )
-                    }
-
-                    // Generate default output name
-                    val baseName = file.nameWithoutExtension
-                    _state.update { it.copy(outputFileName = "${baseName}_rotated") }
-                } else {
+                val path = withContext(Dispatchers.IO) { copyUriToCache(uri) }
+                if (path == null) {
                     _state.update {
                         it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf))
                     }
+                    return@launch
+                }
+
+                pdfToolsRepository.passwordProtectedBlockMessage(context, path)?.let { msg ->
+                    File(path).delete()
+                    _state.update {
+                        it.copy(isLoading = false, sourceFile = null, error = msg)
+                    }
+                    return@launch
+                }
+
+                val loaded = withContext(Dispatchers.IO) {
+                    val file = File(path)
+                    val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
+                    val pages = generatePageThumbnails(path, pageCount)
+                    val selectedPages = pages.map { it.copy(isSelected = true) }
+
+                    LoadedSource(
+                        uri = uri,
+                        path = path,
+                        name = getFileNameFromUri(uri) ?: file.name,
+                        size = file.length(),
+                        pageCount = pageCount,
+                        pages = selectedPages,
+                        baseName = file.nameWithoutExtension
+                    )
+                }
+
+                _state.update {
+                    it.copy(
+                        sourceFile = SourceFile(
+                            uri = loaded.uri,
+                            path = loaded.path,
+                            name = loaded.name,
+                            size = loaded.size,
+                            pageCount = loaded.pageCount,
+                            pages = loaded.pages
+                        ),
+                        selectionMode = PageSelectionMode.ALL_PAGES,
+                        isLoading = false,
+                        error = null,
+                        result = null,
+                        outputFileName = "${loaded.baseName}_rotated"
+                    )
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
@@ -153,52 +166,58 @@ class RotateViewModel(
         }
     }
 
-    private suspend fun generatePageThumbnails(
+    private data class LoadedSource(
+        val uri: Uri,
+        val path: String,
+        val name: String,
+        val size: Long,
+        val pageCount: Int,
+        val pages: List<PageInfo>,
+        val baseName: String
+    )
+
+    private fun generatePageThumbnails(
         pdfPath: String,
         pageCount: Int
-    ): List<PageInfo> = withContext(Dispatchers.IO) {
+    ): List<PageInfo> {
         val pages = mutableListOf<PageInfo>()
         try {
             val file = File(pdfPath)
-            val fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-            val renderer = PdfRenderer(fd)
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                PdfRenderer(fd).use { renderer ->
+                    for (i in 0 until minOf(pageCount, 50)) {
+                        renderer.openPage(i).use { page ->
+                            val thumbnailSize = 300
+                            val aspectRatio = page.width.toFloat() / page.height.toFloat()
+                            val width: Int
+                            val height: Int
+                            if (aspectRatio > 1) {
+                                width = thumbnailSize
+                                height = (thumbnailSize / aspectRatio).toInt()
+                            } else {
+                                height = thumbnailSize
+                                width = (thumbnailSize * aspectRatio).toInt()
+                            }
 
-            for (i in 0 until minOf(pageCount, 50)) { // Limit to 50 pages for performance
-                val page = renderer.openPage(i)
+                            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
 
-                // Create higher quality thumbnail
-                val thumbnailSize = 300
-                val aspectRatio = page.width.toFloat() / page.height.toFloat()
-                val width: Int
-                val height: Int
-                if (aspectRatio > 1) {
-                    width = thumbnailSize
-                    height = (thumbnailSize / aspectRatio).toInt()
-                } else {
-                    height = thumbnailSize
-                    width = (thumbnailSize * aspectRatio).toInt()
+                            pages.add(
+                                PageInfo(
+                                    pageNumber = i + 1,
+                                    thumbnail = bitmap,
+                                    currentRotation = 0,
+                                    isSelected = false
+                                )
+                            )
+                        }
+                    }
                 }
-
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                page.close()
-
-                pages.add(
-                    PageInfo(
-                        pageNumber = i + 1,
-                        thumbnail = bitmap,
-                        currentRotation = 0,
-                        isSelected = false
-                    )
-                )
             }
-
-            renderer.close()
-            fd.close()
         } catch (e: Exception) {
             Timber.e(e, "Failed to generate thumbnails")
         }
-        pages
+        return pages
     }
 
     fun setRotationAngle(angle: RotationAngle) {
@@ -307,61 +326,35 @@ class RotateViewModel(
         _state.update { it.copy(overwriteOriginal = overwrite) }
     }
 
+    /**
+     * Entry from Save: overwrite writes back to the selected document URI;
+     * Save As is handled by the screen via CreateDocument then [rotateToUri].
+     */
     fun rotate() {
         val currentState = _state.value
-        val sourceFile = currentState.sourceFile
+        if (!validateRotate(currentState)) return
 
-        if (sourceFile == null) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
+        if (!currentState.overwriteOriginal) {
             return
         }
 
-        if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
-            return
-        }
+        rotateOverwrite()
+    }
 
-        // Get pages to rotate
-        val pagesToRotate = when (currentState.selectionMode) {
-            PageSelectionMode.ALL_PAGES -> null // null means all pages
-            PageSelectionMode.SELECTED_PAGES -> {
-                val selected = sourceFile.pages.filter { it.isSelected }.map { it.pageNumber }
-                if (selected.isEmpty()) {
-                    _state.update {
-                        it.copy(error = context.getString(R.string.tool_error_select_pages_rotate))
-                    }
-                    return
-                }
-                selected
-            }
-        }
+    fun rotateToUri(destinationUri: Uri) {
+        val currentState = _state.value
+        if (!validateRotate(currentState, requireFileName = false)) return
+
+        val sourceFile = currentState.sourceFile ?: return
+        val pagesToRotate = resolvePagesToRotate(currentState)
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            val outputPath: String
-            val tempPath: String?
-
-            if (currentState.overwriteOriginal) {
-                tempPath = "${context.cacheDir}/rotate_temp_${System.currentTimeMillis()}.pdf"
-                outputPath = sourceFile.path
-            } else {
-                tempPath = null
-                val outputDir = getOutputDirectory()
-                var path = "$outputDir/${currentState.outputFileName}.pdf"
-                var counter = 1
-                while (File(path).exists()) {
-                    path = "$outputDir/${currentState.outputFileName}_$counter.pdf"
-                    counter++
-                }
-                outputPath = path
-            }
-
-            val targetPath = tempPath ?: outputPath
-
+            val tempFile = File(context.cacheDir, "rotate_out_${System.currentTimeMillis()}.pdf")
             val result = pdfToolsRepository.rotatePages(
                 inputPath = sourceFile.path,
-                outputPath = targetPath,
+                outputPath = tempFile.absolutePath,
                 rotation = currentState.rotationAngle.degrees,
                 pages = pagesToRotate,
                 onProgress = { progress ->
@@ -371,43 +364,32 @@ class RotateViewModel(
 
             result.fold(
                 onSuccess = {
-                    if (tempPath != null) {
-                        try {
-                            val tempFile = File(tempPath)
-                            val originalFile = File(outputPath)
-                            originalFile.delete()
-                            tempFile.copyTo(originalFile, overwrite = true)
-                            tempFile.delete()
-                        } catch (e: Exception) {
-                            Timber.e(e, "Failed to replace original file")
-                            _state.update {
-                                it.copy(
-                                    isProcessing = false,
-                                    error = context.getString(R.string.tool_error_replace_original)
-                                )
-                            }
-                            return@launch
+                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
                         }
+                        return@launch
                     }
 
-                    val outputFile = File(outputPath)
-                    val pageCount = pdfToolsRepository.getPageCount(outputPath).getOrDefault(0)
-                    _state.update {
-                        it.copy(
-                            isProcessing = false,
-                            progress = 1f,
-                            result = RotateResult(
-                                outputPath = outputPath,
-                                pageCount = pageCount,
-                                fileSize = outputFile.length(),
-                                rotatedPages = pagesToRotate?.size ?: sourceFile.pageCount
-                            )
-                        )
-                    }
+                    val localCopy = File(
+                        context.cacheDir,
+                        "rotate_result_${System.currentTimeMillis()}.pdf"
+                    )
+                    tempFile.copyTo(localCopy, overwrite = true)
+                    tempFile.delete()
+
+                    finishRotateSuccess(
+                        localPath = localCopy.absolutePath,
+                        rotatedPages = pagesToRotate?.size ?: sourceFile.pageCount
+                    )
                 },
                 onFailure = { error ->
+                    tempFile.delete()
                     Timber.e(error, "Rotation failed")
-                    tempPath?.let { File(it).delete() }
                     _state.update {
                         it.copy(
                             isProcessing = false,
@@ -416,6 +398,120 @@ class RotateViewModel(
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun rotateOverwrite() {
+        val currentState = _state.value
+        val sourceFile = currentState.sourceFile ?: return
+        val pagesToRotate = resolvePagesToRotate(currentState)
+
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
+
+            val tempFile = File(context.cacheDir, "rotate_overwrite_${System.currentTimeMillis()}.pdf")
+            val result = pdfToolsRepository.rotatePages(
+                inputPath = sourceFile.path,
+                outputPath = tempFile.absolutePath,
+                rotation = currentState.rotationAngle.degrees,
+                pages = pagesToRotate,
+                onProgress = { progress ->
+                    _state.update { it.copy(progress = progress) }
+                }
+            )
+
+            result.fold(
+                onSuccess = {
+                    if (!FileOperations.writeFileToUri(context, tempFile, sourceFile.uri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
+                        }
+                        return@launch
+                    }
+
+                    try {
+                        tempFile.copyTo(File(sourceFile.path), overwrite = true)
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to refresh cache after overwrite")
+                    }
+                    tempFile.delete()
+
+                    finishRotateSuccess(
+                        localPath = sourceFile.path,
+                        rotatedPages = pagesToRotate?.size ?: sourceFile.pageCount
+                    )
+                },
+                onFailure = { error ->
+                    tempFile.delete()
+                    Timber.e(error, "Rotation failed")
+                    _state.update {
+                        it.copy(
+                            isProcessing = false,
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_rotation_failed)
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun validateRotate(
+        currentState: RotateState,
+        requireFileName: Boolean = true
+    ): Boolean {
+        if (currentState.sourceFile == null) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
+            return false
+        }
+        if (requireFileName &&
+            !currentState.overwriteOriginal &&
+            currentState.outputFileName.isBlank()
+        ) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
+            return false
+        }
+        if (currentState.selectionMode == PageSelectionMode.SELECTED_PAGES) {
+            val selected = currentState.sourceFile.pages.filter { it.isSelected }.map { it.pageNumber }
+            if (selected.isEmpty()) {
+                _state.update {
+                    it.copy(error = context.getString(R.string.tool_error_select_pages_rotate))
+                }
+                return false
+            }
+        }
+        return true
+    }
+
+    /** Returns null for all-pages mode; null with error when no pages selected. */
+    private fun resolvePagesToRotate(currentState: RotateState): List<Int>? {
+        val sourceFile = currentState.sourceFile ?: return null
+        return when (currentState.selectionMode) {
+            PageSelectionMode.ALL_PAGES -> null
+            PageSelectionMode.SELECTED_PAGES -> {
+                sourceFile.pages.filter { it.isSelected }.map { it.pageNumber }
+            }
+        }
+    }
+
+    private suspend fun finishRotateSuccess(localPath: String, rotatedPages: Int) {
+        val outputFile = File(localPath)
+        val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        _state.update {
+            it.copy(
+                isProcessing = false,
+                progress = 1f,
+                result = RotateResult(
+                    outputPath = localPath,
+                    pageCount = pageCount,
+                    fileSize = outputFile.length(),
+                    rotatedPages = rotatedPages
+                )
             )
         }
     }
@@ -432,29 +528,21 @@ class RotateViewModel(
         _state.update { RotateState() }
     }
 
-    private fun getOutputDirectory(): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
-    }
-
     private fun copyUriToCache(uri: Uri): String? {
         return try {
             if (uri.scheme == "file") {
                 return uri.path
             }
 
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
             val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
             val cacheFile = File(context.cacheDir, "rotate_temp/$fileName")
             cacheFile.parentFile?.mkdirs()
 
-            cacheFile.outputStream().use { output ->
-                inputStream.copyTo(output)
-            }
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                cacheFile.outputStream().use { output ->
+                    inputStream.copyTo(output)
+                }
+            } ?: return null
 
             cacheFile.absolutePath
         } catch (e: Exception) {

@@ -28,6 +28,7 @@ import com.itextpdf.layout.properties.TextAlignment
 import com.itextpdf.layout.properties.VerticalAlignment
 import kotlin.math.cos
 import kotlin.math.sin
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.util.ErrorUtils
 import kotlinx.coroutines.Dispatchers
@@ -643,7 +644,7 @@ class PdfToolsRepositoryImpl(
             Result.success(Unit)
         } catch (e: com.itextpdf.kernel.exceptions.BadPasswordException) {
             Timber.e(e, "Wrong password for PDF")
-            Result.failure(Exception("Incorrect password"))
+            Result.failure(Exception(context.getString(R.string.incorrect_password)))
         } catch (e: Exception) {
             Timber.e(e, "Failed to unlock PDF")
             Result.failure(e)

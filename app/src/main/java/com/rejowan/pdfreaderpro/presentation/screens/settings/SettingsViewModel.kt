@@ -2,6 +2,7 @@ package com.rejowan.pdfreaderpro.presentation.screens.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rejowan.pdfreaderpro.domain.model.AppLanguage
 import com.rejowan.pdfreaderpro.domain.model.AppPreferences
 import com.rejowan.pdfreaderpro.domain.model.QuickZoomPreset
 import com.rejowan.pdfreaderpro.domain.model.ReadingTheme
@@ -9,6 +10,7 @@ import com.rejowan.pdfreaderpro.domain.model.ScreenOrientation
 import com.rejowan.pdfreaderpro.domain.model.ScrollMode
 import com.rejowan.pdfreaderpro.domain.model.ThemeMode
 import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
+import com.rejowan.pdfreaderpro.util.AppLocaleManager
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -24,6 +26,13 @@ class SettingsViewModel(
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch {
             preferencesRepository.setThemeMode(mode)
+        }
+    }
+
+    fun setAppLanguage(language: AppLanguage) {
+        viewModelScope.launch {
+            preferencesRepository.setAppLanguage(language)
+            AppLocaleManager.apply(language)
         }
     }
 

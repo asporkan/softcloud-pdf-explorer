@@ -50,7 +50,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.Pages
 import androidx.compose.material.icons.filled.PictureAsPdf
@@ -108,9 +107,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -130,6 +131,7 @@ fun MergeScreen(
     viewModel: MergeViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
 
     // Load initial files if provided
@@ -145,7 +147,16 @@ fun MergeScreen(
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenMultipleDocuments()
     ) { uris ->
+        uris.forEach { uri ->
+            FileOperations.takePersistableReadWritePermission(context, uri)
+        }
         viewModel.addFiles(uris)
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { viewModel.mergeToUri(it) }
     }
 
     // Page Selection Sheet (hybrid: bottom sheet in portrait, side panel in landscape)
@@ -205,20 +216,36 @@ fun MergeScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (state.selectedFiles.isEmpty() && state.result == null) {
-                // Empty state
-                EmptyState(
-                    onAddFiles = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
-                )
-            } else if (state.result != null) {
+            ToolLoadErrorDialog(
+                message = state.error.takeIf {
+                    !state.isLoading && state.result == null && state.selectedFiles.isEmpty()
+                },
+                onDismiss = { viewModel.clearError() }
+            )
+            when {
+                state.isLoading && state.selectedFiles.isEmpty() && state.result == null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = AccentBlue)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(stringResource(R.string.loading_pdf))
+                        }
+                    }
+                }
+                state.selectedFiles.isEmpty() && state.result == null -> {
+                    EmptyState(
+                        onAddFiles = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
+                    )
+                }
+                state.result != null -> {
                 // Success state
                 val result = requireNotNull(state.result)
                 SuccessState(
                     result = result,
-                    onOpenInApp = {
-                        // Open in app's reader screen
-                        navController.navigateToReader(result.outputPath)
-                    },
+                    onOpenInApp = { exitHandler.onOpenInApp(result.outputPath) },
                     onOpenWith = {
                         // Open with external app via ACTION_VIEW
                         val file = File(result.outputPath)
@@ -255,11 +282,10 @@ fun MergeScreen(
                     onMergeMore = {
                         viewModel.reset()
                     },
-                    onDone = {
-                        navController.popBackStack()
-                    }
+                    onDone = { exitHandler.onDone() }
                 )
-            } else {
+                }
+                else -> {
                 // File list and merge options
                 Column(
                     modifier = Modifier.fillMaxSize()
@@ -311,9 +337,16 @@ fun MergeScreen(
                         progress = state.progress,
                         canMerge = state.selectedFiles.size >= 2,
                         error = state.error,
-                        onMerge = { viewModel.merge() },
+                        onMerge = {
+                            if (viewModel.merge()) {
+                                createDocumentLauncher.launch(
+                                    FileOperations.ensurePdfExtension(state.outputFileName)
+                                )
+                            }
+                        },
                         onClearError = { viewModel.clearError() }
                     )
+                }
                 }
             }
 
@@ -339,7 +372,7 @@ private fun EmptyState(
         initialValue = 0f,
         targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
+            animation = tween(durationMillis = 1200),
             repeatMode = RepeatMode.Reverse
         ),
         label = "float offset"
@@ -768,27 +801,6 @@ private fun MergeBottomSection(
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Output location info
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Default.FolderOpen,
-                contentDescription = stringResource(R.string.cd_open),
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                stringResource(R.string.tool_saved_to_documents, Constants.OUTPUT_DIR_NAME),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-
         Spacer(modifier = Modifier.height(16.dp))
 
         // Merge button
@@ -934,7 +946,7 @@ private fun SuccessState(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        File(result.outputPath).name,
+                        result.displayName,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1,
@@ -952,16 +964,6 @@ private fun SuccessState(
                     ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    result.outputPath,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
                 )
             }
         }

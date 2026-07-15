@@ -4,12 +4,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,6 +43,7 @@ data class ImageToPdfState(
 
 data class ImageToPdfResult(
     val outputPath: String,
+    val displayName: String,
     val pageCount: Int,
     val fileSize: Long
 )
@@ -145,37 +145,39 @@ class ImageToPdfViewModel(
         _state.update { it.copy(outputFileName = name) }
     }
 
-    fun convertToPdf() {
+    /**
+     * Validates inputs. Save As destination is chosen by the screen via CreateDocument
+     * then [convertToPdfToUri].
+     */
+    fun convertToPdf(): Boolean {
         val currentState = _state.value
 
         if (currentState.images.isEmpty()) {
             _state.update { it.copy(error = context.getString(R.string.tool_error_add_at_least_one_image)) }
-            return
+            return false
         }
 
         if (currentState.outputFileName.isBlank()) {
             _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
-            return
+            return false
         }
+
+        return true
+    }
+
+    fun convertToPdfToUri(destinationUri: Uri) {
+        val currentState = _state.value
+        if (!convertToPdf()) return
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            val outputDir = getOutputDirectory()
-            var outputPath = "$outputDir/${currentState.outputFileName}.pdf"
-
-            // Check if file exists and generate unique name
-            var counter = 1
-            while (File(outputPath).exists()) {
-                outputPath = "$outputDir/${currentState.outputFileName}_$counter.pdf"
-                counter++
-            }
-
+            val tempFile = File(context.cacheDir, "imagetopdf_out_${System.currentTimeMillis()}.pdf")
             val imagePaths = currentState.images.map { it.path }
 
             val result = pdfToolsRepository.imagesToPdf(
                 imagePaths = imagePaths,
-                outputPath = outputPath,
+                outputPath = tempFile.absolutePath,
                 onProgress = { progress ->
                     _state.update { it.copy(progress = progress) }
                 }
@@ -183,20 +185,47 @@ class ImageToPdfViewModel(
 
             result.fold(
                 onSuccess = {
-                    val outputFile = File(outputPath)
+                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
+                        }
+                        return@launch
+                    }
+
+                    val localCopy = File(
+                        context.cacheDir,
+                        "imagetopdf_result_${System.currentTimeMillis()}.pdf"
+                    )
+                    tempFile.copyTo(localCopy, overwrite = true)
+                    tempFile.delete()
+
+                    val displayName = FileOperations.getFileNameFromUri(context, destinationUri)
+                        ?: currentState.outputFileName.ifBlank { "document" }
+                    val name = when {
+                        displayName.endsWith(".pdf", ignoreCase = true) -> displayName
+                        displayName.isNotBlank() -> "$displayName.pdf"
+                        else -> localCopy.name
+                    }
+
                     _state.update {
                         it.copy(
                             isProcessing = false,
                             progress = 1f,
                             result = ImageToPdfResult(
-                                outputPath = outputPath,
+                                outputPath = localCopy.absolutePath,
+                                displayName = name,
                                 pageCount = currentState.images.size,
-                                fileSize = outputFile.length()
+                                fileSize = localCopy.length()
                             )
                         )
                     }
                 },
                 onFailure = { error ->
+                    tempFile.delete()
                     Timber.e(error, "Image to PDF conversion failed")
                     _state.update {
                         it.copy(
@@ -219,15 +248,6 @@ class ImageToPdfViewModel(
         generateDefaultFileName()
     }
 
-    private fun getOutputDirectory(): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
-    }
-
     private suspend fun copyImageToCache(uri: Uri): String? = withContext(Dispatchers.IO) {
         try {
             if (uri.scheme == "file") {
@@ -235,15 +255,17 @@ class ImageToPdfViewModel(
             }
 
             val inputStream = context.contentResolver.openInputStream(uri) ?: return@withContext null
-            val fileName = getFileNameFromUri(uri) ?: "image_${System.currentTimeMillis()}.jpg"
-            val cacheFile = File(context.cacheDir, "imagetopdf_temp/$fileName")
-            cacheFile.parentFile?.mkdirs()
+            inputStream.use { stream ->
+                val fileName = getFileNameFromUri(uri) ?: "image_${System.currentTimeMillis()}.jpg"
+                val cacheFile = File(context.cacheDir, "imagetopdf_temp/$fileName")
+                cacheFile.parentFile?.mkdirs()
 
-            cacheFile.outputStream().use { output ->
-                inputStream.copyTo(output)
+                cacheFile.outputStream().use { output ->
+                    stream.copyTo(output)
+                }
+
+                cacheFile.absolutePath
             }
-
-            cacheFile.absolutePath
         } catch (e: Exception) {
             Timber.e(e, "Failed to copy image to cache")
             null

@@ -60,6 +60,7 @@
     <string name="do_you_want_to_delete_this_file">Bu dosyayı silmek istiyor musunuz?</string>
     <string name="cancel">İptal</string>
     <string name="dismiss">Kapat</string>
+    <string name="ok">Tamam</string>
     <string name="size_t">Boyut:</string>
     <string name="last_modified_t">Son Değişiklik:</string>
     <string name="pages_t">Sayfa:</string>
@@ -197,6 +198,13 @@
     <string name="updates">Güncellemeler</string>
     <string name="about">Hakkında</string>
     <string name="theme">Tema</string>
+    <string name="app_language">Dil</string>
+    <string name="choose_app_language">Uygulama dilini seçin</string>
+    <string name="language_english">İngilizce</string>
+    <string name="language_turkish">Türkçe</string>
+    <string name="language_follow_device">Cihaz dilini kullan</string>
+    <string name="language_english_desc">Her zaman İngilizce kullan</string>
+    <string name="language_turkish_desc">Her zaman Türkçe kullan</string>
     <string name="theme_light">Açık</string>
     <string name="theme_dark">Koyu</string>
     <string name="theme_system">Sistem</string>
@@ -368,7 +376,7 @@
     <string name="unlock_more">Daha Fazla Kilit Aç</string>
     <string name="locked_successfully">PDF başarıyla kilitlendi</string>
     <string name="unlocked_successfully">PDF kilidi başarıyla açıldı</string>
-    <string name="incorrect_password">Yanlış şifre</string>
+    <string name="incorrect_password">Yanlış parola.</string>
     <string name="pdf_not_protected">Bu PDF şifre korumalı değil</string>
     <string name="pdf_protected">Bu PDF şifre korumalı</string>
 
@@ -432,8 +440,11 @@
     <string name="error_invalid_pdf">Geçersiz PDF dosyası</string>
     <string name="error_corrupted_pdf">PDF dosyası bozuk</string>
     <string name="error_password_required">Şifre gerekli</string>
+    <string name="failed_to_open_pdf">PDF açılamadı</string>
+    <string name="error_with_message">Hata: %1$s</string>
+    <string name="toc_contents_tab">İçindekiler</string>
     <string name="error_generic">Bir şeyler ters gitti</string>
-    <string name="error_wrong_password">Yanlış şifre</string>
+    <string name="error_wrong_password">Yanlış parola.</string>
     <string name="error_storage_full">Depolama dolu</string>
     <string name="error_network">Ağ hatası</string>
     <string name="error_timeout">İşlem zaman aşımına uğradı</string>
@@ -707,7 +718,7 @@
     <!-- Password Dialog -->
     <string name="password_required">Şifre Gerekli</string>
     <string name="password_protected_message">Bu PDF şifre korumalı. Açmak için şifreyi girin.</string>
-    <string name="incorrect_password_error">Yanlış şifre</string>
+    <string name="incorrect_password_error">Yanlış parola.</string>
     <string name="hide_password">Şifreyi gizle</string>
     <string name="show_password">Şifreyi göster</string>
     <string name="remember_password">Bu dosya için şifreyi hatırla</string>
@@ -888,7 +899,7 @@
     <string name="unknown">Bilinmiyor</string>
     <string name="enter_password_to_open">Bu PDF\'yi açmak için şifre girin</string>
     <string name="password_hint">Şifre</string>
-    <string name="wrong_password">Yanlış şifre. Lütfen tekrar deneyin.</string>
+    <string name="wrong_password">Yanlış parola. Lütfen tekrar deneyin.</string>
     <string name="open_pdf">Aç</string>
     <string name="error_loading">PDF yüklenirken hata</string>
     <string name="try_again_message">Bu PDF yüklenirken bir şeyler ters gitti. Lütfen tekrar deneyin.</string>
@@ -1384,6 +1395,8 @@
     <string name="tool_error_enter_output_name">Lütfen bir çıktı dosya adı girin</string>
     <string name="tool_error_enter_output_name_short">Çıktı dosya adını girin</string>
     <string name="tool_error_replace_original">Orijinal dosya değiştirilemedi</string>
+    <string name="tool_error_pdf_password_protected">Bu PDF şifre korumalı.\nLütfen önce kilidini açın.</string>
+    <string name="tool_error_save_to_folder">Dosyalar seçilen klasöre kaydedilemedi</string>
     <string name="tool_error_merge_failed">Birleştirme başarısız</string>
     <string name="tool_error_split_failed">Bölme başarısız</string>
     <string name="tool_error_compress_failed">Sıkıştırma başarısız</string>
@@ -1400,7 +1413,7 @@
     <string name="tool_error_enter_pages_extract">Ayıklanacak sayfaları girin</string>
     <string name="tool_error_no_pdf_selected">PDF dosyası seçilmedi</string>
     <string name="share_pdf_chooser">PDF Paylaş</string>
-    <string name="tool_error_skipped_password">Şifre korumalı atlandı: %s</string>
+    <string name="tool_error_skipped_password">Bazı PDF\'ler şifre korumalı. Lütfen önce kilidini açın.\nAtlanan: %s</string>
     <string name="tool_error_no_pages_selected_for">Sayfa seçilmedi: %s</string>
     <string name="tool_error_invalid_format">Geçersiz biçim: %s</string>
     <string name="tool_error_page_at_least_one">Sayfa en az 1 olmalıdır</string>

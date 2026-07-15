@@ -1,13 +1,14 @@
 package com.rejowan.pdfreaderpro.presentation.components
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ViewList
@@ -44,16 +45,20 @@ fun CompactTabRow(
     modifier: Modifier = Modifier
 ) {
     val softPurple = Color(0xFF9575CD)
+    val tabsScrollState = rememberScrollState()
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Tabs - Left aligned
+        // Tabs — original typography/spacing; scroll horizontally when labels don't fit.
         Row(
+            modifier = Modifier
+                .weight(1f)
+                .horizontalScroll(tabsScrollState)
+                .padding(end = 8.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -67,7 +72,7 @@ fun CompactTabRow(
             }
         }
 
-        // View Mode Toggle - Right aligned
+        // View Mode Toggle - Right aligned (unchanged)
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically

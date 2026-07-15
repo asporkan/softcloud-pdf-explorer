@@ -89,7 +89,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.util.FileOperations
@@ -109,6 +111,7 @@ fun RemovePagesScreen(
     viewModel: RemovePagesViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
@@ -177,6 +180,12 @@ fun RemovePagesScreen(
                     focusManager.clearFocus()
                 }
         ) {
+            ToolLoadErrorDialog(
+                message = state.error.takeIf {
+                    !state.isLoading && state.result == null && state.sourceFile == null
+                },
+                onDismiss = { viewModel.clearError() }
+            )
             when {
                 state.isLoading -> {
                     Box(
@@ -194,7 +203,7 @@ fun RemovePagesScreen(
                     val result = requireNotNull(state.result)
                     SuccessState(
                         result = result,
-                        onOpenInApp = { navController.navigateToReader(result.outputPath) },
+                        onOpenInApp = { exitHandler.onOpenInApp(result.outputPath) },
                         onOpenWith = {
                             val file = File(result.outputPath)
                             val uri = FileProvider.getUriForFile(
@@ -230,7 +239,7 @@ fun RemovePagesScreen(
                             )
                         },
                         onRemoveMore = { viewModel.reset() },
-                        onDone = { navController.popBackStack() }
+                        onDone = { exitHandler.onDone() }
                     )
                 }
                 state.sourceFile == null -> {
@@ -335,7 +344,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         initialValue = 0f,
         targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
+            animation = tween(durationMillis = 1200),
             repeatMode = RepeatMode.Reverse
         ),
         label = "float offset"

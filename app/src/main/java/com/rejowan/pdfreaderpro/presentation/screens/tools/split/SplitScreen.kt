@@ -89,8 +89,10 @@ import androidx.core.content.FileProvider
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.navigation.NavController
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
 import org.koin.androidx.compose.koinViewModel
@@ -111,13 +113,26 @@ fun SplitScreen(
     viewModel: SplitViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
+        // Prefer read-only grant for Split source — outputs are always new files via OpenDocumentTree.
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { viewModel.setSourceFile(it) }
+        uri?.let {
+            viewModel.setSourceFile(it)
+        }
+    }
+
+    val openDocumentTreeLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            FileOperations.takePersistableTreePermission(context, it)
+            viewModel.splitToTree(it)
+        }
     }
 
     Scaffold(
@@ -161,7 +176,25 @@ fun SplitScreen(
                     focusManager.clearFocus()
                 }
         ) {
+            ToolLoadErrorDialog(
+                message = state.error.takeIf {
+                    !state.isLoading && state.result == null && state.sourceFile == null
+                },
+                onDismiss = { viewModel.clearError() }
+            )
             when {
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = AccentAmber)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(stringResource(R.string.loading_pdf))
+                        }
+                    }
+                }
                 state.sourceFile == null && state.result == null -> {
                     // Empty state - no file selected
                     EmptyState(
@@ -174,7 +207,7 @@ fun SplitScreen(
                     SuccessState(
                         result = result,
                         onViewFile = { filePath ->
-                            navController.navigateToReader(filePath)
+                            exitHandler.onOpenInApp(filePath)
                         },
                         onShareFile = { filePath ->
                             val file = File(filePath)
@@ -196,7 +229,7 @@ fun SplitScreen(
                             )
                         },
                         onSplitMore = { viewModel.reset() },
-                        onDone = { navController.popBackStack() }
+                        onDone = { exitHandler.onDone() }
                     )
                 }
                 else -> {
@@ -317,7 +350,11 @@ fun SplitScreen(
                             progress = state.progress,
                             canSplit = state.sourceFile != null,
                             error = state.error,
-                            onSplit = { viewModel.split() },
+                            onSplit = {
+                                if (viewModel.split()) {
+                                    openDocumentTreeLauncher.launch(null)
+                                }
+                            },
                             onClearError = { viewModel.clearError() }
                         )
                     }
@@ -344,7 +381,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         initialValue = 0f,
         targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
+            animation = tween(durationMillis = 1200),
             repeatMode = RepeatMode.Reverse
         ),
         label = "float offset"
@@ -860,33 +897,6 @@ private fun SplitBottomSection(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Output location info
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                Icons.Default.FolderOpen,
-                contentDescription = stringResource(R.string.cd_decorative),
-                modifier = Modifier.size(16.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                stringResource(
-                    R.string.tool_saved_to_documents_split,
-                    Constants.OUTPUT_DIR_NAME,
-                    outputPrefix
-                ),
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

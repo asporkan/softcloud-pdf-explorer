@@ -313,7 +313,7 @@ private fun TocSheetContent(
                         activeContentColor = AccentPurple
                     )
                 ) {
-                    Text("Contents", style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.toc_contents_tab), style = MaterialTheme.typography.labelSmall)
                 }
                 SegmentedButton(
                     selected = selectedTab == 1,
@@ -331,7 +331,7 @@ private fun TocSheetContent(
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Attachments", style = MaterialTheme.typography.labelSmall)
+                        Text(stringResource(R.string.attachments), style = MaterialTheme.typography.labelSmall)
                     }
                 }
             }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
@@ -13,7 +12,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -94,6 +94,7 @@ data class PageNumbersState(
 
 data class PageNumbersResult(
     val outputPath: String,
+    val displayName: String,
     val pageCount: Int,
     val numberedPages: Int,
     val fileSize: Long
@@ -113,33 +114,42 @@ class PageNumbersViewModel(
 
             try {
                 val path = copyUriToCache(uri)
-                if (path != null) {
-                    val file = File(path)
-                    val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
-                    val preview = generatePreview(path)
-
-                    _state.update {
-                        it.copy(
-                            sourceFile = SourceFile(
-                                uri = uri,
-                                path = path,
-                                name = getFileNameFromUri(uri) ?: file.name,
-                                size = file.length(),
-                                pageCount = pageCount,
-                                previewBitmap = preview
-                            ),
-                            isLoading = false,
-                            error = null,
-                            result = null
-                        )
-                    }
-
-                    // Generate default output name
-                    val baseName = file.nameWithoutExtension
-                    _state.update { it.copy(outputFileName = "${baseName}_numbered") }
-                } else {
+                if (path == null) {
                     _state.update { it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf)) }
+                    return@launch
                 }
+
+                pdfToolsRepository.passwordProtectedBlockMessage(context, path)?.let { msg ->
+                    File(path).delete()
+                    _state.update {
+                        it.copy(isLoading = false, sourceFile = null, error = msg)
+                    }
+                    return@launch
+                }
+
+                val file = File(path)
+                val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
+                val preview = generatePreview(path)
+
+                _state.update {
+                    it.copy(
+                        sourceFile = SourceFile(
+                            uri = uri,
+                            path = path,
+                            name = getFileNameFromUri(uri) ?: file.name,
+                            size = file.length(),
+                            pageCount = pageCount,
+                            previewBitmap = preview
+                        ),
+                        isLoading = false,
+                        error = null,
+                        result = null
+                    )
+                }
+
+                // Generate default output name
+                val baseName = file.nameWithoutExtension
+                _state.update { it.copy(outputFileName = "${baseName}_numbered") }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
                 _state.update {
@@ -237,110 +247,59 @@ class PageNumbersViewModel(
 
     fun applyPageNumbers() {
         val currentState = _state.value
-        val sourceFile = currentState.sourceFile
+        if (!validatePageNumbers(currentState)) return
+        if (!currentState.overwriteOriginal) return
 
-        if (sourceFile == null) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
-            return
-        }
+        applyPageNumbersOverwrite()
+    }
 
-        if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
-            return
-        }
+    fun applyPageNumbersToUri(destinationUri: Uri) {
+        val currentState = _state.value
+        if (!validatePageNumbers(currentState, requireFileName = false)) return
+        val sourceFile = currentState.sourceFile ?: return
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            val outputPath: String
-            val tempPath: String?
-
-            if (currentState.overwriteOriginal) {
-                tempPath = "${context.cacheDir}/pagenumbers_temp_${System.currentTimeMillis()}.pdf"
-                outputPath = sourceFile.path
-            } else {
-                tempPath = null
-                val outputDir = getOutputDirectory()
-                var path = "$outputDir/${currentState.outputFileName}.pdf"
-                var counter = 1
-                while (File(path).exists()) {
-                    path = "$outputDir/${currentState.outputFileName}_$counter.pdf"
-                    counter++
-                }
-                outputPath = path
-            }
-
-            val targetPath = tempPath ?: outputPath
-
-            // Calculate pages to number
+            val tempFile = File(context.cacheDir, "pagenumbers_out_${System.currentTimeMillis()}.pdf")
             val pages = calculatePages(
                 currentState.pageSelection,
                 currentState.customPages,
                 currentState.skipFirstN,
                 sourceFile.pageCount
             )
-
-            val config = PdfToolsRepository.PageNumberConfig(
-                position = mapPosition(currentState.position),
-                format = mapFormat(currentState.format),
-                fontSize = currentState.fontSize,
-                color = currentState.textColor.toArgb(),
-                startNumber = currentState.startNumber,
-                prefix = currentState.customPrefix,
-                suffix = currentState.customSuffix,
-                marginX = currentState.marginX,
-                marginY = currentState.marginY
-            )
-
-            val result = pdfToolsRepository.addPageNumbers(
-                inputPath = sourceFile.path,
-                outputPath = targetPath,
-                config = config,
-                pages = pages,
-                onProgress = { progress ->
-                    _state.update { it.copy(progress = progress) }
-                }
-            )
+            val result = runPageNumbers(sourceFile.path, tempFile.absolutePath, currentState, pages)
 
             result.fold(
                 onSuccess = {
-                    if (tempPath != null) {
-                        try {
-                            val tempFile = File(tempPath)
-                            val originalFile = File(outputPath)
-                            originalFile.delete()
-                            tempFile.copyTo(originalFile, overwrite = true)
-                            tempFile.delete()
-                        } catch (e: Exception) {
-                            Timber.e(e, "Failed to replace original file")
-                            _state.update {
-                                it.copy(
-                                    isProcessing = false,
-                                    error = context.getString(R.string.tool_error_replace_original)
-                                )
-                            }
-                            return@launch
+                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
                         }
+                        return@launch
                     }
 
-                    val outputFile = File(outputPath)
-                    val newPageCount = pdfToolsRepository.getPageCount(outputPath).getOrDefault(0)
-                    _state.update {
-                        it.copy(
-                            isProcessing = false,
-                            progress = 1f,
-                            result = PageNumbersResult(
-                                outputPath = outputPath,
-                                pageCount = newPageCount,
-                                numberedPages = pages?.size ?: sourceFile.pageCount,
-                                fileSize = outputFile.length()
-                            )
-                        )
-                    }
+                    val localCopy = File(
+                        context.cacheDir,
+                        "pagenumbers_result_${System.currentTimeMillis()}.pdf"
+                    )
+                    tempFile.copyTo(localCopy, overwrite = true)
+                    tempFile.delete()
+
+                    finishPageNumbersSuccess(
+                        localPath = localCopy.absolutePath,
+                        displayName = getFileNameFromUri(destinationUri)
+                            ?: currentState.outputFileName.ifBlank { sourceFile.name },
+                        numberedPages = pages?.size ?: sourceFile.pageCount
+                    )
                 },
                 onFailure = { error ->
+                    tempFile.delete()
                     Timber.e(error, "Add page numbers failed")
-                    tempPath?.let { File(it).delete() }
                     _state.update {
                         it.copy(
                             isProcessing = false,
@@ -349,6 +308,134 @@ class PageNumbersViewModel(
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun applyPageNumbersOverwrite() {
+        val currentState = _state.value
+        val sourceFile = currentState.sourceFile ?: return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
+
+            val tempFile = File(context.cacheDir, "pagenumbers_overwrite_${System.currentTimeMillis()}.pdf")
+            val pages = calculatePages(
+                currentState.pageSelection,
+                currentState.customPages,
+                currentState.skipFirstN,
+                sourceFile.pageCount
+            )
+            val result = runPageNumbers(sourceFile.path, tempFile.absolutePath, currentState, pages)
+
+            result.fold(
+                onSuccess = {
+                    if (!FileOperations.writeFileToUri(context, tempFile, sourceFile.uri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
+                        }
+                        return@launch
+                    }
+
+                    try {
+                        tempFile.copyTo(File(sourceFile.path), overwrite = true)
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to refresh cache after overwrite")
+                    }
+                    tempFile.delete()
+
+                    finishPageNumbersSuccess(
+                        localPath = sourceFile.path,
+                        displayName = sourceFile.name,
+                        numberedPages = pages?.size ?: sourceFile.pageCount
+                    )
+                },
+                onFailure = { error ->
+                    tempFile.delete()
+                    Timber.e(error, "Add page numbers failed")
+                    _state.update {
+                        it.copy(
+                            isProcessing = false,
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_add_page_numbers_failed)
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private suspend fun runPageNumbers(
+        inputPath: String,
+        outputPath: String,
+        currentState: PageNumbersState,
+        pages: List<Int>?
+    ): Result<Unit> {
+        val config = PdfToolsRepository.PageNumberConfig(
+            position = mapPosition(currentState.position),
+            format = mapFormat(currentState.format),
+            fontSize = currentState.fontSize,
+            color = currentState.textColor.toArgb(),
+            startNumber = currentState.startNumber,
+            prefix = currentState.customPrefix,
+            suffix = currentState.customSuffix,
+            marginX = currentState.marginX,
+            marginY = currentState.marginY
+        )
+        return pdfToolsRepository.addPageNumbers(
+            inputPath = inputPath,
+            outputPath = outputPath,
+            config = config,
+            pages = pages,
+            onProgress = { progress -> _state.update { it.copy(progress = progress) } }
+        )
+    }
+
+    private fun validatePageNumbers(
+        currentState: PageNumbersState,
+        requireFileName: Boolean = true
+    ): Boolean {
+        if (currentState.sourceFile == null) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
+            return false
+        }
+        if (requireFileName &&
+            !currentState.overwriteOriginal &&
+            currentState.outputFileName.isBlank()
+        ) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
+            return false
+        }
+        return true
+    }
+
+    private suspend fun finishPageNumbersSuccess(
+        localPath: String,
+        displayName: String,
+        numberedPages: Int
+    ) {
+        val outputFile = File(localPath)
+        val newPageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        val name = when {
+            displayName.endsWith(".pdf", ignoreCase = true) -> displayName
+            displayName.isNotBlank() -> "$displayName.pdf"
+            else -> outputFile.name
+        }
+        _state.update {
+            it.copy(
+                isProcessing = false,
+                progress = 1f,
+                result = PageNumbersResult(
+                    outputPath = localPath,
+                    displayName = name,
+                    pageCount = newPageCount,
+                    numberedPages = numberedPages,
+                    fileSize = outputFile.length()
+                )
             )
         }
     }
@@ -425,15 +512,6 @@ class PageNumbersViewModel(
 
     fun reset() {
         _state.update { PageNumbersState() }
-    }
-
-    private fun getOutputDirectory(): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
     }
 
     private fun copyUriToCache(uri: Uri): String? {

@@ -23,8 +23,8 @@ android {
         applicationId = "com.softcloud.pdfexplorer"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.targetSdk.get().toInt()
-        versionCode = 5
-        versionName = "0.5"
+        versionCode = 6
+        versionName = "0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -103,6 +103,8 @@ ksp {
 dependencies {
     // Core Android
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.documentfile)
 
     // Compose
     implementation(platform(libs.compose.bom))

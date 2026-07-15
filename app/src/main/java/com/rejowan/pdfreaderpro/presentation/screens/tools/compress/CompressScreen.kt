@@ -90,9 +90,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -112,13 +115,23 @@ fun CompressScreen(
     viewModel: CompressViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { viewModel.setSourceFile(it) }
+        uri?.let {
+            FileOperations.takePersistableReadWritePermission(context, it)
+            viewModel.setSourceFile(it)
+        }
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { viewModel.compressToUri(it) }
     }
 
     Scaffold(
@@ -162,19 +175,31 @@ fun CompressScreen(
                     focusManager.clearFocus()
                 }
         ) {
+            ToolLoadErrorDialog(
+                message = state.error.takeIf {
+                    !state.isLoading && state.result == null && state.sourceFile == null
+                },
+                onDismiss = { viewModel.clearError() }
+            )
             when {
-                state.sourceFile == null && state.result == null -> {
-                    // Empty state - no file selected
-                    EmptyState(
-                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
-                    )
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = AccentPurple)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(stringResource(R.string.loading_pages))
+                        }
+                    }
                 }
                 state.result != null -> {
                     // Success state
                     val result = requireNotNull(state.result)
                     SuccessState(
                         result = result,
-                        onOpenInApp = { navController.navigateToReader(result.outputPath) },
+                        onOpenInApp = { exitHandler.onOpenInApp(result.outputPath) },
                         onOpenWith = {
                             val file = File(result.outputPath)
                             val uri = FileProvider.getUriForFile(
@@ -210,7 +235,12 @@ fun CompressScreen(
                             )
                         },
                         onCompressMore = { viewModel.reset() },
-                        onDone = { navController.popBackStack() }
+                        onDone = { exitHandler.onDone() }
+                    )
+                }
+                state.sourceFile == null -> {
+                    EmptyState(
+                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
                     )
                 }
                 else -> {
@@ -288,8 +318,7 @@ fun CompressScreen(
                                 ) {
                                     CompressionLevelSection(
                                         selectedLevel = state.compressionLevel,
-                                        onLevelSelected = { viewModel.setCompressionLevel(it) },
-                                        sourceFile = requireNotNull(state.sourceFile)
+                                        onLevelSelected = { viewModel.setCompressionLevel(it) }
                                     )
                                 }
                             }
@@ -305,7 +334,20 @@ fun CompressScreen(
                             progress = state.progress,
                             canCompress = state.sourceFile != null,
                             error = state.error,
-                            onCompress = { viewModel.compress() },
+                            onCompress = {
+                                if (state.overwriteOriginal) {
+                                    viewModel.compress()
+                                } else {
+                                    val suggested = state.outputFileName
+                                        .ifBlank {
+                                            state.sourceFile?.name?.substringBeforeLast('.')
+                                                ?: "compressed"
+                                        }
+                                    createDocumentLauncher.launch(
+                                        FileOperations.ensurePdfExtension(suggested)
+                                    )
+                                }
+                            },
                             onClearError = { viewModel.clearError() }
                         )
                     }
@@ -332,7 +374,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         initialValue = 0f,
         targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
+            animation = tween(durationMillis = 1200),
             repeatMode = RepeatMode.Reverse
         ),
         label = "float offset"
@@ -509,8 +551,7 @@ private fun SourceFileCard(
 @Composable
 private fun CompressionLevelSection(
     selectedLevel: CompressionLevel,
-    onLevelSelected: (CompressionLevel) -> Unit,
-    sourceFile: SourceFile
+    onLevelSelected: (CompressionLevel) -> Unit
 ) {
     Column {
         Text(
@@ -532,13 +573,6 @@ private fun CompressionLevelSection(
                 )
             }
         }
-
-        // Size estimate pill
-        Spacer(modifier = Modifier.height(20.dp))
-        SizeEstimatePill(
-            sourceFile = sourceFile,
-            compressionLevel = selectedLevel
-        )
     }
 }
 
@@ -615,103 +649,6 @@ private fun CompressionLevelItem(
                     contentDescription = stringResource(R.string.cd_checkbox),
                     modifier = Modifier.size(20.dp),
                     tint = accentColor
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SizeEstimatePill(
-    sourceFile: SourceFile,
-    compressionLevel: CompressionLevel
-) {
-    val estimate = sourceFile.compressionEstimate
-    val originalSize = sourceFile.size
-
-    // Get estimated size based on compression level
-    val estimatedSize = when {
-        estimate != null -> when (compressionLevel) {
-            CompressionLevel.LOW -> estimate.estimatedSizeLow
-            CompressionLevel.MEDIUM -> estimate.estimatedSizeMedium
-            CompressionLevel.HIGH -> estimate.estimatedSizeHigh
-        }
-        // Fallback if no analysis available
-        else -> when (compressionLevel) {
-            CompressionLevel.LOW -> (originalSize * 0.90f).toLong()
-            CompressionLevel.MEDIUM -> (originalSize * 0.70f).toLong()
-            CompressionLevel.HIGH -> (originalSize * 0.50f).toLong()
-        }
-    }
-
-    val savedSize = originalSize - estimatedSize
-    val reductionPercent = if (originalSize > 0) {
-        ((savedSize.toFloat() / originalSize) * 100).toInt()
-    } else 0
-
-    val alreadyOptimized = stringResource(R.string.already_optimized)
-    val limitedPotential = stringResource(R.string.limited_potential)
-    // Determine color based on potential
-    val (pillColor, contentInfo) = when {
-        estimate?.isAlreadyOptimized == true -> AccentAmber to alreadyOptimized
-        reductionPercent >= 30 -> AccentGreen to null
-        reductionPercent >= 15 -> AccentBlue to null
-        else -> AccentAmber to limitedPotential
-    }
-
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = pillColor.copy(alpha = 0.1f)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 14.dp, horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Main estimate row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    Icons.Default.Compress,
-                    contentDescription = stringResource(R.string.cd_compress_pdf),
-                    modifier = Modifier.size(20.dp),
-                    tint = pillColor
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    "~${formatFileSize(estimatedSize)}",
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
-                    color = pillColor
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    stringResource(
-                        R.string.compress_save_estimate,
-                        formatFileSize(savedSize),
-                        reductionPercent
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            }
-
-            // Content info if applicable
-            if (contentInfo != null || estimate != null) {
-                Spacer(modifier = Modifier.height(6.dp))
-                val infoText = contentInfo ?: when {
-                    estimate?.hasImages == true -> stringResource(R.string.contains_images_good_compression)
-                    else -> stringResource(R.string.mostly_text_content)
-                }
-                Text(
-                    infoText,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
             }
         }
@@ -834,7 +771,11 @@ private fun CompressBottomSection(
             }
             Text(
                 stringResource(
-                    if (isProcessing) R.string.compressing else R.string.tool_compress_pdf
+                    when {
+                        isProcessing -> R.string.compressing
+                        overwriteOriginal -> R.string.tool_compress_pdf
+                        else -> R.string.save_as
+                    }
                 )
             )
         }

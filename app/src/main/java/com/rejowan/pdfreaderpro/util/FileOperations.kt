@@ -3,8 +3,10 @@ package com.rejowan.pdfreaderpro.util
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import androidx.core.content.FileProvider
+import androidx.documentfile.provider.DocumentFile
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -131,6 +133,85 @@ object FileOperations {
         } catch (e: Exception) {
             Timber.w(e, "Failed to take persistable URI permission")
         }
+    }
+
+    /** Persist read/write access to a folder picked via OpenDocumentTree. */
+    fun takePersistableTreePermission(context: Context, treeUri: Uri) {
+        if (treeUri.scheme != "content") return
+        try {
+            context.contentResolver.takePersistableUriPermission(
+                treeUri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+        } catch (e: SecurityException) {
+            Timber.w(e, "Persistable tree permission not available; session grants may still allow write")
+        } catch (e: Exception) {
+            Timber.w(e, "Failed to take persistable tree permission")
+        }
+    }
+
+    /** Creates a new document child under a tree URI (OpenDocumentTree result). */
+    fun createDocumentInTree(
+        context: Context,
+        treeUri: Uri,
+        mimeType: String,
+        displayName: String
+    ): Uri? {
+        return try {
+            // OpenDocumentTree returns a tree URI; createDocument needs the document URI.
+            val parentDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
+                treeUri,
+                DocumentsContract.getTreeDocumentId(treeUri)
+            )
+            DocumentsContract.createDocument(
+                context.contentResolver,
+                parentDocumentUri,
+                mimeType,
+                displayName
+            )
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to create document in tree: $displayName")
+            null
+        }
+    }
+
+    /**
+     * Writes local files as new documents into a folder chosen via OpenDocumentTree.
+     * Never overwrites the source document — always creates new children under the tree.
+     */
+    fun writeFilesToTree(
+        context: Context,
+        treeUri: Uri,
+        files: List<File>,
+        mimeType: String
+    ): Boolean {
+        if (files.isEmpty()) return false
+        val tree = DocumentFile.fromTreeUri(context, treeUri)
+        if (tree == null || !tree.canWrite()) {
+            Timber.e("Tree URI not writable: $treeUri")
+            return false
+        }
+        for (file in files) {
+            if (!file.exists()) {
+                Timber.e("Missing output file: ${file.absolutePath}")
+                return false
+            }
+            // Prefer DocumentFile.createFile; fall back to DocumentsContract with correct parent URI.
+            val destUri = tree.createFile(mimeType, file.nameWithoutExtension)?.uri
+                ?: createDocumentInTree(context, treeUri, mimeType, file.name)
+            if (destUri == null) {
+                Timber.e("Failed to create child document: ${file.name}")
+                return false
+            }
+            if (!writeFileToUri(context, file, destUri)) return false
+        }
+        return true
+    }
+
+    /** Ensures a user-facing name ends with `.pdf` for CreateDocument suggestions. */
+    fun ensurePdfExtension(fileName: String): String {
+        val trimmed = fileName.trim().ifBlank { "document" }
+        return if (trimmed.endsWith(".pdf", ignoreCase = true)) trimmed else "$trimmed.pdf"
     }
 
     /**

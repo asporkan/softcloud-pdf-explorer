@@ -59,6 +59,7 @@
     <string name="do_you_want_to_delete_this_file">Do you want to Delete this file?</string>
     <string name="cancel">Cancel</string>
     <string name="dismiss">Dismiss</string>
+    <string name="ok">OK</string>
     <string name="size_t">Size:</string>
     <string name="last_modified_t">Last Modified:</string>
     <string name="pages_t">Pages:</string>
@@ -196,6 +197,13 @@
     <string name="updates">Updates</string>
     <string name="about">About</string>
     <string name="theme">Theme</string>
+    <string name="app_language">Language</string>
+    <string name="choose_app_language">Choose app language</string>
+    <string name="language_english">English</string>
+    <string name="language_turkish">Turkish</string>
+    <string name="language_follow_device">Follow device language</string>
+    <string name="language_english_desc">Always use English</string>
+    <string name="language_turkish_desc">Always use Turkish</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
     <string name="theme_system">System</string>
@@ -367,7 +375,7 @@
     <string name="unlock_more">Unlock More</string>
     <string name="locked_successfully">PDF locked successfully</string>
     <string name="unlocked_successfully">PDF unlocked successfully</string>
-    <string name="incorrect_password">Incorrect password</string>
+    <string name="incorrect_password">Incorrect password.</string>
     <string name="pdf_not_protected">This PDF is not password protected</string>
     <string name="pdf_protected">This PDF is password protected</string>
 
@@ -431,8 +439,11 @@
     <string name="error_invalid_pdf">Invalid PDF file</string>
     <string name="error_corrupted_pdf">PDF file is corrupted</string>
     <string name="error_password_required">Password required</string>
+    <string name="failed_to_open_pdf">Failed to open PDF</string>
+    <string name="error_with_message">Error: %1$s</string>
+    <string name="toc_contents_tab">Contents</string>
     <string name="error_generic">Something went wrong</string>
-    <string name="error_wrong_password">Incorrect password</string>
+    <string name="error_wrong_password">Incorrect password.</string>
     <string name="error_storage_full">Storage is full</string>
     <string name="error_network">Network error</string>
     <string name="error_timeout">Operation timed out</string>
@@ -706,7 +717,7 @@
     <!-- Password Dialog -->
     <string name="password_required">Password Required</string>
     <string name="password_protected_message">This PDF is password protected. Enter the password to open it.</string>
-    <string name="incorrect_password_error">Incorrect password</string>
+    <string name="incorrect_password_error">Incorrect password.</string>
     <string name="hide_password">Hide password</string>
     <string name="show_password">Show password</string>
     <string name="remember_password">Remember password for this file</string>
@@ -887,7 +898,7 @@
     <string name="unknown">Unknown</string>
     <string name="enter_password_to_open">Enter password to open this PDF</string>
     <string name="password_hint">Password</string>
-    <string name="wrong_password">Wrong password. Please try again.</string>
+    <string name="wrong_password">Incorrect password. Please try again.</string>
     <string name="open_pdf">Open</string>
     <string name="error_loading">Error loading PDF</string>
     <string name="try_again_message">Something went wrong while loading this PDF. Please try again.</string>
@@ -1383,6 +1394,8 @@
     <string name="tool_error_enter_output_name">Please enter an output file name</string>
     <string name="tool_error_enter_output_name_short">Enter an output file name</string>
     <string name="tool_error_replace_original">Failed to replace original file</string>
+    <string name="tool_error_pdf_password_protected">This PDF is password protected.\nPlease unlock it first.</string>
+    <string name="tool_error_save_to_folder">Failed to save files to the selected folder</string>
     <string name="tool_error_merge_failed">Merge failed</string>
     <string name="tool_error_split_failed">Split failed</string>
     <string name="tool_error_compress_failed">Compression failed</string>
@@ -1399,7 +1412,7 @@
     <string name="tool_error_enter_pages_extract">Enter pages to extract</string>
     <string name="tool_error_no_pdf_selected">No PDF file selected</string>
     <string name="share_pdf_chooser">Share PDF</string>
-    <string name="tool_error_skipped_password">Skipped password-protected: %s</string>
+    <string name="tool_error_skipped_password">Some PDFs are password protected. Please unlock them first.\nSkipped: %s</string>
     <string name="tool_error_no_pages_selected_for">No pages selected for: %s</string>
     <string name="tool_error_invalid_format">Invalid format: %s</string>
     <string name="tool_error_page_at_least_one">Page must be at least 1</string>

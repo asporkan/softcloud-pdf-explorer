@@ -1,5 +1,6 @@
 package com.rejowan.pdfreaderpro.domain.repository
 
+import com.rejowan.pdfreaderpro.domain.model.AppLanguage
 import com.rejowan.pdfreaderpro.domain.model.AppPreferences
 import com.rejowan.pdfreaderpro.domain.model.QuickZoomPreset
 import com.rejowan.pdfreaderpro.domain.model.ReadingTheme
@@ -17,6 +18,7 @@ interface PreferencesRepository {
     suspend fun setFirstLaunch(isFirst: Boolean)
     suspend fun setOnboardingCompleted(completed: Boolean)
     suspend fun setThemeMode(mode: ThemeMode)
+    suspend fun setAppLanguage(language: AppLanguage)
     suspend fun setDefaultViewMode(mode: ViewMode)
     suspend fun setDefaultSortOption(option: SortOption)
     suspend fun setRememberPasswords(enabled: Boolean)

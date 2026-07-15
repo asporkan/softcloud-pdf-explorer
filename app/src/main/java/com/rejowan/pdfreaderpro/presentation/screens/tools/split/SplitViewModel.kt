@@ -2,17 +2,19 @@ package com.rejowan.pdfreaderpro.presentation.screens.tools.split
 
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 import java.text.SimpleDateFormat
@@ -35,6 +37,7 @@ data class SplitState(
     val specificPagesInput: String = "",    // For SPECIFIC_PAGES: "1, 3, 5-8, 12"
     val specificPagesError: String? = null, // Validation error for specific pages
     val outputPrefix: String = "",
+    val isLoading: Boolean = false,
     val isProcessing: Boolean = false,
     val progress: Float = 0f,
     val error: String? = null,
@@ -75,33 +78,51 @@ class SplitViewModel(
 
     fun setSourceFile(uri: Uri) {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
             try {
                 val tempPath = copyUriToCache(uri)
-                if (tempPath != null) {
-                    val file = File(tempPath)
-                    val pageCount = pdfToolsRepository.getPageCount(tempPath).getOrDefault(0)
-                    val sourceFile = SourceFile(
-                        uri = uri,
-                        path = tempPath,
-                        name = getFileNameFromUri(uri) ?: file.name,
-                        size = file.length(),
-                        pageCount = pageCount
-                    )
+                if (tempPath == null) {
                     _state.update {
                         it.copy(
-                            sourceFile = sourceFile,
-                            error = null
+                            isLoading = false,
+                            error = context.getString(R.string.tool_error_load_file)
                         )
                     }
-                    // Auto-generate ranges based on page count
-                    generateDefaultRanges(pageCount)
-                } else {
-                    _state.update { it.copy(error = context.getString(R.string.tool_error_load_file)) }
+                    return@launch
                 }
+
+                pdfToolsRepository.passwordProtectedBlockMessage(context, tempPath)?.let { msg ->
+                    File(tempPath).delete()
+                    _state.update {
+                        it.copy(isLoading = false, sourceFile = null, error = msg)
+                    }
+                    return@launch
+                }
+
+                val file = File(tempPath)
+                val pageCount = pdfToolsRepository.getPageCount(tempPath).getOrDefault(0)
+                val sourceFile = SourceFile(
+                    uri = uri,
+                    path = tempPath,
+                    name = getFileNameFromUri(uri) ?: file.name,
+                    size = file.length(),
+                    pageCount = pageCount
+                )
+                _state.update {
+                    it.copy(
+                        sourceFile = sourceFile,
+                        isLoading = false,
+                        error = null
+                    )
+                }
+                generateDefaultRanges(pageCount)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
                 _state.update {
-                    it.copy(error = e.message ?: context.getString(R.string.tool_error_load_file))
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: context.getString(R.string.tool_error_load_file)
+                    )
                 }
             }
         }
@@ -226,72 +247,74 @@ class SplitViewModel(
         _state.update { it.copy(outputPrefix = prefix) }
     }
 
-    fun split() {
+    /**
+     * Validates split inputs. Destination folder is chosen by the screen via OpenDocumentTree
+     * then [splitToTree].
+     */
+    fun split(): Boolean {
+        return validateSplit()
+    }
+
+    fun splitToTree(treeUri: Uri) {
         val currentState = _state.value
-        val sourceFile = currentState.sourceFile
-
-        if (sourceFile == null) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_no_pdf_selected)) }
-            return
-        }
-
-        if (currentState.outputPrefix.isBlank()) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_prefix)) }
-            return
-        }
-
-        // Check for validation errors based on mode
-        when (currentState.splitMode) {
-            SplitMode.BY_RANGES -> {
-                if (currentState.rangesInput.isBlank()) {
-                    _state.update { it.copy(error = context.getString(R.string.tool_error_enter_page_ranges)) }
-                    return
-                }
-                if (currentState.rangesError != null) {
-                    _state.update { it.copy(error = currentState.rangesError) }
-                    return
-                }
-            }
-            SplitMode.SPECIFIC_PAGES -> {
-                if (currentState.specificPagesInput.isBlank()) {
-                    _state.update { it.copy(error = context.getString(R.string.tool_error_enter_pages_extract)) }
-                    return
-                }
-                if (currentState.specificPagesError != null) {
-                    _state.update { it.copy(error = currentState.specificPagesError) }
-                    return
-                }
-            }
-            else -> { /* No additional validation needed */ }
-        }
+        val sourceFile = currentState.sourceFile ?: return
+        if (!validateSplit()) return
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            val outputDir = getOutputDirectory(currentState.outputPrefix)
+            val tempDir = File(context.cacheDir, "split_out_${System.currentTimeMillis()}").apply { mkdirs() }
 
             val result = when (currentState.splitMode) {
-                SplitMode.BY_RANGES -> splitByRanges(sourceFile, outputDir, currentState.rangesInput)
-                SplitMode.EVERY_N_PAGES -> splitEveryNPages(sourceFile, outputDir, currentState.everyNPages)
-                SplitMode.INTO_PAGES -> splitIntoPages(sourceFile, outputDir)
-                SplitMode.SPECIFIC_PAGES -> extractSpecificPages(sourceFile, outputDir, currentState.specificPagesInput)
+                SplitMode.BY_RANGES -> splitByRanges(sourceFile, tempDir.absolutePath, currentState.rangesInput)
+                SplitMode.EVERY_N_PAGES -> splitEveryNPages(sourceFile, tempDir.absolutePath, currentState.everyNPages)
+                SplitMode.INTO_PAGES -> splitIntoPages(sourceFile, tempDir.absolutePath)
+                SplitMode.SPECIFIC_PAGES -> extractSpecificPages(
+                    sourceFile,
+                    tempDir.absolutePath,
+                    currentState.specificPagesInput
+                )
             }
 
             result.fold(
-                onSuccess = { createdFiles ->
+                onSuccess = { tempFiles ->
+                    val files = tempFiles.map { File(it) }
+                    val written = withContext(Dispatchers.IO) {
+                        FileOperations.writeFilesToTree(
+                            context,
+                            treeUri,
+                            files,
+                            "application/pdf"
+                        )
+                    }
+                    if (!written) {
+                        tempDir.deleteRecursively()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_save_to_folder)
+                            )
+                        }
+                        return@launch
+                    }
+
+                    val localFiles = copyToResultCache(tempFiles, "split")
+                    tempDir.deleteRecursively()
+
                     _state.update {
                         it.copy(
                             isProcessing = false,
                             progress = 1f,
                             result = SplitResult(
-                                outputDir = outputDir,
-                                createdFiles = createdFiles,
-                                totalPages = createdFiles.size
+                                outputDir = File(localFiles.first()).parent ?: "",
+                                createdFiles = localFiles,
+                                totalPages = localFiles.size
                             )
                         )
                     }
                 },
                 onFailure = { error ->
+                    tempDir.deleteRecursively()
                     Timber.e(error, "Split failed")
                     _state.update {
                         it.copy(
@@ -301,6 +324,57 @@ class SplitViewModel(
                     }
                 }
             )
+        }
+    }
+
+    private fun validateSplit(): Boolean {
+        val currentState = _state.value
+        val sourceFile = currentState.sourceFile
+
+        if (sourceFile == null) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_no_pdf_selected)) }
+            return false
+        }
+
+        if (currentState.outputPrefix.isBlank()) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_prefix)) }
+            return false
+        }
+
+        when (currentState.splitMode) {
+            SplitMode.BY_RANGES -> {
+                if (currentState.rangesInput.isBlank()) {
+                    _state.update { it.copy(error = context.getString(R.string.tool_error_enter_page_ranges)) }
+                    return false
+                }
+                if (currentState.rangesError != null) {
+                    _state.update { it.copy(error = currentState.rangesError) }
+                    return false
+                }
+            }
+            SplitMode.SPECIFIC_PAGES -> {
+                if (currentState.specificPagesInput.isBlank()) {
+                    _state.update { it.copy(error = context.getString(R.string.tool_error_enter_pages_extract)) }
+                    return false
+                }
+                if (currentState.specificPagesError != null) {
+                    _state.update { it.copy(error = currentState.specificPagesError) }
+                    return false
+                }
+            }
+            else -> { /* No additional validation needed */ }
+        }
+
+        return true
+    }
+
+    private fun copyToResultCache(tempFiles: List<String>, prefix: String): List<String> {
+        val resultDir = File(context.cacheDir, "${prefix}_result_${System.currentTimeMillis()}").apply { mkdirs() }
+        return tempFiles.map { path ->
+            val src = File(path)
+            val dest = File(resultDir, src.name)
+            src.copyTo(dest, overwrite = true)
+            dest.absolutePath
         }
     }
 
@@ -436,27 +510,20 @@ class SplitViewModel(
         generateDefaultPrefix()
     }
 
-    private fun getOutputDirectory(prefix: String): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, "${Constants.OUTPUT_DIR_NAME}/split_$prefix")
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
-    }
-
     private fun copyUriToCache(uri: Uri): String? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
-            val cacheFile = File(context.cacheDir, "split_temp/$fileName")
-            cacheFile.parentFile?.mkdirs()
+            inputStream.use { stream ->
+                val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
+                val cacheFile = File(context.cacheDir, "split_temp/$fileName")
+                cacheFile.parentFile?.mkdirs()
 
-            cacheFile.outputStream().use { output ->
-                inputStream.copyTo(output)
+                cacheFile.outputStream().use { output ->
+                    stream.copyTo(output)
+                }
+
+                cacheFile.absolutePath
             }
-
-            cacheFile.absolutePath
         } catch (e: Exception) {
             Timber.e(e, "Failed to copy URI to cache")
             null

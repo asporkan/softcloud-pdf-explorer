@@ -248,7 +248,7 @@ fun HomeScreen(
     val bottomBarHeight = 120.dp
     val bottomBarOffset by animateDpAsState(
         targetValue = if (isBottomBarVisible) 0.dp else bottomBarHeight,
-        animationSpec = tween(durationMillis = 300),
+        animationSpec = tween(durationMillis = 150),
         label = "bottomBarOffset"
     )
 

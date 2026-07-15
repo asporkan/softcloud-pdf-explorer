@@ -4,13 +4,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -73,6 +72,7 @@ data class MergeFile(
 data class MergeState(
     val selectedFiles: List<MergeFile> = emptyList(),
     val outputFileName: String = "",
+    val isLoading: Boolean = false,
     val isProcessing: Boolean = false,
     val progress: Float = 0f,
     val error: String? = null,
@@ -81,6 +81,7 @@ data class MergeState(
 
 data class MergeResult(
     val outputPath: String,
+    val displayName: String,
     val pageCount: Int,
     val fileSize: Long
 )
@@ -105,6 +106,8 @@ class MergeViewModel(
 
     fun addFiles(uris: List<Uri>) {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+
             val skippedPasswordProtected = mutableListOf<String>()
 
             val newFiles = uris.mapNotNull { uri ->
@@ -163,14 +166,11 @@ class MergeViewModel(
             _state.update { current ->
                 val existingPaths = current.selectedFiles.map { it.path }.toSet()
                 val filteredNew = newFiles.filter { it.path !in existingPaths }
-                val errorMessage = if (skippedPasswordProtected.isNotEmpty()) {
-                    context.getString(
-                        R.string.tool_error_skipped_password,
-                        skippedPasswordProtected.joinToString(", ")
-                    )
-                } else null
+                val updatedFiles = current.selectedFiles + filteredNew
+                val errorMessage = skippedPasswordError(skippedPasswordProtected, updatedFiles)
                 current.copy(
-                    selectedFiles = current.selectedFiles + filteredNew,
+                    selectedFiles = updatedFiles,
+                    isLoading = false,
                     error = errorMessage
                 )
             }
@@ -179,6 +179,8 @@ class MergeViewModel(
 
     fun addFilesFromPaths(paths: List<String>) {
         viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, error = null) }
+
             val skippedPasswordProtected = mutableListOf<String>()
 
             val newFiles = paths.mapNotNull { path ->
@@ -212,14 +214,11 @@ class MergeViewModel(
             _state.update { current ->
                 val existingPaths = current.selectedFiles.map { it.path }.toSet()
                 val filteredNew = newFiles.filter { it.path !in existingPaths }
-                val errorMessage = if (skippedPasswordProtected.isNotEmpty()) {
-                    context.getString(
-                        R.string.tool_error_skipped_password,
-                        skippedPasswordProtected.joinToString(", ")
-                    )
-                } else null
+                val updatedFiles = current.selectedFiles + filteredNew
+                val errorMessage = skippedPasswordError(skippedPasswordProtected, updatedFiles)
                 current.copy(
-                    selectedFiles = current.selectedFiles + filteredNew,
+                    selectedFiles = updatedFiles,
+                    isLoading = false,
                     error = errorMessage
                 )
             }
@@ -296,44 +295,23 @@ class MergeViewModel(
         _state.update { it.copy(outputFileName = name) }
     }
 
-    fun merge() {
+    /**
+     * Validates merge inputs. Save As destination is chosen by the screen via CreateDocument
+     * then [mergeToUri].
+     */
+    fun merge(): Boolean {
+        return validateMerge()
+    }
+
+    fun mergeToUri(destinationUri: Uri) {
         val currentState = _state.value
-        if (currentState.selectedFiles.size < 2) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_select_min_merge)) }
-            return
-        }
-
-        if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name_short)) }
-            return
-        }
-
-        // Check for empty page selections
-        val emptySelectionFiles = currentState.selectedFiles.filter { file ->
-            file.pageSelection.getSelectedCount(file.pageCount) == 0
-        }
-        if (emptySelectionFiles.isNotEmpty()) {
-            val fileNames = emptySelectionFiles.joinToString(", ") { it.name }
-            _state.update {
-                it.copy(error = context.getString(R.string.tool_error_no_pages_selected_for, fileNames))
-            }
-            return
-        }
+        if (!validateMerge()) return
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            val outputDir = getOutputDirectory()
-            var outputPath = "$outputDir/${currentState.outputFileName}.pdf"
+            val tempFile = File(context.cacheDir, "merge_out_${System.currentTimeMillis()}.pdf")
 
-            // Check if file exists and generate unique name
-            var counter = 1
-            while (File(outputPath).exists()) {
-                outputPath = "$outputDir/${currentState.outputFileName}_$counter.pdf"
-                counter++
-            }
-
-            // Create page selections from merge files
             val selections = currentState.selectedFiles.map { file ->
                 PdfToolsRepository.PdfPageSelection(
                     path = file.path,
@@ -343,7 +321,7 @@ class MergeViewModel(
 
             val result = pdfToolsRepository.mergePdfsWithSelection(
                 selections = selections,
-                outputPath = outputPath,
+                outputPath = tempFile.absolutePath,
                 onProgress = { progress ->
                     _state.update { it.copy(progress = progress) }
                 }
@@ -351,24 +329,34 @@ class MergeViewModel(
 
             result.fold(
                 onSuccess = {
-                    // Clean up temp files after successful merge
+                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
+                        }
+                        return@launch
+                    }
+
                     cleanupTempFiles()
 
-                    val outputFile = File(outputPath)
-                    val pageCount = pdfToolsRepository.getPageCount(outputPath).getOrDefault(0)
-                    _state.update {
-                        it.copy(
-                            isProcessing = false,
-                            progress = 1f,
-                            result = MergeResult(
-                                outputPath = outputPath,
-                                pageCount = pageCount,
-                                fileSize = outputFile.length()
-                            )
-                        )
-                    }
+                    val localCopy = File(
+                        context.cacheDir,
+                        "merge_result_${System.currentTimeMillis()}.pdf"
+                    )
+                    tempFile.copyTo(localCopy, overwrite = true)
+                    tempFile.delete()
+
+                    finishMergeSuccess(
+                        localPath = localCopy.absolutePath,
+                        displayName = FileOperations.getFileNameFromUri(context, destinationUri)
+                            ?: currentState.outputFileName.ifBlank { "merged" }
+                    )
                 },
                 onFailure = { error ->
+                    tempFile.delete()
                     Timber.e(error, "Merge failed")
                     _state.update {
                         it.copy(
@@ -377,6 +365,69 @@ class MergeViewModel(
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun validateMerge(): Boolean {
+        val currentState = _state.value
+        if (currentState.selectedFiles.size < 2) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_min_merge)) }
+            return false
+        }
+
+        if (currentState.outputFileName.isBlank()) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name_short)) }
+            return false
+        }
+
+        val emptySelectionFiles = currentState.selectedFiles.filter { file ->
+            file.pageSelection.getSelectedCount(file.pageCount) == 0
+        }
+        if (emptySelectionFiles.isNotEmpty()) {
+            val fileNames = emptySelectionFiles.joinToString(", ") { it.name }
+            _state.update {
+                it.copy(error = context.getString(R.string.tool_error_no_pages_selected_for, fileNames))
+            }
+            return false
+        }
+
+        return true
+    }
+
+    private suspend fun finishMergeSuccess(localPath: String, displayName: String) {
+        val outputFile = File(localPath)
+        val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        val name = when {
+            displayName.endsWith(".pdf", ignoreCase = true) -> displayName
+            displayName.isNotBlank() -> "$displayName.pdf"
+            else -> outputFile.name
+        }
+        _state.update {
+            it.copy(
+                isProcessing = false,
+                progress = 1f,
+                result = MergeResult(
+                    outputPath = localPath,
+                    displayName = name,
+                    pageCount = pageCount,
+                    fileSize = outputFile.length()
+                )
+            )
+        }
+    }
+
+    private fun skippedPasswordError(
+        skippedNames: List<String>,
+        filesAfterAdd: List<MergeFile>
+    ): String? {
+        if (skippedNames.isEmpty()) return null
+        return if (filesAfterAdd.isEmpty()) {
+            context.getString(R.string.tool_error_pdf_password_protected)
+        } else {
+            context.getString(
+                R.string.tool_error_skipped_password,
+                skippedNames.joinToString(", ")
             )
         }
     }
@@ -408,26 +459,14 @@ class MergeViewModel(
         }
     }
 
-    private fun getOutputDirectory(): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
-    }
-
     private fun getPathFromUri(uri: Uri): String? {
-        // Handle file:// URIs
         if (uri.scheme == "file") {
             return uri.path
         }
 
-        // Try to get path from content:// URI
         return try {
             context.contentResolver.openFileDescriptor(uri, "r")?.use { _ ->
-                // If we can open it, copy to cache
-                null // We'll handle via copyUriToCache
+                null
             }
         } catch (e: Exception) {
             null
@@ -437,15 +476,17 @@ class MergeViewModel(
     private fun copyUriToCache(uri: Uri): String? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
-            val cacheFile = File(context.cacheDir, "merge_temp/$fileName")
-            cacheFile.parentFile?.mkdirs()
+            inputStream.use { stream ->
+                val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
+                val cacheFile = File(context.cacheDir, "merge_temp/$fileName")
+                cacheFile.parentFile?.mkdirs()
 
-            cacheFile.outputStream().use { output ->
-                inputStream.copyTo(output)
+                cacheFile.outputStream().use { output ->
+                    stream.copyTo(output)
+                }
+
+                cacheFile.absolutePath
             }
-
-            cacheFile.absolutePath
         } catch (e: Exception) {
             Timber.e(e, "Failed to copy URI to cache")
             null

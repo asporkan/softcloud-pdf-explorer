@@ -217,7 +217,7 @@ fun ToolsScreen(
                 // Section label
                 SectionLabel(
                     text = stringResource(category.titleRes),
-                    delay = animationIndex * 50
+                    delay = animationIndex * 25
                 )
                 animationIndex++
 
@@ -228,7 +228,7 @@ fun ToolsScreen(
                     ToolItem(
                         tool = tool,
                         accentColor = category.accentColor,
-                        animationDelay = animationIndex * 50,
+                        animationDelay = animationIndex * 25,
                         onClick = {
                             when (tool.id) {
                                 "merge" -> navController.navigateToMergeTool()
@@ -272,7 +272,7 @@ private fun SectionLabel(
 
     val alpha by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0f,
-        animationSpec = tween(200),
+        animationSpec = tween(120),
         label = "section alpha"
     )
 
@@ -304,7 +304,7 @@ private fun ToolItem(
 
     val scale by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0.95f,
-        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        animationSpec = tween(150, easing = FastOutSlowInEasing),
         label = "tool scale"
     )
 

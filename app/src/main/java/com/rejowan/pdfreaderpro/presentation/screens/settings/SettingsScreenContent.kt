@@ -116,6 +116,7 @@ import androidx.core.net.toUri
 import androidx.compose.ui.res.painterResource
 import com.rejowan.pdfreaderpro.BuildConfig
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.domain.model.AppLanguage
 import com.rejowan.pdfreaderpro.domain.model.QuickZoomPreset
 import com.rejowan.pdfreaderpro.domain.model.ReadingTheme
 import com.rejowan.pdfreaderpro.domain.model.ScreenOrientation
@@ -148,6 +149,7 @@ fun SettingsScreenContent(
 
     // Sheet visibility states
     var showThemeModeSheet by remember { mutableStateOf(false) }
+    var showLanguageSheet by remember { mutableStateOf(false) }
     var showScrollModeSheet by remember { mutableStateOf(false) }
     var showQuickZoomSheet by remember { mutableStateOf(false) }
     var showDoubleTapZoomSheet by remember { mutableStateOf(false) }
@@ -190,7 +192,22 @@ fun SettingsScreenContent(
             },
             accentColor = AccentPurple,
             onClick = { showThemeModeSheet = true },
-            animationDelay = 50
+            animationDelay = 25
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        SettingsOptionItem(
+            icon = Icons.Rounded.Language,
+            title = stringResource(R.string.app_language),
+            subtitle = when (preferences.appLanguage) {
+                AppLanguage.SYSTEM -> stringResource(R.string.system_default)
+                AppLanguage.ENGLISH -> stringResource(R.string.language_english)
+                AppLanguage.TURKISH -> stringResource(R.string.language_turkish)
+            },
+            accentColor = AccentBlue,
+            onClick = { showLanguageSheet = true },
+            animationDelay = 40
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -202,13 +219,13 @@ fun SettingsScreenContent(
             checked = preferences.showToolsTab,
             accentColor = AccentPurple,
             onCheckedChange = { viewModel.setShowToolsTab(it) },
-            animationDelay = 75
+            animationDelay = 50
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // Reader Section
-        SectionLabel(text = stringResource(R.string.reader_section), delay = 100)
+        SectionLabel(text = stringResource(R.string.reader_section), delay = 60)
         Spacer(modifier = Modifier.height(8.dp))
 
         SettingsOptionItem(
@@ -217,7 +234,7 @@ fun SettingsScreenContent(
             subtitle = if (preferences.readerBrightness < 0) stringResource(R.string.system_default) else "${(preferences.readerBrightness * 100).toInt()}%",
             accentColor = AccentAmber,
             onClick = { showBrightnessSheet = true },
-            animationDelay = 150
+            animationDelay = 75
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -228,7 +245,7 @@ fun SettingsScreenContent(
             subtitle = preferences.readerScrollMode.name.lowercase().replace("_", " ").replaceFirstChar { it.uppercase() },
             accentColor = AccentPurple,
             onClick = { showScrollModeSheet = true },
-            animationDelay = 200
+            animationDelay = 100
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -243,7 +260,7 @@ fun SettingsScreenContent(
             },
             accentColor = AccentBlue,
             onClick = { showQuickZoomSheet = true },
-            animationDelay = 300
+            animationDelay = 125
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -254,7 +271,7 @@ fun SettingsScreenContent(
             subtitle = "${(preferences.readerDoubleTapZoom * 10f).toInt() / 10f}×",
             accentColor = AccentBlue,
             onClick = { showDoubleTapZoomSheet = true },
-            animationDelay = 325
+            animationDelay = 140
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -265,7 +282,7 @@ fun SettingsScreenContent(
             subtitle = preferences.readerTheme.name.lowercase().replaceFirstChar { it.uppercase() },
             accentColor = AccentAmber,
             onClick = { showReadingThemeSheet = true },
-            animationDelay = 350
+            animationDelay = 155
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -280,7 +297,7 @@ fun SettingsScreenContent(
             },
             accentColor = AccentBlue,
             onClick = { showScreenOrientationSheet = true },
-            animationDelay = 375
+            animationDelay = 170
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -292,7 +309,7 @@ fun SettingsScreenContent(
             accentColor = AccentTeal,
             checked = preferences.readerSnapToPages,
             onCheckedChange = { viewModel.setReaderSnapToPages(it) },
-            animationDelay = 385
+            animationDelay = 185
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -304,7 +321,7 @@ fun SettingsScreenContent(
             accentColor = AccentPurple,
             checked = preferences.readerAutoHideToolbar,
             onCheckedChange = { viewModel.setReaderAutoHideToolbar(it) },
-            animationDelay = 400
+            animationDelay = 200
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -316,13 +333,13 @@ fun SettingsScreenContent(
             accentColor = AccentTeal,
             checked = preferences.readerKeepScreenOn,
             onCheckedChange = { viewModel.setReaderKeepScreenOn(it) },
-            animationDelay = 450
+            animationDelay = 215
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         // About Section
-        SectionLabel(text = stringResource(R.string.about_section), delay = 500)
+        SectionLabel(text = stringResource(R.string.about_section), delay = 230)
         Spacer(modifier = Modifier.height(8.dp))
 
         SettingsOptionItem(
@@ -331,7 +348,7 @@ fun SettingsScreenContent(
             subtitle = stringResource(R.string.view_changelog),
             accentColor = AccentBlue,
             onClick = { showChangelogSheet = true },
-            animationDelay = 700
+            animationDelay = 245
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -342,7 +359,7 @@ fun SettingsScreenContent(
             subtitle = stringResource(R.string.view_privacy_policy),
             accentColor = AccentTeal,
             onClick = { showPrivacyPolicySheet = true },
-            animationDelay = 750
+            animationDelay = 260
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -353,7 +370,7 @@ fun SettingsScreenContent(
             subtitle = stringResource(R.string.view_third_party),
             accentColor = AccentPurple,
             onClick = { showLicensesSheet = true },
-            animationDelay = 800
+            animationDelay = 275
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -364,7 +381,7 @@ fun SettingsScreenContent(
             subtitle = stringResource(R.string.about_developer),
             accentColor = AccentAmber,
             onClick = { showCreatorSheet = true },
-            animationDelay = 850
+            animationDelay = 290
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -375,7 +392,7 @@ fun SettingsScreenContent(
             subtitle = stringResource(R.string.gpl_full_name),
             accentColor = AccentBlue,
             onClick = { showAppLicenseSheet = true },
-            animationDelay = 900
+            animationDelay = 305
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -392,7 +409,7 @@ fun SettingsScreenContent(
                 }
                 context.startActivity(intent)
             },
-            animationDelay = 950
+            animationDelay = 320
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -409,7 +426,7 @@ fun SettingsScreenContent(
                 )
                 context.startActivity(intent)
             },
-            animationDelay = 1000
+            animationDelay = 335
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -434,6 +451,39 @@ fun SettingsScreenContent(
                 showThemeModeSheet = false
             },
             onDismiss = { showThemeModeSheet = false }
+        )
+    }
+
+    // App language picker
+    if (showLanguageSheet) {
+        SettingsPickerSheet(
+            title = stringResource(R.string.app_language),
+            subtitle = stringResource(R.string.choose_app_language),
+            icon = Icons.Rounded.Language,
+            accentColor = AccentBlue,
+            options = listOf(
+                PickerOption(
+                    Icons.Rounded.PhoneAndroid,
+                    stringResource(R.string.system_default),
+                    stringResource(R.string.language_follow_device)
+                ),
+                PickerOption(
+                    Icons.Rounded.Language,
+                    stringResource(R.string.language_english),
+                    stringResource(R.string.language_english_desc)
+                ),
+                PickerOption(
+                    Icons.Rounded.Language,
+                    stringResource(R.string.language_turkish),
+                    stringResource(R.string.language_turkish_desc)
+                )
+            ),
+            selectedIndex = AppLanguage.entries.indexOf(preferences.appLanguage),
+            onSelect = { index ->
+                viewModel.setAppLanguage(AppLanguage.entries[index])
+                showLanguageSheet = false
+            },
+            onDismiss = { showLanguageSheet = false }
         )
     }
 
@@ -586,13 +636,13 @@ private fun SectionLabel(
 
     val scale by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0.9f,
-        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        animationSpec = tween(150, easing = FastOutSlowInEasing),
         label = "section scale"
     )
 
     val alpha by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0f,
-        animationSpec = tween(200),
+        animationSpec = tween(120),
         label = "section alpha"
     )
 
@@ -619,7 +669,7 @@ private fun SettingsHeaderCard() {
 
     val scale by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0.95f,
-        animationSpec = tween(300, easing = FastOutSlowInEasing),
+        animationSpec = tween(150, easing = FastOutSlowInEasing),
         label = "header scale"
     )
 
@@ -696,7 +746,7 @@ private fun SettingsOptionItem(
 
     val scale by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0.95f,
-        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        animationSpec = tween(150, easing = FastOutSlowInEasing),
         label = "item scale"
     )
 
@@ -782,7 +832,7 @@ private fun SettingsToggleItem(
 
     val scale by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0.95f,
-        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        animationSpec = tween(150, easing = FastOutSlowInEasing),
         label = "toggle scale"
     )
 
@@ -953,8 +1003,8 @@ private fun PickerSideSheet(
         // Scrim
         AnimatedVisibility(
             visible = isVisible,
-            enter = fadeIn(tween(300)),
-            exit = fadeOut(tween(300))
+            enter = fadeIn(tween(150)),
+            exit = fadeOut(tween(150))
         ) {
             Box(
                 modifier = Modifier
@@ -971,11 +1021,11 @@ private fun PickerSideSheet(
             visible = isVisible,
             enter = slideInHorizontally(
                 initialOffsetX = { it },
-                animationSpec = tween(300, easing = FastOutSlowInEasing)
+                animationSpec = tween(150, easing = FastOutSlowInEasing)
             ),
             exit = slideOutHorizontally(
                 targetOffsetX = { it },
-                animationSpec = tween(250, easing = FastOutSlowInEasing)
+                animationSpec = tween(150, easing = FastOutSlowInEasing)
             ),
             modifier = Modifier.align(Alignment.CenterEnd)
         ) {
@@ -1100,21 +1150,21 @@ private fun PickerOptionItem(
 
     val scale by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0.95f,
-        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        animationSpec = tween(150, easing = FastOutSlowInEasing),
         label = "option scale"
     )
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
         else MaterialTheme.colorScheme.surfaceContainerLow,
-        animationSpec = tween(200),
+        animationSpec = tween(120),
         label = "option bg"
     )
 
     val borderColor by animateColorAsState(
         targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
         else Color.Transparent,
-        animationSpec = tween(200),
+        animationSpec = tween(120),
         label = "option border"
     )
 
@@ -1266,8 +1316,8 @@ private fun BrightnessSideSheet(
     Box(modifier = Modifier.fillMaxSize()) {
         AnimatedVisibility(
             visible = isVisible,
-            enter = fadeIn(tween(300)),
-            exit = fadeOut(tween(300))
+            enter = fadeIn(tween(150)),
+            exit = fadeOut(tween(150))
         ) {
             Box(
                 modifier = Modifier
@@ -1283,11 +1333,11 @@ private fun BrightnessSideSheet(
             visible = isVisible,
             enter = slideInHorizontally(
                 initialOffsetX = { it },
-                animationSpec = tween(300, easing = FastOutSlowInEasing)
+                animationSpec = tween(150, easing = FastOutSlowInEasing)
             ),
             exit = slideOutHorizontally(
                 targetOffsetX = { it },
-                animationSpec = tween(250, easing = FastOutSlowInEasing)
+                animationSpec = tween(150, easing = FastOutSlowInEasing)
             ),
             modifier = Modifier.align(Alignment.CenterEnd)
         ) {
@@ -1471,21 +1521,21 @@ private fun BrightnessOptionItem(
 
     val scale by animateFloatAsState(
         targetValue = if (isVisible) 1f else 0.95f,
-        animationSpec = tween(250, easing = FastOutSlowInEasing),
+        animationSpec = tween(150, easing = FastOutSlowInEasing),
         label = "brightness option scale"
     )
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
         else MaterialTheme.colorScheme.surfaceContainerLow,
-        animationSpec = tween(200),
+        animationSpec = tween(120),
         label = "brightness option bg"
     )
 
     val borderColor by animateColorAsState(
         targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
         else Color.Transparent,
-        animationSpec = tween(200),
+        animationSpec = tween(120),
         label = "brightness option border"
     )
 
@@ -1594,8 +1644,8 @@ private fun AboutSheet(
             // Scrim
             AnimatedVisibility(
                 visible = isVisible,
-                enter = fadeIn(tween(300)),
-                exit = fadeOut(tween(300))
+                enter = fadeIn(tween(150)),
+                exit = fadeOut(tween(150))
             ) {
                 Box(
                     modifier = Modifier
@@ -1610,11 +1660,11 @@ private fun AboutSheet(
                 visible = isVisible,
                 enter = slideInHorizontally(
                     initialOffsetX = { it },
-                    animationSpec = tween(300, easing = FastOutSlowInEasing)
+                    animationSpec = tween(150, easing = FastOutSlowInEasing)
                 ),
                 exit = slideOutHorizontally(
                     targetOffsetX = { it },
-                    animationSpec = tween(250, easing = FastOutSlowInEasing)
+                    animationSpec = tween(150, easing = FastOutSlowInEasing)
                 ),
                 modifier = Modifier.align(Alignment.CenterEnd)
             ) {
@@ -1702,9 +1752,25 @@ private fun ChangelogContent() {
                 .verticalScroll(rememberScrollState())
         ) {
             ChangelogVersionItem(
-                version = "0.5",
+                version = "0.6",
                 date = "July 2026",
                 isLatest = true,
+                changes = listOf(
+                    "In-app language selector (System, English, Turkish)",
+                    "Fixed Reorder / Remove Pages on large PDFs (page count and thumbnails)",
+                    "Overwrite edits write back to the original document",
+                    "Save As uses the system document picker",
+                    "Fixed white screen after quick Done / Continue on tool success",
+                    "Lighter UI animations for smoother performance"
+                )
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ChangelogVersionItem(
+                version = "0.5",
+                date = "July 2026",
+                isLatest = false,
                 changes = listOf(
                     "New PDF Explorer app icon and adaptive launcher assets",
                     "Themed icon support on Android 13+",
@@ -1727,43 +1793,6 @@ private fun ChangelogContent() {
                     "Folder browser and file management",
                     "Favorites and Recent Files",
                     "Performance and stability improvements"
-                )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ChangelogVersionItem(
-                version = "0.3",
-                date = "June 2026",
-                isLatest = false,
-                changes = listOf(
-                    "UI improvements",
-                    "Reader enhancements",
-                    "Performance optimizations"
-                )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ChangelogVersionItem(
-                version = "0.2",
-                date = "May 2026",
-                isLatest = false,
-                changes = listOf(
-                    "Added PDF editing tools",
-                    "Improved file management",
-                    "General bug fixes"
-                )
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            ChangelogVersionItem(
-                version = "0.1",
-                date = "April 2026",
-                isLatest = false,
-                changes = listOf(
-                    "Initial internal development build"
                 )
             )
 

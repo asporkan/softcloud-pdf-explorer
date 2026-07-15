@@ -5,6 +5,7 @@ data class AppPreferences(
     val isFirstLaunch: Boolean = true,
     val hasCompletedOnboarding: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val appLanguage: AppLanguage = AppLanguage.SYSTEM,
     val defaultViewMode: ViewMode = ViewMode.LIST,
     val defaultSortOption: SortOption = SortOption.NAME_ASC,
     val rememberPasswords: Boolean = true,
@@ -27,6 +28,13 @@ enum class ThemeMode {
     DARK,
     BLACK,
     SYSTEM
+}
+
+/** App UI language; SYSTEM follows the device locale list. */
+enum class AppLanguage(val tag: String) {
+    SYSTEM(""),
+    ENGLISH("en"),
+    TURKISH("tr")
 }
 
 enum class ScrollMode {

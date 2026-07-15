@@ -76,14 +76,17 @@ class FolderDetailViewModel(
     }
 
     fun refreshFolder() {
+        if (currentFolderPath.isBlank()) return
         viewModelScope.launch {
             _isRefreshing.value = true
             try {
-                pdfFileRepository.getPdfsByFolder(currentFolderPath).collect { files ->
-                    _files.value = sortFiles(files, _sortOption.value)
-                    _isRefreshing.value = false
-                }
-            } catch (e: Exception) {
+                // Re-scan MediaStore so newly added/removed PDFs appear in this folder.
+                pdfFileRepository.refreshPdfs()
+                val files = pdfFileRepository.getPdfsByFolder(currentFolderPath).first()
+                _files.value = sortFiles(files, _sortOption.value)
+            } catch (_: Exception) {
+                // Keep current list on failure; indicator still dismisses.
+            } finally {
                 _isRefreshing.value = false
             }
         }
@@ -91,6 +94,9 @@ class FolderDetailViewModel(
 
     fun setViewMode(mode: ViewMode) {
         _viewMode.value = mode
+        viewModelScope.launch {
+            preferencesRepository.setDefaultViewMode(mode)
+        }
     }
 
     fun setSortOption(option: SortOption) {

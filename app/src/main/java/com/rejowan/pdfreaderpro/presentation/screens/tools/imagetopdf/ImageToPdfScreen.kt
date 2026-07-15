@@ -82,8 +82,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -100,6 +102,7 @@ fun ImageToPdfScreen(
     viewModel: ImageToPdfViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
@@ -109,6 +112,12 @@ fun ImageToPdfScreen(
         if (uris.isNotEmpty()) {
             viewModel.addImages(uris)
         }
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { viewModel.convertToPdfToUri(it) }
     }
 
     Scaffold(
@@ -153,7 +162,7 @@ fun ImageToPdfScreen(
                     val result = requireNotNull(state.result)
                     SuccessState(
                         result = result,
-                        onOpenInApp = { navController.navigateToReader(result.outputPath) },
+                        onOpenInApp = { exitHandler.onOpenInApp(result.outputPath) },
                         onShare = {
                             val file = File(result.outputPath)
                             val uri = FileProvider.getUriForFile(
@@ -174,8 +183,16 @@ fun ImageToPdfScreen(
                             )
                         },
                         onConvertMore = { viewModel.reset() },
-                        onDone = { navController.popBackStack() }
+                        onDone = { exitHandler.onDone() }
                     )
+                }
+                state.isLoading && state.images.isEmpty() -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = AccentTeal)
+                    }
                 }
                 state.images.isEmpty() -> {
                     EmptyState(
@@ -188,7 +205,13 @@ fun ImageToPdfScreen(
                         onAddMore = { imagePickerLauncher.launch(arrayOf("image/*")) },
                         onRemoveImage = { viewModel.removeImage(it) },
                         onOutputFileNameChange = { viewModel.setOutputFileName(it) },
-                        onConvert = { viewModel.convertToPdf() },
+                        onConvert = {
+                            if (viewModel.convertToPdf()) {
+                                createDocumentLauncher.launch(
+                                    FileOperations.ensurePdfExtension(state.outputFileName)
+                                )
+                            }
+                        },
                         onClearError = { viewModel.clearError() }
                     )
                 }
@@ -230,7 +253,7 @@ private fun EmptyState(onSelectImages: () -> Unit) {
         initialValue = 0f,
         targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
+            animation = tween(durationMillis = 1200),
             repeatMode = RepeatMode.Reverse
         ),
         label = "float offset"
@@ -589,7 +612,7 @@ private fun SuccessState(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        File(result.outputPath).name,
+                        result.displayName,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),

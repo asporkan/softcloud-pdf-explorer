@@ -95,9 +95,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -117,13 +120,23 @@ fun RotateScreen(
     viewModel: RotateViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { viewModel.setSourceFile(it) }
+        uri?.let {
+            FileOperations.takePersistableReadWritePermission(context, it)
+            viewModel.setSourceFile(it)
+        }
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { viewModel.rotateToUri(it) }
     }
 
     Scaffold(
@@ -168,17 +181,30 @@ fun RotateScreen(
                     focusManager.clearFocus()
                 }
         ) {
+            ToolLoadErrorDialog(
+                message = state.error.takeIf {
+                    !state.isLoading && state.result == null && state.sourceFile == null
+                },
+                onDismiss = { viewModel.clearError() }
+            )
             when {
-                state.sourceFile == null && state.result == null -> {
-                    EmptyState(
-                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
-                    )
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = AccentOrange)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(stringResource(R.string.loading_pages))
+                        }
+                    }
                 }
                 state.result != null -> {
                     val result = requireNotNull(state.result)
                     SuccessState(
                         result = result,
-                        onOpenInApp = { navController.navigateToReader(result.outputPath) },
+                        onOpenInApp = { exitHandler.onOpenInApp(result.outputPath) },
                         onOpenWith = {
                             val file = File(result.outputPath)
                             val uri = FileProvider.getUriForFile(
@@ -214,20 +240,13 @@ fun RotateScreen(
                             )
                         },
                         onRotateMore = { viewModel.reset() },
-                        onDone = { navController.popBackStack() }
+                        onDone = { exitHandler.onDone() }
                     )
                 }
-                state.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentOrange)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(stringResource(R.string.loading_pages))
-                        }
-                    }
+                state.sourceFile == null -> {
+                    EmptyState(
+                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
+                    )
                 }
                 else -> {
                     // Staggered entry animation states
@@ -337,7 +356,20 @@ fun RotateScreen(
                             progress = state.progress,
                             canRotate = state.sourceFile != null,
                             error = state.error,
-                            onRotate = { viewModel.rotate() },
+                            onRotate = {
+                                if (state.overwriteOriginal) {
+                                    viewModel.rotate()
+                                } else {
+                                    val suggested = state.outputFileName
+                                        .ifBlank {
+                                            state.sourceFile?.name?.substringBeforeLast('.')
+                                                ?: "rotated"
+                                        }
+                                    createDocumentLauncher.launch(
+                                        FileOperations.ensurePdfExtension(suggested)
+                                    )
+                                }
+                            },
                             onClearError = { viewModel.clearError() }
                         )
                     }
@@ -364,7 +396,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         initialValue = 0f,
         targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
+            animation = tween(durationMillis = 1200),
             repeatMode = RepeatMode.Reverse
         ),
         label = "float offset"
@@ -821,7 +853,15 @@ private fun RotateBottomSection(
                 Icon(Icons.AutoMirrored.Filled.RotateRight, contentDescription = stringResource(R.string.cd_decorative))
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            Text(stringResource(if (isProcessing) R.string.rotating else R.string.rotate_pages))
+            Text(
+                stringResource(
+                    when {
+                        isProcessing -> R.string.rotating
+                        overwriteOriginal -> R.string.rotate_pages
+                        else -> R.string.save_as
+                    }
+                )
+            )
         }
     }
 }

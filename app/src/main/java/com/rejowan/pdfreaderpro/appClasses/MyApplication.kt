@@ -9,8 +9,16 @@ import com.rejowan.pdfreaderpro.di.dataStoreModule
 import com.rejowan.pdfreaderpro.di.databaseModule
 import com.rejowan.pdfreaderpro.di.repositoryModule
 import com.rejowan.pdfreaderpro.di.viewModelModule
+import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
 import com.rejowan.pdfreaderpro.util.AndroidSafeXmlParserFactory
+import com.rejowan.pdfreaderpro.util.AppLocaleManager
 import com.rejowan.pdfreaderpro.util.GlobalErrorHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import org.koin.android.ext.android.getKoin
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -18,6 +26,8 @@ import org.koin.core.logger.Level
 import timber.log.Timber
 
 class MyApplication : Application() {
+
+    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     override fun onCreate() {
         super.onCreate()
@@ -30,6 +40,12 @@ class MyApplication : Application() {
 
         // Critical path: Initialize Koin (required for dependency injection)
         initKoin()
+
+        // Restore persisted app language (SYSTEM uses empty locale list = device default)
+        applicationScope.launch {
+            val language = getKoin().get<PreferencesRepository>().preferences.first().appLanguage
+            AppLocaleManager.apply(language)
+        }
 
         // Defer non-critical initialization to avoid blocking startup
         Handler(Looper.getMainLooper()).post {

@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -90,15 +91,29 @@ class ReorderViewModel(
             _state.update { it.copy(isLoading = true, error = null) }
 
             try {
+                val path = withContext(Dispatchers.IO) { copyUriToCache(uri) }
+                if (path == null) {
+                    _state.update {
+                        it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf))
+                    }
+                    return@launch
+                }
+
+                pdfToolsRepository.passwordProtectedBlockMessage(context, path)?.let { msg ->
+                    File(path).delete()
+                    _state.update {
+                        it.copy(isLoading = false, sourceFile = null, error = msg)
+                    }
+                    return@launch
+                }
+
                 val loaded = withContext(Dispatchers.IO) {
-                    val path = copyUriToCache(uri) ?: return@withContext null
                     val file = File(path)
                     val (pageCount, pages) = loadPagePlaceholders(path)
                     Triple(path, file, pageCount to pages)
                 }
-                if (loaded != null) {
-                    val (path, file, pageData) = loaded
-                    val (pageCount, pages) = pageData
+                val (loadedPath, file, pageData) = loaded
+                val (pageCount, pages) = pageData
 
                     synchronized(thumbnailCache) { thumbnailCache.clear() }
                     thumbnailRequests.clear()
@@ -108,7 +123,7 @@ class ReorderViewModel(
                         it.copy(
                             sourceFile = SourceFile(
                                 uri = uri,
-                                path = path,
+                                path = loadedPath,
                                 name = getFileNameFromUri(uri) ?: file.name,
                                 size = file.length(),
                                 pageCount = pageCount
@@ -126,11 +141,6 @@ class ReorderViewModel(
 
                     // Prefetch first screenful so the grid is not empty
                     pages.take(PREFETCH_THUMBNAILS).forEach { ensureThumbnail(it.originalIndex) }
-                } else {
-                    _state.update {
-                        it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf))
-                    }
-                }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
                 _state.update {

@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
@@ -13,7 +12,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -92,6 +92,7 @@ data class WatermarkState(
 
 data class WatermarkResult(
     val outputPath: String,
+    val displayName: String,
     val pageCount: Int,
     val fileSize: Long
 )
@@ -112,33 +113,42 @@ class WatermarkViewModel(
 
             try {
                 val path = copyUriToCache(uri)
-                if (path != null) {
-                    val file = File(path)
-                    val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
-                    val preview = generatePreview(path)
-
-                    _state.update {
-                        it.copy(
-                            sourceFile = SourceFile(
-                                uri = uri,
-                                path = path,
-                                name = getFileNameFromUri(uri) ?: file.name,
-                                size = file.length(),
-                                pageCount = pageCount,
-                                previewBitmap = preview
-                            ),
-                            isLoading = false,
-                            error = null,
-                            result = null
-                        )
-                    }
-
-                    // Generate default output name
-                    val baseName = file.nameWithoutExtension
-                    _state.update { it.copy(outputFileName = "${baseName}_watermarked") }
-                } else {
+                if (path == null) {
                     _state.update { it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf)) }
+                    return@launch
                 }
+
+                pdfToolsRepository.passwordProtectedBlockMessage(context, path)?.let { msg ->
+                    File(path).delete()
+                    _state.update {
+                        it.copy(isLoading = false, sourceFile = null, error = msg)
+                    }
+                    return@launch
+                }
+
+                val file = File(path)
+                val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
+                val preview = generatePreview(path)
+
+                _state.update {
+                    it.copy(
+                        sourceFile = SourceFile(
+                            uri = uri,
+                            path = path,
+                            name = getFileNameFromUri(uri) ?: file.name,
+                            size = file.length(),
+                            pageCount = pageCount,
+                            previewBitmap = preview
+                        ),
+                        isLoading = false,
+                        error = null,
+                        result = null
+                    )
+                }
+
+                // Generate default output name
+                val baseName = file.nameWithoutExtension
+                _state.update { it.copy(outputFileName = "${baseName}_watermarked") }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
                 _state.update {
@@ -247,128 +257,52 @@ class WatermarkViewModel(
 
     fun applyWatermark() {
         val currentState = _state.value
-        val sourceFile = currentState.sourceFile
+        if (!validateWatermark(currentState)) return
+        if (!currentState.overwriteOriginal) return
 
-        if (sourceFile == null) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
-            return
-        }
+        applyWatermarkOverwrite()
+    }
 
-        if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
-            return
-        }
-
-        if (currentState.watermarkType == WatermarkType.TEXT && currentState.watermarkText.isBlank()) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_watermark_text)) }
-            return
-        }
-
-        if (currentState.watermarkType == WatermarkType.IMAGE && currentState.imagePath == null) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_select_watermark_image)) }
-            return
-        }
+    fun applyWatermarkToUri(destinationUri: Uri) {
+        val currentState = _state.value
+        if (!validateWatermark(currentState, requireFileName = false)) return
+        val sourceFile = currentState.sourceFile ?: return
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            val outputPath: String
-            val tempPath: String?
-
-            if (currentState.overwriteOriginal) {
-                tempPath = "${context.cacheDir}/watermark_temp_${System.currentTimeMillis()}.pdf"
-                outputPath = sourceFile.path
-            } else {
-                tempPath = null
-                val outputDir = getOutputDirectory()
-                var path = "$outputDir/${currentState.outputFileName}.pdf"
-                var counter = 1
-                while (File(path).exists()) {
-                    path = "$outputDir/${currentState.outputFileName}_$counter.pdf"
-                    counter++
-                }
-                outputPath = path
-            }
-
-            val targetPath = tempPath ?: outputPath
-
-            // Calculate pages to apply watermark
-            val pages = calculatePages(currentState.pageSelection, currentState.customPages, sourceFile.pageCount)
-
-            val result = if (currentState.watermarkType == WatermarkType.TEXT) {
-                val config = PdfToolsRepository.TextWatermarkConfig(
-                    text = currentState.watermarkText,
-                    fontSize = currentState.fontSize,
-                    color = currentState.textColor.toArgb(),
-                    opacity = currentState.textOpacity,
-                    rotation = currentState.textRotation,
-                    position = mapPosition(currentState.position)
-                )
-                pdfToolsRepository.addTextWatermark(
-                    inputPath = sourceFile.path,
-                    outputPath = targetPath,
-                    config = config,
-                    pages = pages,
-                    onProgress = { progress ->
-                        _state.update { it.copy(progress = progress) }
-                    }
-                )
-            } else {
-                val config = PdfToolsRepository.ImageWatermarkConfig(
-                    imagePath = requireNotNull(currentState.imagePath),
-                    scale = currentState.imageScale,
-                    opacity = currentState.imageOpacity,
-                    position = mapPosition(currentState.position)
-                )
-                pdfToolsRepository.addImageWatermark(
-                    inputPath = sourceFile.path,
-                    outputPath = targetPath,
-                    config = config,
-                    pages = pages,
-                    onProgress = { progress ->
-                        _state.update { it.copy(progress = progress) }
-                    }
-                )
-            }
+            val tempFile = File(context.cacheDir, "watermark_out_${System.currentTimeMillis()}.pdf")
+            val result = runWatermark(sourceFile.path, tempFile.absolutePath, currentState)
 
             result.fold(
                 onSuccess = {
-                    if (tempPath != null) {
-                        try {
-                            val tempFile = File(tempPath)
-                            val originalFile = File(outputPath)
-                            originalFile.delete()
-                            tempFile.copyTo(originalFile, overwrite = true)
-                            tempFile.delete()
-                        } catch (e: Exception) {
-                            Timber.e(e, "Failed to replace original file")
-                            _state.update {
-                                it.copy(
-                                    isProcessing = false,
-                                    error = context.getString(R.string.tool_error_replace_original)
-                                )
-                            }
-                            return@launch
+                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
                         }
+                        return@launch
                     }
 
-                    val outputFile = File(outputPath)
-                    val newPageCount = pdfToolsRepository.getPageCount(outputPath).getOrDefault(0)
-                    _state.update {
-                        it.copy(
-                            isProcessing = false,
-                            progress = 1f,
-                            result = WatermarkResult(
-                                outputPath = outputPath,
-                                pageCount = newPageCount,
-                                fileSize = outputFile.length()
-                            )
-                        )
-                    }
+                    val localCopy = File(
+                        context.cacheDir,
+                        "watermark_result_${System.currentTimeMillis()}.pdf"
+                    )
+                    tempFile.copyTo(localCopy, overwrite = true)
+                    tempFile.delete()
+
+                    finishWatermarkSuccess(
+                        localPath = localCopy.absolutePath,
+                        displayName = getFileNameFromUri(destinationUri)
+                            ?: currentState.outputFileName.ifBlank { sourceFile.name }
+                    )
                 },
                 onFailure = { error ->
+                    tempFile.delete()
                     Timber.e(error, "Watermark failed")
-                    tempPath?.let { File(it).delete() }
                     _state.update {
                         it.copy(
                             isProcessing = false,
@@ -377,6 +311,151 @@ class WatermarkViewModel(
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun applyWatermarkOverwrite() {
+        val currentState = _state.value
+        val sourceFile = currentState.sourceFile ?: return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
+
+            val tempFile = File(context.cacheDir, "watermark_overwrite_${System.currentTimeMillis()}.pdf")
+            val result = runWatermark(sourceFile.path, tempFile.absolutePath, currentState)
+
+            result.fold(
+                onSuccess = {
+                    if (!FileOperations.writeFileToUri(context, tempFile, sourceFile.uri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
+                        }
+                        return@launch
+                    }
+
+                    try {
+                        tempFile.copyTo(File(sourceFile.path), overwrite = true)
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to refresh cache after overwrite")
+                    }
+                    tempFile.delete()
+
+                    finishWatermarkSuccess(
+                        localPath = sourceFile.path,
+                        displayName = sourceFile.name
+                    )
+                },
+                onFailure = { error ->
+                    tempFile.delete()
+                    Timber.e(error, "Watermark failed")
+                    _state.update {
+                        it.copy(
+                            isProcessing = false,
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_add_watermark_failed)
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private suspend fun runWatermark(
+        inputPath: String,
+        outputPath: String,
+        currentState: WatermarkState
+    ): Result<Unit> {
+        val sourceFile = currentState.sourceFile ?: return Result.failure(
+            IllegalStateException(context.getString(R.string.tool_error_select_pdf_first))
+        )
+        val pages = calculatePages(
+            currentState.pageSelection,
+            currentState.customPages,
+            sourceFile.pageCount
+        )
+
+        return if (currentState.watermarkType == WatermarkType.TEXT) {
+            val config = PdfToolsRepository.TextWatermarkConfig(
+                text = currentState.watermarkText,
+                fontSize = currentState.fontSize,
+                color = currentState.textColor.toArgb(),
+                opacity = currentState.textOpacity,
+                rotation = currentState.textRotation,
+                position = mapPosition(currentState.position)
+            )
+            pdfToolsRepository.addTextWatermark(
+                inputPath = inputPath,
+                outputPath = outputPath,
+                config = config,
+                pages = pages,
+                onProgress = { progress -> _state.update { it.copy(progress = progress) } }
+            )
+        } else {
+            val config = PdfToolsRepository.ImageWatermarkConfig(
+                imagePath = requireNotNull(currentState.imagePath),
+                scale = currentState.imageScale,
+                opacity = currentState.imageOpacity,
+                position = mapPosition(currentState.position)
+            )
+            pdfToolsRepository.addImageWatermark(
+                inputPath = inputPath,
+                outputPath = outputPath,
+                config = config,
+                pages = pages,
+                onProgress = { progress -> _state.update { it.copy(progress = progress) } }
+            )
+        }
+    }
+
+    private fun validateWatermark(
+        currentState: WatermarkState,
+        requireFileName: Boolean = true
+    ): Boolean {
+        if (currentState.sourceFile == null) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
+            return false
+        }
+        if (requireFileName &&
+            !currentState.overwriteOriginal &&
+            currentState.outputFileName.isBlank()
+        ) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
+            return false
+        }
+        if (currentState.watermarkType == WatermarkType.TEXT && currentState.watermarkText.isBlank()) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_watermark_text)) }
+            return false
+        }
+        if (currentState.watermarkType == WatermarkType.IMAGE && currentState.imagePath == null) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_watermark_image)) }
+            return false
+        }
+        return true
+    }
+
+    private suspend fun finishWatermarkSuccess(localPath: String, displayName: String) {
+        val outputFile = File(localPath)
+        val newPageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        val name = when {
+            displayName.endsWith(".pdf", ignoreCase = true) -> displayName
+            displayName.isNotBlank() -> "$displayName.pdf"
+            else -> outputFile.name
+        }
+        _state.update {
+            it.copy(
+                isProcessing = false,
+                progress = 1f,
+                result = WatermarkResult(
+                    outputPath = localPath,
+                    displayName = name,
+                    pageCount = newPageCount,
+                    fileSize = outputFile.length()
+                )
             )
         }
     }
@@ -441,15 +520,6 @@ class WatermarkViewModel(
         _state.update {
             WatermarkState(watermarkText = context.getString(R.string.watermark_default_text))
         }
-    }
-
-    private fun getOutputDirectory(): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
     }
 
     private fun copyUriToCache(uri: Uri): String? {

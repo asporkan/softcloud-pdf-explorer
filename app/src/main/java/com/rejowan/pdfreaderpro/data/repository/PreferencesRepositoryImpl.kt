@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.rejowan.pdfreaderpro.domain.model.AppLanguage
 import com.rejowan.pdfreaderpro.domain.model.AppPreferences
 import com.rejowan.pdfreaderpro.domain.model.QuickZoomPreset
 import com.rejowan.pdfreaderpro.domain.model.ReadingTheme
@@ -27,6 +28,7 @@ class PreferencesRepositoryImpl(
         val IS_FIRST_LAUNCH = booleanPreferencesKey("is_first_launch")
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val THEME_MODE = stringPreferencesKey("theme_mode")
+        val APP_LANGUAGE = stringPreferencesKey("app_language")
         val DEFAULT_VIEW_MODE = stringPreferencesKey("default_view_mode")
         val DEFAULT_SORT_OPTION = stringPreferencesKey("default_sort_option")
         val REMEMBER_PASSWORDS = booleanPreferencesKey("remember_passwords")
@@ -50,6 +52,9 @@ class PreferencesRepositoryImpl(
             isFirstLaunch = prefs[Keys.IS_FIRST_LAUNCH] ?: true,
             hasCompletedOnboarding = prefs[Keys.ONBOARDING_COMPLETED] ?: false,
             themeMode = prefs[Keys.THEME_MODE]?.let { ThemeMode.valueOf(it) } ?: ThemeMode.SYSTEM,
+            appLanguage = prefs[Keys.APP_LANGUAGE]?.let {
+                runCatching { AppLanguage.valueOf(it) }.getOrDefault(AppLanguage.SYSTEM)
+            } ?: AppLanguage.SYSTEM,
             defaultViewMode = prefs[Keys.DEFAULT_VIEW_MODE]?.let { ViewMode.valueOf(it) } ?: ViewMode.LIST,
             defaultSortOption = prefs[Keys.DEFAULT_SORT_OPTION]?.let { SortOption.valueOf(it) } ?: SortOption.NAME_ASC,
             rememberPasswords = prefs[Keys.REMEMBER_PASSWORDS] ?: true,
@@ -79,6 +84,10 @@ class PreferencesRepositoryImpl(
 
     override suspend fun setThemeMode(mode: ThemeMode) {
         dataStore.edit { it[Keys.THEME_MODE] = mode.name }
+    }
+
+    override suspend fun setAppLanguage(language: AppLanguage) {
+        dataStore.edit { it[Keys.APP_LANGUAGE] = language.name }
     }
 
     override suspend fun setDefaultViewMode(mode: ViewMode) {

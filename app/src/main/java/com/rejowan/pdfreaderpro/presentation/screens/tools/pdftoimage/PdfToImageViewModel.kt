@@ -4,14 +4,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,9 +21,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 enum class ImageFormat(
     val extension: String,
@@ -80,28 +77,37 @@ class PdfToImageViewModel(
 
             try {
                 val path = copyUriToCache(uri)
-                if (path != null) {
-                    val file = File(path)
-                    val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
-                    val preview = generatePreview(path)
-
-                    _state.update {
-                        it.copy(
-                            sourceFile = SourceFile(
-                                uri = uri,
-                                path = path,
-                                name = getFileNameFromUri(uri) ?: file.name,
-                                size = file.length(),
-                                pageCount = pageCount,
-                                previewBitmap = preview
-                            ),
-                            isLoading = false,
-                            error = null,
-                            result = null
-                        )
-                    }
-                } else {
+                if (path == null) {
                     _state.update { it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf)) }
+                    return@launch
+                }
+
+                pdfToolsRepository.passwordProtectedBlockMessage(context, path)?.let { msg ->
+                    File(path).delete()
+                    _state.update {
+                        it.copy(isLoading = false, sourceFile = null, error = msg)
+                    }
+                    return@launch
+                }
+
+                val file = File(path)
+                val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
+                val preview = generatePreview(path)
+
+                _state.update {
+                    it.copy(
+                        sourceFile = SourceFile(
+                            uri = uri,
+                            path = path,
+                            name = getFileNameFromUri(uri) ?: file.name,
+                            size = file.length(),
+                            pageCount = pageCount,
+                            previewBitmap = preview
+                        ),
+                        isLoading = false,
+                        error = null,
+                        result = null
+                    )
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
@@ -154,39 +160,44 @@ class PdfToImageViewModel(
         _state.update { it.copy(customPages = pages) }
     }
 
-    fun exportImages() {
+    /**
+     * Validates export inputs. Destination folder is chosen by the screen via OpenDocumentTree
+     * then [exportImagesToTree].
+     */
+    fun exportImages(): Boolean {
         val currentState = _state.value
-        val sourceFile = currentState.sourceFile
-
-        if (sourceFile == null) {
+        if (currentState.sourceFile == null) {
             _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
-            return
+            return false
         }
+        return true
+    }
+
+    fun exportImagesToTree(treeUri: Uri) {
+        val currentState = _state.value
+        val sourceFile = currentState.sourceFile ?: return
+        if (!exportImages()) return
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            // Create output directory
-            val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
-            val timestamp = dateFormat.format(Date())
-            val baseName = File(sourceFile.path).nameWithoutExtension
-            val outputDirName = "${baseName}_images_$timestamp"
-            val outputDir = File(getOutputDirectory(), outputDirName)
+            val tempDir = File(context.cacheDir, "pdftoimage_out_${System.currentTimeMillis()}").apply { mkdirs() }
 
-            if (!outputDir.exists()) {
-                outputDir.mkdirs()
-            }
-
-            // Calculate pages to export
             val pages = calculatePages(
                 currentState.pageSelection,
                 currentState.customPages,
                 sourceFile.pageCount
             )
 
+            val mimeType = if (currentState.imageFormat.extension.equals("jpg", ignoreCase = true)) {
+                "image/jpeg"
+            } else {
+                "image/png"
+            }
+
             val result = pdfToolsRepository.pdfToImages(
                 inputPath = sourceFile.path,
-                outputDir = outputDir.absolutePath,
+                outputDir = tempDir.absolutePath,
                 format = currentState.imageFormat.extension,
                 pages = pages,
                 onProgress = { progress ->
@@ -195,21 +206,40 @@ class PdfToImageViewModel(
             )
 
             result.fold(
-                onSuccess = { imagePaths ->
+                onSuccess = { tempFiles ->
+                    val files = tempFiles.map { File(it) }
+                    val written = withContext(Dispatchers.IO) {
+                        FileOperations.writeFilesToTree(context, treeUri, files, mimeType)
+                    }
+                    if (!written) {
+                        tempDir.deleteRecursively()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_save_to_folder)
+                            )
+                        }
+                        return@launch
+                    }
+
+                    val localFiles = copyToResultCache(tempFiles, "pdftoimage")
+                    tempDir.deleteRecursively()
+
                     _state.update {
                         it.copy(
                             isProcessing = false,
                             progress = 1f,
                             result = PdfToImageResult(
-                                outputDir = outputDir.absolutePath,
-                                imagePaths = imagePaths,
-                                imageCount = imagePaths.size,
+                                outputDir = File(localFiles.first()).parent ?: "",
+                                imagePaths = localFiles,
+                                imageCount = localFiles.size,
                                 format = currentState.imageFormat.extension.uppercase()
                             )
                         )
                     }
                 },
                 onFailure = { error ->
+                    tempDir.deleteRecursively()
                     Timber.e(error, "PDF to images export failed")
                     _state.update {
                         it.copy(
@@ -220,6 +250,16 @@ class PdfToImageViewModel(
                     }
                 }
             )
+        }
+    }
+
+    private fun copyToResultCache(tempFiles: List<String>, prefix: String): List<String> {
+        val resultDir = File(context.cacheDir, "${prefix}_result_${System.currentTimeMillis()}").apply { mkdirs() }
+        return tempFiles.map { path ->
+            val src = File(path)
+            val dest = File(resultDir, src.name)
+            src.copyTo(dest, overwrite = true)
+            dest.absolutePath
         }
     }
 
@@ -268,15 +308,6 @@ class PdfToImageViewModel(
         _state.update { PdfToImageState() }
     }
 
-    private fun getOutputDirectory(): String {
-        val picturesDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-        val pdfToolsDir = File(picturesDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
-    }
-
     private fun copyUriToCache(uri: Uri): String? {
         return try {
             if (uri.scheme == "file") {
@@ -284,15 +315,17 @@ class PdfToImageViewModel(
             }
 
             val inputStream = context.contentResolver.openInputStream(uri) ?: return null
-            val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
-            val cacheFile = File(context.cacheDir, "pdftoimage_temp/$fileName")
-            cacheFile.parentFile?.mkdirs()
+            inputStream.use { stream ->
+                val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
+                val cacheFile = File(context.cacheDir, "pdftoimage_temp/$fileName")
+                cacheFile.parentFile?.mkdirs()
 
-            cacheFile.outputStream().use { output ->
-                inputStream.copyTo(output)
+                cacheFile.outputStream().use { output ->
+                    stream.copyTo(output)
+                }
+
+                cacheFile.absolutePath
             }
-
-            cacheFile.absolutePath
         } catch (e: Exception) {
             Timber.e(e, "Failed to copy URI to cache")
             null

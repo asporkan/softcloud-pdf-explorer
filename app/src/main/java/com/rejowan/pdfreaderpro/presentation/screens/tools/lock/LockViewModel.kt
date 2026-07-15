@@ -4,13 +4,13 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,6 +49,7 @@ data class LockState(
 
 data class LockResult(
     val outputPath: String,
+    val displayName: String,
     val pageCount: Int,
     val fileSize: Long
 )
@@ -67,33 +68,42 @@ class LockViewModel(
 
             try {
                 val path = copyUriToCache(uri)
-                if (path != null) {
-                    val file = File(path)
-                    val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
-                    val thumbnail = generateThumbnail(path)
-
-                    _state.update {
-                        it.copy(
-                            sourceFile = SourceFile(
-                                uri = uri,
-                                path = path,
-                                name = getFileNameFromUri(uri) ?: file.name,
-                                size = file.length(),
-                                pageCount = pageCount,
-                                thumbnail = thumbnail
-                            ),
-                            isLoading = false,
-                            error = null,
-                            result = null
-                        )
-                    }
-
-                    // Generate default output name
-                    val baseName = file.nameWithoutExtension
-                    _state.update { it.copy(outputFileName = "${baseName}_locked") }
-                } else {
+                if (path == null) {
                     _state.update { it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf)) }
+                    return@launch
                 }
+
+                pdfToolsRepository.passwordProtectedBlockMessage(context, path)?.let { msg ->
+                    File(path).delete()
+                    _state.update {
+                        it.copy(isLoading = false, sourceFile = null, error = msg)
+                    }
+                    return@launch
+                }
+
+                val file = File(path)
+                val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
+                val thumbnail = generateThumbnail(path)
+
+                _state.update {
+                    it.copy(
+                        sourceFile = SourceFile(
+                            uri = uri,
+                            path = path,
+                            name = getFileNameFromUri(uri) ?: file.name,
+                            size = file.length(),
+                            pageCount = pageCount,
+                            thumbnail = thumbnail
+                        ),
+                        isLoading = false,
+                        error = null,
+                        result = null
+                    )
+                }
+
+                // Generate default output name
+                val baseName = file.nameWithoutExtension
+                _state.update { it.copy(outputFileName = "${baseName}_locked") }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
                 _state.update {
@@ -172,112 +182,52 @@ class LockViewModel(
 
     fun lock() {
         val currentState = _state.value
-        val sourceFile = currentState.sourceFile
+        if (!validateLock(currentState)) return
+        if (!currentState.overwriteOriginal) return
 
-        if (sourceFile == null) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
-            return
-        }
+        lockOverwrite()
+    }
 
-        if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
-            return
-        }
-
-        // Validate owner password
-        if (currentState.ownerPassword.isBlank()) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_owner_password_required)) }
-            return
-        }
-
-        if (currentState.ownerPassword.length < 4) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_owner_password_min)) }
-            return
-        }
-
-        // Validate user password if provided
-        if (currentState.userPassword.isNotEmpty() && currentState.userPassword.length < 4) {
-            _state.update { it.copy(error = context.getString(R.string.tool_error_user_password_min)) }
-            return
-        }
+    fun lockToUri(destinationUri: Uri) {
+        val currentState = _state.value
+        if (!validateLock(currentState, requireFileName = false)) return
+        val sourceFile = currentState.sourceFile ?: return
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            val outputPath: String
-            val tempPath: String?
-
-            if (currentState.overwriteOriginal) {
-                tempPath = "${context.cacheDir}/lock_temp_${System.currentTimeMillis()}.pdf"
-                outputPath = sourceFile.path
-            } else {
-                tempPath = null
-                val outputDir = getOutputDirectory()
-                var path = "$outputDir/${currentState.outputFileName}.pdf"
-                var counter = 1
-                while (File(path).exists()) {
-                    path = "$outputDir/${currentState.outputFileName}_$counter.pdf"
-                    counter++
-                }
-                outputPath = path
-            }
-
-            val targetPath = tempPath ?: outputPath
-
-            val result = pdfToolsRepository.lockPdf(
-                inputPath = sourceFile.path,
-                outputPath = targetPath,
-                userPassword = currentState.userPassword,
-                ownerPassword = currentState.ownerPassword,
-                permissions = PdfToolsRepository.PdfPermissions(
-                    allowPrinting = currentState.allowPrinting,
-                    allowCopying = currentState.allowCopying,
-                    allowModifying = currentState.allowModifying,
-                    allowAnnotations = currentState.allowAnnotations
-                ),
-                onProgress = { progress ->
-                    _state.update { it.copy(progress = progress) }
-                }
-            )
+            val tempFile = File(context.cacheDir, "lock_out_${System.currentTimeMillis()}.pdf")
+            val result = runLock(sourceFile.path, tempFile.absolutePath, currentState)
 
             result.fold(
                 onSuccess = {
-                    if (tempPath != null) {
-                        try {
-                            val tempFile = File(tempPath)
-                            val originalFile = File(outputPath)
-                            originalFile.delete()
-                            tempFile.copyTo(originalFile, overwrite = true)
-                            tempFile.delete()
-                        } catch (e: Exception) {
-                            Timber.e(e, "Failed to replace original file")
-                            _state.update {
-                                it.copy(
-                                    isProcessing = false,
-                                    error = context.getString(R.string.tool_error_replace_original)
-                                )
-                            }
-                            return@launch
+                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
                         }
+                        return@launch
                     }
 
-                    val outputFile = File(outputPath)
-                    val pageCount = pdfToolsRepository.getPageCount(outputPath).getOrDefault(0)
-                    _state.update {
-                        it.copy(
-                            isProcessing = false,
-                            progress = 1f,
-                            result = LockResult(
-                                outputPath = outputPath,
-                                pageCount = pageCount,
-                                fileSize = outputFile.length()
-                            )
-                        )
-                    }
+                    val localCopy = File(
+                        context.cacheDir,
+                        "lock_result_${System.currentTimeMillis()}.pdf"
+                    )
+                    tempFile.copyTo(localCopy, overwrite = true)
+                    tempFile.delete()
+
+                    finishLockSuccess(
+                        localPath = localCopy.absolutePath,
+                        displayName = getFileNameFromUri(destinationUri)
+                            ?: currentState.outputFileName.ifBlank { sourceFile.name }
+                    )
                 },
                 onFailure = { error ->
+                    tempFile.delete()
                     Timber.e(error, "Lock failed")
-                    tempPath?.let { File(it).delete() }
                     _state.update {
                         it.copy(
                             isProcessing = false,
@@ -285,6 +235,127 @@ class LockViewModel(
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun lockOverwrite() {
+        val currentState = _state.value
+        val sourceFile = currentState.sourceFile ?: return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
+
+            val tempFile = File(context.cacheDir, "lock_overwrite_${System.currentTimeMillis()}.pdf")
+            val result = runLock(sourceFile.path, tempFile.absolutePath, currentState)
+
+            result.fold(
+                onSuccess = {
+                    if (!FileOperations.writeFileToUri(context, tempFile, sourceFile.uri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
+                        }
+                        return@launch
+                    }
+
+                    try {
+                        tempFile.copyTo(File(sourceFile.path), overwrite = true)
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to refresh cache after overwrite")
+                    }
+                    tempFile.delete()
+
+                    finishLockSuccess(
+                        localPath = sourceFile.path,
+                        displayName = sourceFile.name
+                    )
+                },
+                onFailure = { error ->
+                    tempFile.delete()
+                    Timber.e(error, "Lock failed")
+                    _state.update {
+                        it.copy(
+                            isProcessing = false,
+                            error = error.message ?: context.getString(R.string.tool_error_lock_failed)
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private suspend fun runLock(
+        inputPath: String,
+        outputPath: String,
+        currentState: LockState
+    ): Result<Unit> {
+        return pdfToolsRepository.lockPdf(
+            inputPath = inputPath,
+            outputPath = outputPath,
+            userPassword = currentState.userPassword,
+            ownerPassword = currentState.ownerPassword,
+            permissions = PdfToolsRepository.PdfPermissions(
+                allowPrinting = currentState.allowPrinting,
+                allowCopying = currentState.allowCopying,
+                allowModifying = currentState.allowModifying,
+                allowAnnotations = currentState.allowAnnotations
+            ),
+            onProgress = { progress -> _state.update { it.copy(progress = progress) } }
+        )
+    }
+
+    private fun validateLock(
+        currentState: LockState,
+        requireFileName: Boolean = true
+    ): Boolean {
+        if (currentState.sourceFile == null) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
+            return false
+        }
+        if (requireFileName &&
+            !currentState.overwriteOriginal &&
+            currentState.outputFileName.isBlank()
+        ) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
+            return false
+        }
+        if (currentState.ownerPassword.isBlank()) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_owner_password_required)) }
+            return false
+        }
+        if (currentState.ownerPassword.length < 4) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_owner_password_min)) }
+            return false
+        }
+        if (currentState.userPassword.isNotEmpty() && currentState.userPassword.length < 4) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_user_password_min)) }
+            return false
+        }
+        return true
+    }
+
+    private suspend fun finishLockSuccess(localPath: String, displayName: String) {
+        val outputFile = File(localPath)
+        val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        val name = when {
+            displayName.endsWith(".pdf", ignoreCase = true) -> displayName
+            displayName.isNotBlank() -> "$displayName.pdf"
+            else -> outputFile.name
+        }
+        _state.update {
+            it.copy(
+                isProcessing = false,
+                progress = 1f,
+                result = LockResult(
+                    outputPath = localPath,
+                    displayName = name,
+                    pageCount = pageCount,
+                    fileSize = outputFile.length()
+                )
             )
         }
     }
@@ -299,15 +370,6 @@ class LockViewModel(
 
     fun reset() {
         _state.update { LockState() }
-    }
-
-    private fun getOutputDirectory(): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
     }
 
     private fun copyUriToCache(uri: Uri): String? {

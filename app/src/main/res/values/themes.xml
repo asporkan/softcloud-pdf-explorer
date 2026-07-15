@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Base app theme - minimal for Compose app -->
-    <style name="Theme.PdfExplorer" parent="android:Theme.Material.Light.NoActionBar">
+    <!-- AppCompat parent required for AppCompatActivity + setApplicationLocales -->
+    <style name="Theme.PdfExplorer" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>

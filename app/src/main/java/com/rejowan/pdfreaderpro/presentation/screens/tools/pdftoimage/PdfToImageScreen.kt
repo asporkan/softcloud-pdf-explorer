@@ -82,8 +82,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
+import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
+import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -101,13 +104,25 @@ fun PdfToImageScreen(
     viewModel: PdfToImageViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { viewModel.setSourceFile(it) }
+        uri?.let {
+            viewModel.setSourceFile(it)
+        }
+    }
+
+    val openDocumentTreeLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        uri?.let {
+            FileOperations.takePersistableTreePermission(context, it)
+            viewModel.exportImagesToTree(it)
+        }
     }
 
     Scaffold(
@@ -149,7 +164,25 @@ fun PdfToImageScreen(
                     focusManager.clearFocus()
                 }
         ) {
+            ToolLoadErrorDialog(
+                message = state.error.takeIf {
+                    !state.isLoading && state.result == null && state.sourceFile == null
+                },
+                onDismiss = { viewModel.clearError() }
+            )
             when {
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = AccentPurple)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(stringResource(R.string.loading_pdf))
+                        }
+                    }
+                }
                 state.sourceFile == null && state.result == null -> {
                     EmptyState(
                         onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
@@ -218,20 +251,8 @@ fun PdfToImageScreen(
                             )
                         },
                         onExportMore = { viewModel.reset() },
-                        onDone = { navController.popBackStack() }
+                        onDone = { exitHandler.onDone() }
                     )
-                }
-                state.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentPurple)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(stringResource(R.string.loading_pdf))
-                        }
-                    }
                 }
                 else -> {
                     ExportContent(
@@ -239,7 +260,11 @@ fun PdfToImageScreen(
                         onFormatChange = { viewModel.setImageFormat(it) },
                         onPageSelectionChange = { viewModel.setPageSelection(it) },
                         onCustomPagesChange = { viewModel.setCustomPages(it) },
-                        onExport = { viewModel.exportImages() },
+                        onExport = {
+                            if (viewModel.exportImages()) {
+                                openDocumentTreeLauncher.launch(null)
+                            }
+                        },
                         onClearError = { viewModel.clearError() }
                     )
                 }
@@ -265,7 +290,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         initialValue = 0f,
         targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
+            animation = tween(durationMillis = 1200),
             repeatMode = RepeatMode.Reverse
         ),
         label = "float offset"

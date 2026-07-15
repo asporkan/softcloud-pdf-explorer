@@ -9,6 +9,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6] - 2026-07-15
+
+### Added
+- In-app language selector (System default, English, Turkish)
+- SAF overwrite writes back to the original document URI
+- Save As uses the system Create Document picker (or folder tree for Split / PDF→Images)
+
+### Fixed
+- Large PDFs showed "0 pages" in Reorder / Remove Pages (PdfRenderer page count)
+- Loading state briefly flashed the empty "Select PDF" screen
+- Reorder / Remove truncated large PDFs to 100 thumbnails and broke save order
+- iText XMP parse crash on Android (`Unknown` / `0.0`) when saving PDFs with metadata
+- Success Done / Open could double-navigate and leave a white screen
+- Save As / Overwrite inconsistent across Merge, Compress, Rotate, and other tools
+- Split / PDF→Images failed writing into the chosen folder (incorrect tree URI parent for SAF create)
+- Compress showed unreliable size estimates; estimates removed in favor of level-only UI
+- Pull-to-refresh inside folder detail did not re-scan MediaStore
+- Turkish Home tabs overlapped the List/Grid toggle
+- Folder detail forgot List/Grid mode after leaving the folder
+- Password-protected PDFs silently failed back to Select PDF in editing tools
+- Incorrect password strings not localized to “Yanlış parola.”
+
+### Changed
+- Lighter UI animation timings for smoother low-end device performance
+- All PDF tools share CreateDocument / OpenDocumentTree Save As instead of Documents/PdfExplorer
+- Compress UI shows level choices only (no pre-compress size estimates)
+---
+
 ## [0.5] - 2026-07-14
 
 ### Changed

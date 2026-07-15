@@ -84,8 +84,10 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -103,13 +105,23 @@ fun UnlockScreen(
     viewModel: UnlockViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { viewModel.setSourceFile(it) }
+        uri?.let {
+            FileOperations.takePersistableReadWritePermission(context, it)
+            viewModel.setSourceFile(it)
+        }
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { viewModel.unlockToUri(it) }
     }
 
     Scaffold(
@@ -150,16 +162,23 @@ fun UnlockScreen(
                 }
         ) {
             when {
-                state.sourceFile == null && state.result == null -> {
-                    EmptyState(
-                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
-                    )
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = AccentTeal)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(stringResource(R.string.checking_pdf))
+                        }
+                    }
                 }
                 state.result != null -> {
                     val result = requireNotNull(state.result)
                     SuccessState(
                         result = result,
-                        onOpenInApp = { navController.navigateToReader(result.outputPath) },
+                        onOpenInApp = { exitHandler.onOpenInApp(result.outputPath) },
                         onShare = {
                             val file = File(result.outputPath)
                             val uri = FileProvider.getUriForFile(
@@ -180,20 +199,13 @@ fun UnlockScreen(
                             )
                         },
                         onUnlockMore = { viewModel.reset() },
-                        onDone = { navController.popBackStack() }
+                        onDone = { exitHandler.onDone() }
                     )
                 }
-                state.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentTeal)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(stringResource(R.string.checking_pdf))
-                        }
-                    }
+                state.sourceFile == null -> {
+                    EmptyState(
+                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
+                    )
                 }
                 else -> {
                     UnlockContent(
@@ -201,7 +213,16 @@ fun UnlockScreen(
                         onPasswordChange = { viewModel.setPassword(it) },
                         onOutputFileNameChange = { viewModel.setOutputFileName(it) },
                         onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
-                        onUnlock = { viewModel.unlock() },
+                        onUnlock = {
+                            if (state.overwriteOriginal) {
+                                viewModel.unlock()
+                            } else {
+                                val suggested = state.outputFileName.ifBlank {
+                                    state.sourceFile?.name?.substringBeforeLast('.') ?: "unlocked"
+                                }
+                                createDocumentLauncher.launch(FileOperations.ensurePdfExtension(suggested))
+                            }
+                        },
                         onClearError = { viewModel.clearError() },
                         onChangeFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
                     )
@@ -228,7 +249,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         initialValue = 0f,
         targetValue = 6f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 2000),
+            animation = tween(durationMillis = 1200),
             repeatMode = RepeatMode.Reverse
         ),
         label = "float offset"
@@ -658,7 +679,7 @@ private fun SuccessState(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        File(result.outputPath).name,
+                        result.displayName,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),

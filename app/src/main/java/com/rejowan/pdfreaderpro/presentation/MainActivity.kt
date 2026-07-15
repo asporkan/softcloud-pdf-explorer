@@ -6,9 +6,9 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.widget.Toast
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,6 +25,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
 import com.rejowan.pdfreaderpro.presentation.components.PermissionBottomSheet
 import com.rejowan.pdfreaderpro.presentation.navigation.Home
@@ -40,7 +41,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.inject
 
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val preferencesRepository: PreferencesRepository by inject()
 
@@ -177,13 +178,21 @@ class MainActivity : ComponentActivity() {
                 val path = FileOperations.resolveUriToPath(this@MainActivity, uri)
                 if (path == null) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@MainActivity, "Failed to open PDF", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            this@MainActivity,
+                            getString(R.string.failed_to_open_pdf),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
                 path
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.error_with_message, e.message ?: ""),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
                 null
             }
