@@ -173,7 +173,12 @@ fun LockScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_pdf_chooser)
+                                )
+                            )
                         },
                         onLockMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }

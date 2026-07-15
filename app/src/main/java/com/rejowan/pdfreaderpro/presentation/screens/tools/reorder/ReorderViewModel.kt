@@ -4,12 +4,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,6 +49,7 @@ data class ReorderState(
 
 data class ReorderResult(
     val outputPath: String,
+    val displayName: String,
     val pageCount: Int,
     val fileSize: Long
 )
@@ -63,17 +64,44 @@ class ReorderViewModel(
 
     private var originalOrder: List<Int> = emptyList()
 
+    /** In-flight thumbnail requests (0-based original indices). */
+    private val thumbnailRequests = mutableSetOf<Int>()
+
+    /** LRU of rendered thumbnails to bound memory for large PDFs. */
+    private val thumbnailCache = object : LinkedHashMap<Int, Bitmap>(32, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Bitmap>?): Boolean {
+            if (size <= MAX_CACHED_THUMBNAILS) return false
+            val index = eldest?.key ?: return false
+            val bitmap = eldest.value
+            _state.update { current ->
+                current.copy(
+                    pages = current.pages.map { page ->
+                        if (page.originalIndex == index) page.copy(thumbnail = null) else page
+                    }
+                )
+            }
+            if (!bitmap.isRecycled) bitmap.recycle()
+            return true
+        }
+    }
+
     fun setSourceFile(uri: Uri) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
 
             try {
-                val path = copyUriToCache(uri)
-                if (path != null) {
+                val loaded = withContext(Dispatchers.IO) {
+                    val path = copyUriToCache(uri) ?: return@withContext null
                     val file = File(path)
-                    val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
-                    val pages = generatePageThumbnails(path, pageCount)
+                    val (pageCount, pages) = loadPagePlaceholders(path)
+                    Triple(path, file, pageCount to pages)
+                }
+                if (loaded != null) {
+                    val (path, file, pageData) = loaded
+                    val (pageCount, pages) = pageData
 
+                    synchronized(thumbnailCache) { thumbnailCache.clear() }
+                    thumbnailRequests.clear()
                     originalOrder = pages.map { it.originalIndex }
 
                     _state.update {
@@ -93,64 +121,103 @@ class ReorderViewModel(
                         )
                     }
 
-                    // Generate default output name
                     val baseName = file.nameWithoutExtension
                     _state.update { it.copy(outputFileName = "${baseName}_reordered") }
+
+                    // Prefetch first screenful so the grid is not empty
+                    pages.take(PREFETCH_THUMBNAILS).forEach { ensureThumbnail(it.originalIndex) }
                 } else {
-                    _state.update { it.copy(isLoading = false, error = "Failed to load PDF file") }
+                    _state.update {
+                        it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf))
+                    }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
-                _state.update { it.copy(isLoading = false, error = "Failed to load PDF: ${e.message}") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = context.getString(
+                            R.string.tool_error_load_pdf_detail,
+                            e.message ?: ""
+                        )
+                    )
+                }
             }
         }
     }
 
-    private suspend fun generatePageThumbnails(
-        pdfPath: String,
-        pageCount: Int
-    ): List<PageItem> = withContext(Dispatchers.IO) {
-        val pages = mutableListOf<PageItem>()
-        try {
-            val file = File(pdfPath)
-            val fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-            val renderer = PdfRenderer(fd)
-
-            for (i in 0 until minOf(pageCount, 100)) { // Limit to 100 pages
-                val page = renderer.openPage(i)
-
-                // Create higher quality thumbnail
-                val thumbnailSize = 300
-                val aspectRatio = page.width.toFloat() / page.height.toFloat()
-                val width: Int
-                val height: Int
-                if (aspectRatio > 1) {
-                    width = thumbnailSize
-                    height = (thumbnailSize / aspectRatio).toInt()
-                } else {
-                    height = thumbnailSize
-                    width = (thumbnailSize * aspectRatio).toInt()
+    /**
+     * Builds placeholders for every page. Thumbnails are loaded on demand —
+     * the previous hard cap of 100 was intentional memory protection, not lazy
+     * loading, and truncated both the UI and the save order for large PDFs.
+     */
+    private fun loadPagePlaceholders(pdfPath: String): Pair<Int, List<PageItem>> {
+        ParcelFileDescriptor.open(File(pdfPath), ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+            PdfRenderer(fd).use { renderer ->
+                val pageCount = renderer.pageCount
+                val pages = List(pageCount) { i ->
+                    PageItem(originalIndex = i, pageNumber = i + 1, thumbnail = null)
                 }
-
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                page.close()
-
-                pages.add(
-                    PageItem(
-                        originalIndex = i,
-                        pageNumber = i + 1,
-                        thumbnail = bitmap
-                    )
-                )
+                return pageCount to pages
             }
-
-            renderer.close()
-            fd.close()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to generate thumbnails")
         }
-        pages
+    }
+
+    fun ensureThumbnail(originalIndex: Int) {
+        val existing = _state.value.pages.find { it.originalIndex == originalIndex }
+        if (existing == null || existing.thumbnail != null) return
+        if (!thumbnailRequests.add(originalIndex)) return
+
+        val path = _state.value.sourceFile?.path ?: run {
+            thumbnailRequests.remove(originalIndex)
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val bitmap = renderThumbnail(path, originalIndex) ?: return@launch
+                synchronized(thumbnailCache) {
+                    thumbnailCache[originalIndex] = bitmap
+                }
+                _state.update { current ->
+                    current.copy(
+                        pages = current.pages.map { page ->
+                            if (page.originalIndex == originalIndex) {
+                                page.copy(thumbnail = bitmap)
+                            } else page
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to render thumbnail for page $originalIndex")
+            } finally {
+                thumbnailRequests.remove(originalIndex)
+            }
+        }
+    }
+
+    private fun renderThumbnail(pdfPath: String, pageIndex: Int): Bitmap? {
+        ParcelFileDescriptor.open(File(pdfPath), ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+            PdfRenderer(fd).use { renderer ->
+                if (pageIndex !in 0 until renderer.pageCount) return null
+                renderer.openPage(pageIndex).use { page ->
+                    val thumbnailSize = 300
+                    val aspectRatio = page.width.toFloat() / page.height.toFloat()
+                    val width: Int
+                    val height: Int
+                    if (aspectRatio > 1) {
+                        width = thumbnailSize
+                        height = (thumbnailSize / aspectRatio).toInt().coerceAtLeast(1)
+                    } else {
+                        height = thumbnailSize
+                        width = (thumbnailSize * aspectRatio).toInt().coerceAtLeast(1)
+                    }
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    return bitmap
+                }
+            }
+        }
     }
 
     fun movePage(fromIndex: Int, toIndex: Int) {
@@ -167,6 +234,11 @@ class ReorderViewModel(
         }
     }
 
+    companion object {
+        private const val MAX_CACHED_THUMBNAILS = 48
+        private const val PREFETCH_THUMBNAILS = 24
+    }
+
     fun setOutputFileName(name: String) {
         _state.update { it.copy(outputFileName = name) }
     }
@@ -175,100 +247,181 @@ class ReorderViewModel(
         _state.update { it.copy(overwriteOriginal = overwrite) }
     }
 
+    /**
+     * Entry from Save: overwrite writes back to the selected document URI;
+     * Save As is handled by the screen via CreateDocument then [reorderToUri].
+     */
     fun reorder() {
         val currentState = _state.value
-        val sourceFile = currentState.sourceFile
+        if (!validateReorder(currentState)) return
 
-        if (sourceFile == null) {
-            _state.update { it.copy(error = "Please select a PDF file first") }
+        if (!currentState.overwriteOriginal) {
+            // Screen must launch CreateDocument; nothing to do here.
             return
         }
 
-        if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = "Please enter an output file name") }
-            return
-        }
+        reorderOverwrite()
+    }
 
-        if (!currentState.hasChanges) {
-            _state.update { it.copy(error = "No changes made to page order") }
-            return
-        }
+    fun reorderToUri(destinationUri: Uri) {
+        val currentState = _state.value
+        if (!validateReorder(currentState, requireFileName = false)) return
 
-        // Get the new page order (1-based for the repository)
+        val sourceFile = currentState.sourceFile ?: return
         val newOrder = currentState.pages.map { it.originalIndex + 1 }
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
 
-            val outputPath: String
-            val tempPath: String?
-
-            if (currentState.overwriteOriginal) {
-                tempPath = "${context.cacheDir}/reorder_temp_${System.currentTimeMillis()}.pdf"
-                outputPath = sourceFile.path
-            } else {
-                tempPath = null
-                val outputDir = getOutputDirectory()
-                var path = "$outputDir/${currentState.outputFileName}.pdf"
-                var counter = 1
-                while (File(path).exists()) {
-                    path = "$outputDir/${currentState.outputFileName}_$counter.pdf"
-                    counter++
-                }
-                outputPath = path
-            }
-
-            val targetPath = tempPath ?: outputPath
-
+            val tempFile = File(context.cacheDir, "reorder_out_${System.currentTimeMillis()}.pdf")
             val result = pdfToolsRepository.reorderPages(
                 inputPath = sourceFile.path,
-                outputPath = targetPath,
+                outputPath = tempFile.absolutePath,
                 newOrder = newOrder,
-                onProgress = { progress ->
-                    _state.update { it.copy(progress = progress) }
-                }
+                onProgress = { progress -> _state.update { it.copy(progress = progress) } }
             )
 
             result.fold(
                 onSuccess = {
-                    if (tempPath != null) {
-                        try {
-                            val tempFile = File(tempPath)
-                            val originalFile = File(outputPath)
-                            originalFile.delete()
-                            tempFile.copyTo(originalFile, overwrite = true)
-                            tempFile.delete()
-                        } catch (e: Exception) {
-                            Timber.e(e, "Failed to replace original file")
-                            _state.update { it.copy(isProcessing = false, error = "Failed to replace original file") }
-                            return@launch
+                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
                         }
+                        return@launch
                     }
 
-                    val outputFile = File(outputPath)
-                    val pageCount = pdfToolsRepository.getPageCount(outputPath).getOrDefault(0)
-                    _state.update {
-                        it.copy(
-                            isProcessing = false,
-                            progress = 1f,
-                            result = ReorderResult(
-                                outputPath = outputPath,
-                                pageCount = pageCount,
-                                fileSize = outputFile.length()
-                            )
-                        )
-                    }
+                    // Local copy for in-app open/share (destination URI is the real output)
+                    val localCopy = File(
+                        context.cacheDir,
+                        "reorder_result_${System.currentTimeMillis()}.pdf"
+                    )
+                    tempFile.copyTo(localCopy, overwrite = true)
+                    tempFile.delete()
+
+                    finishReorderSuccess(
+                        localPath = localCopy.absolutePath,
+                        displayName = getFileNameFromUri(destinationUri)
+                            ?: currentState.outputFileName.ifBlank { sourceFile.name }
+                    )
                 },
                 onFailure = { error ->
+                    tempFile.delete()
                     Timber.e(error, "Reorder failed")
-                    tempPath?.let { File(it).delete() }
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = error.message ?: "Reorder failed"
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_reorder_failed)
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun reorderOverwrite() {
+        val currentState = _state.value
+        val sourceFile = currentState.sourceFile ?: return
+        val newOrder = currentState.pages.map { it.originalIndex + 1 }
+
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
+
+            // Must write to a temp file first: iText cannot read+write the same path,
+            // and content:// originals are not filesystem paths.
+            val tempFile = File(context.cacheDir, "reorder_overwrite_${System.currentTimeMillis()}.pdf")
+            val result = pdfToolsRepository.reorderPages(
+                inputPath = sourceFile.path,
+                outputPath = tempFile.absolutePath,
+                newOrder = newOrder,
+                onProgress = { progress -> _state.update { it.copy(progress = progress) } }
+            )
+
+            result.fold(
+                onSuccess = {
+                    if (!FileOperations.writeFileToUri(context, tempFile, sourceFile.uri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
+                        }
+                        return@launch
+                    }
+
+                    // Keep working cache in sync with the overwritten original for Reader
+                    try {
+                        tempFile.copyTo(File(sourceFile.path), overwrite = true)
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to refresh cache after overwrite")
+                    }
+                    tempFile.delete()
+
+                    finishReorderSuccess(
+                        localPath = sourceFile.path,
+                        displayName = sourceFile.name
+                    )
+                },
+                onFailure = { error ->
+                    tempFile.delete()
+                    Timber.e(error, "Reorder failed")
+                    _state.update {
+                        it.copy(
+                            isProcessing = false,
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_reorder_failed)
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun validateReorder(
+        currentState: ReorderState,
+        requireFileName: Boolean = true
+    ): Boolean {
+        if (currentState.sourceFile == null) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
+            return false
+        }
+        if (requireFileName &&
+            !currentState.overwriteOriginal &&
+            currentState.outputFileName.isBlank()
+        ) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
+            return false
+        }
+        if (!currentState.hasChanges) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_no_reorder_changes)) }
+            return false
+        }
+        return true
+    }
+
+    private suspend fun finishReorderSuccess(localPath: String, displayName: String) {
+        val outputFile = File(localPath)
+        val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        val name = when {
+            displayName.endsWith(".pdf", ignoreCase = true) -> displayName
+            displayName.isNotBlank() -> "$displayName.pdf"
+            else -> outputFile.name
+        }
+        _state.update {
+            it.copy(
+                isProcessing = false,
+                progress = 1f,
+                result = ReorderResult(
+                    outputPath = localPath,
+                    displayName = name,
+                    pageCount = pageCount,
+                    fileSize = outputFile.length()
+                )
             )
         }
     }
@@ -289,16 +442,13 @@ class ReorderViewModel(
     }
 
     fun reset() {
-        _state.update { ReorderState() }
-    }
-
-    private fun getOutputDirectory(): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
+        synchronized(thumbnailCache) {
+            thumbnailCache.values.forEach { if (!it.isRecycled) it.recycle() }
+            thumbnailCache.clear()
         }
-        return pdfToolsDir.absolutePath
+        thumbnailRequests.clear()
+        originalOrder = emptyList()
+        _state.update { ReorderState() }
     }
 
     private fun copyUriToCache(uri: Uri): String? {
@@ -307,14 +457,15 @@ class ReorderViewModel(
                 return uri.path
             }
 
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
             val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
             val cacheFile = File(context.cacheDir, "reorder_temp/$fileName")
             cacheFile.parentFile?.mkdirs()
 
-            cacheFile.outputStream().use { output ->
-                inputStream.copyTo(output)
-            }
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                cacheFile.outputStream().use { output ->
+                    inputStream.copyTo(output)
+                }
+            } ?: return null
 
             cacheFile.absolutePath
         } catch (e: Exception) {

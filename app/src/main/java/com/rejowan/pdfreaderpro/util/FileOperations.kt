@@ -117,6 +117,48 @@ object FileOperations {
     }
 
     /**
+     * Best-effort persistable read/write grant for SAF documents so overwrite can update the original.
+     */
+    fun takePersistableReadWritePermission(context: Context, uri: Uri) {
+        if (uri.scheme != "content") return
+        try {
+            context.contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            )
+        } catch (e: SecurityException) {
+            Timber.w(e, "Persistable URI permission not available; session grants may still allow write")
+        } catch (e: Exception) {
+            Timber.w(e, "Failed to take persistable URI permission")
+        }
+    }
+
+    /**
+     * Writes [file] to a SAF/content or file URI (truncating). Used to overwrite originals / Save As.
+     */
+    fun writeFileToUri(context: Context, file: File, uri: Uri): Boolean {
+        return try {
+            when (uri.scheme) {
+                "file" -> {
+                    val target = File(uri.path ?: return false)
+                    file.copyTo(target, overwrite = true)
+                    true
+                }
+                "content" -> {
+                    context.contentResolver.openOutputStream(uri, "wt")?.use { output ->
+                        file.inputStream().use { input -> input.copyTo(output) }
+                    } ?: return false
+                    true
+                }
+                else -> false
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to write file to URI: $uri")
+            false
+        }
+    }
+
+    /**
      * Checks if a URI is a content URI that needs to be copied.
      */
     fun isContentUri(uri: Uri): Boolean {

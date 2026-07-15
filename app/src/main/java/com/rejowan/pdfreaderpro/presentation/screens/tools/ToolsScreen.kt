@@ -51,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.annotation.StringRes
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -77,17 +78,20 @@ private val AccentTeal = Color(0xFF4DB6AC)
 private val AccentAmber = Color(0xFFFFB74D)
 private val AccentGreen = Color(0xFF81C784)
 
-enum class ToolCategory(val title: String, val accentColor: Color) {
-    ORGANIZE("Organize", AccentPurple),
-    EDIT("Edit", AccentBlue),
-    SECURITY("Security", AccentAmber),
-    CONVERT("Convert", AccentTeal)
+enum class ToolCategory(
+    @param:StringRes val titleRes: Int,
+    val accentColor: Color
+) {
+    ORGANIZE(R.string.tool_category_organize, AccentPurple),
+    EDIT(R.string.tool_category_edit, AccentBlue),
+    SECURITY(R.string.tool_category_security, AccentAmber),
+    CONVERT(R.string.tool_category_convert, AccentTeal)
 }
 
 data class PdfTool(
     val id: String,
-    val name: String,
-    val description: String,
+    @param:StringRes val nameRes: Int,
+    @param:StringRes val descriptionRes: Int,
     val icon: ImageVector,
     val category: ToolCategory,
     val isEnabled: Boolean = false
@@ -95,99 +99,99 @@ data class PdfTool(
 
 private val pdfTools = listOf(
     PdfTool(
-        "merge",
-        "Merge PDFs",
-        "Combine multiple PDF files into one",
-        Icons.AutoMirrored.Filled.CallMerge,
-        ToolCategory.ORGANIZE,
+        id = "merge",
+        nameRes = R.string.merge_pdfs,
+        descriptionRes = R.string.tools_hub_merge_desc,
+        icon = Icons.AutoMirrored.Filled.CallMerge,
+        category = ToolCategory.ORGANIZE,
         isEnabled = true
     ),
     PdfTool(
-        "split",
-        "Split PDF",
-        "Split a PDF into multiple files",
-        Icons.AutoMirrored.Filled.CallSplit,
-        ToolCategory.ORGANIZE,
+        id = "split",
+        nameRes = R.string.split_pdf,
+        descriptionRes = R.string.tools_hub_split_desc,
+        icon = Icons.AutoMirrored.Filled.CallSplit,
+        category = ToolCategory.ORGANIZE,
         isEnabled = true
     ),
     PdfTool(
-        "compress",
-        "Compress PDF",
-        "Reduce file size while maintaining quality",
-        Icons.Default.Compress,
-        ToolCategory.ORGANIZE,
+        id = "compress",
+        nameRes = R.string.compress_pdf,
+        descriptionRes = R.string.tools_hub_compress_desc,
+        icon = Icons.Default.Compress,
+        category = ToolCategory.ORGANIZE,
         isEnabled = true
     ),
     PdfTool(
-        "rotate",
-        "Rotate Pages",
-        "Rotate individual or all pages",
-        Icons.AutoMirrored.Filled.RotateRight,
-        ToolCategory.ORGANIZE,
+        id = "rotate",
+        nameRes = R.string.tool_rotate_pages,
+        descriptionRes = R.string.tools_hub_rotate_desc,
+        icon = Icons.AutoMirrored.Filled.RotateRight,
+        category = ToolCategory.ORGANIZE,
         isEnabled = true
     ),
     PdfTool(
-        "reorder",
-        "Reorder Pages",
-        "Rearrange page order in PDF",
-        Icons.Default.Reorder,
-        ToolCategory.ORGANIZE,
+        id = "reorder",
+        nameRes = R.string.tool_reorder_pages,
+        descriptionRes = R.string.tools_hub_reorder_desc,
+        icon = Icons.Default.Reorder,
+        category = ToolCategory.ORGANIZE,
         isEnabled = true
     ),
     PdfTool(
-        "remove_pages",
-        "Remove Pages",
-        "Delete specific pages from PDF",
-        Icons.Default.DeleteSweep,
-        ToolCategory.EDIT,
+        id = "remove_pages",
+        nameRes = R.string.remove_pages,
+        descriptionRes = R.string.tools_hub_remove_pages_desc,
+        icon = Icons.Default.DeleteSweep,
+        category = ToolCategory.EDIT,
         isEnabled = true
     ),
     PdfTool(
-        "watermark",
-        "Add Watermark",
-        "Add text or image watermark",
-        Icons.Default.WaterDrop,
-        ToolCategory.EDIT,
+        id = "watermark",
+        nameRes = R.string.add_watermark,
+        descriptionRes = R.string.tools_hub_watermark_desc,
+        icon = Icons.Default.WaterDrop,
+        category = ToolCategory.EDIT,
         isEnabled = true
     ),
     PdfTool(
-        "page_numbers",
-        "Add Page Numbers",
-        "Insert page numbers to PDF",
-        Icons.Default.FormatListNumbered,
-        ToolCategory.EDIT,
+        id = "page_numbers",
+        nameRes = R.string.add_page_numbers,
+        descriptionRes = R.string.tools_hub_page_numbers_desc,
+        icon = Icons.Default.FormatListNumbered,
+        category = ToolCategory.EDIT,
         isEnabled = true
     ),
     PdfTool(
-        "lock_pdf",
-        "Lock PDF",
-        "Add password protection",
-        Icons.Default.Lock,
-        ToolCategory.SECURITY,
+        id = "lock_pdf",
+        nameRes = R.string.lock_pdf,
+        descriptionRes = R.string.tools_hub_lock_desc,
+        icon = Icons.Default.Lock,
+        category = ToolCategory.SECURITY,
         isEnabled = true
     ),
     PdfTool(
-        "unlock_pdf",
-        "Unlock PDF",
-        "Remove password from PDF",
-        Icons.Default.LockOpen,
-        ToolCategory.SECURITY,
+        id = "unlock_pdf",
+        nameRes = R.string.unlock_pdf,
+        descriptionRes = R.string.tools_hub_unlock_desc,
+        icon = Icons.Default.LockOpen,
+        category = ToolCategory.SECURITY,
         isEnabled = true
     ),
     PdfTool(
-        "img_to_pdf",
-        "Image to PDF",
-        "Convert images to PDF document",
-        Icons.Default.Image,
-        ToolCategory.CONVERT,
+        id = "img_to_pdf",
+        nameRes = R.string.tool_image_to_pdf,
+        descriptionRes = R.string.tools_hub_image_to_pdf_desc,
+        icon = Icons.Default.Image,
+        category = ToolCategory.CONVERT,
         isEnabled = true
     ),
     PdfTool(
-        "pdf_to_img",
-        "PDF to Images",
-        "Export PDF pages as image files",
-        Icons.Default.Photo,
-        ToolCategory.CONVERT,
+        id = "pdf_to_img",
+        nameRes = R.string.pdf_to_images,
+        descriptionRes = R.string.tools_hub_pdf_to_images_desc,
+        icon = Icons.Default.Photo,
+        category = ToolCategory.CONVERT,
         isEnabled = true
     ),
 )
@@ -212,7 +216,7 @@ fun ToolsScreen(
             if (toolsInCategory.isNotEmpty()) {
                 // Section label
                 SectionLabel(
-                    text = category.title,
+                    text = stringResource(category.titleRes),
                     delay = animationIndex * 50
                 )
                 animationIndex++
@@ -356,7 +360,7 @@ private fun ToolItem(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = tool.name,
+                        text = stringResource(tool.nameRes),
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = FontWeight.Medium
                         ),
@@ -376,7 +380,7 @@ private fun ToolItem(
                 Spacer(modifier = Modifier.height(2.dp))
 
                 Text(
-                    text = tool.description,
+                    text = stringResource(tool.descriptionRes),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (tool.isEnabled) {
                         MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)

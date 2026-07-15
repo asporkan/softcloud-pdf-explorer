@@ -66,6 +66,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -91,6 +92,7 @@ import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
@@ -113,7 +115,16 @@ fun RemovePagesScreen(
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { viewModel.setSourceFile(it) }
+        uri?.let {
+            FileOperations.takePersistableReadWritePermission(context, it)
+            viewModel.setSourceFile(it)
+        }
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { viewModel.removePagesToUri(it) }
     }
 
     Scaffold(
@@ -126,13 +137,17 @@ fun RemovePagesScreen(
                             val selectedCount = file.pages.count { it.isSelected }
                             if (selectedCount > 0) {
                                 Text(
-                                    "$selectedCount of ${file.pageCount} selected for removal",
+                                    stringResource(
+                                        R.string.selected_for_removal,
+                                        selectedCount,
+                                        file.pageCount
+                                    ),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = AccentRed
                                 )
                             } else {
                                 Text(
-                                    "${file.pageCount} pages",
+                                    stringResource(R.string.pages_count, file.pageCount),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -163,10 +178,17 @@ fun RemovePagesScreen(
                 }
         ) {
             when {
-                state.sourceFile == null && state.result == null -> {
-                    EmptyState(
-                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
-                    )
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = AccentRed)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(stringResource(R.string.loading_pages))
+                        }
+                    }
                 }
                 state.result != null -> {
                     val result = requireNotNull(state.result)
@@ -184,7 +206,9 @@ fun RemovePagesScreen(
                                 setDataAndType(uri, "application/pdf")
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(intent, "Open with"))
+                            context.startActivity(
+                                Intent.createChooser(intent, context.getString(R.string.open_with))
+                            )
                         },
                         onShare = {
                             val file = File(result.outputPath)
@@ -198,23 +222,21 @@ fun RemovePagesScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_pdf_chooser)
+                                )
+                            )
                         },
                         onRemoveMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }
                     )
                 }
-                state.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentRed)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(stringResource(R.string.loading_pages))
-                        }
-                    }
+                state.sourceFile == null -> {
+                    EmptyState(
+                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
+                    )
                 }
                 else -> {
                     Column(modifier = Modifier.fillMaxSize()) {
@@ -244,13 +266,17 @@ fun RemovePagesScreen(
                             }
 
                             // Page thumbnails
-                            items(state.sourceFile?.pages ?: emptyList()) { page ->
+                            items(
+                                items = state.sourceFile?.pages ?: emptyList(),
+                                key = { it.pageNumber }
+                            ) { page ->
                                 PageThumbnailItem(
                                     page = page,
                                     onClick = {
                                         focusManager.clearFocus()
                                         viewModel.togglePageSelection(page.pageNumber)
-                                    }
+                                    },
+                                    onVisible = { viewModel.ensureThumbnail(page.pageNumber - 1) }
                                 )
                             }
                         }
@@ -266,7 +292,23 @@ fun RemovePagesScreen(
                             selectedCount = state.sourceFile?.pages?.count { it.isSelected } ?: 0,
                             totalCount = state.sourceFile?.pageCount ?: 0,
                             error = state.error,
-                            onRemove = { viewModel.removePages() },
+                            onRemove = {
+                                if (state.overwriteOriginal) {
+                                    viewModel.removePages()
+                                } else {
+                                    val suggested = state.outputFileName
+                                        .ifBlank {
+                                            state.sourceFile?.name?.substringBeforeLast('.')
+                                                ?: "modified"
+                                        }
+                                    val name = if (suggested.endsWith(".pdf", ignoreCase = true)) {
+                                        suggested
+                                    } else {
+                                        "$suggested.pdf"
+                                    }
+                                    createDocumentLauncher.launch(name)
+                                }
+                            },
                             onClearError = { viewModel.clearError() }
                         )
                     }
@@ -325,7 +367,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Remove Pages",
+            stringResource(R.string.tool_remove_pages),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
@@ -333,7 +375,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            "Select and delete unwanted pages from your PDF",
+            stringResource(R.string.remove_pages_empty_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -381,7 +423,7 @@ private fun SelectionHeader(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    "TAP TO SELECT",
+                    stringResource(R.string.tap_to_select),
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.SemiBold,
                         letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing * 1.5f
@@ -407,7 +449,7 @@ private fun SelectionHeader(
                     color = MaterialTheme.colorScheme.surfaceContainerLow
                 ) {
                     Text(
-                        "Clear",
+                        stringResource(R.string.clear),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
@@ -419,7 +461,7 @@ private fun SelectionHeader(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            "Selected pages will be removed from the PDF",
+            stringResource(R.string.selected_pages_will_be_removed),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )
@@ -432,22 +474,22 @@ private fun SelectionHeader(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             QuickSelectChip(
-                label = "All",
+                label = stringResource(R.string.quick_select_all),
                 onClick = onSelectAll,
                 modifier = Modifier.weight(1f)
             )
             QuickSelectChip(
-                label = "Odd",
+                label = stringResource(R.string.quick_select_odd),
                 onClick = onSelectOdd,
                 modifier = Modifier.weight(1f)
             )
             QuickSelectChip(
-                label = "Even",
+                label = stringResource(R.string.quick_select_even),
                 onClick = onSelectEven,
                 modifier = Modifier.weight(1f)
             )
             QuickSelectChip(
-                label = "Range",
+                label = stringResource(R.string.range_option),
                 onClick = { showRangeDialog = true },
                 modifier = Modifier.weight(1f)
             )
@@ -461,7 +503,7 @@ private fun SelectionHeader(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             QuickSelectChip(
-                label = "First N",
+                label = stringResource(R.string.quick_select_first_n),
                 onClick = {
                     dialogMode = "first"
                     showFirstLastDialog = true
@@ -469,7 +511,7 @@ private fun SelectionHeader(
                 modifier = Modifier.weight(1f)
             )
             QuickSelectChip(
-                label = "Last N",
+                label = stringResource(R.string.quick_select_last_n),
                 onClick = {
                     dialogMode = "last"
                     showFirstLastDialog = true
@@ -477,7 +519,7 @@ private fun SelectionHeader(
                 modifier = Modifier.weight(1f)
             )
             QuickSelectChip(
-                label = "Before",
+                label = stringResource(R.string.quick_select_before),
                 onClick = {
                     dialogMode = "before"
                     showBeforeAfterDialog = true
@@ -485,7 +527,7 @@ private fun SelectionHeader(
                 modifier = Modifier.weight(1f)
             )
             QuickSelectChip(
-                label = "After",
+                label = stringResource(R.string.quick_select_after),
                 onClick = {
                     dialogMode = "after"
                     showBeforeAfterDialog = true
@@ -510,8 +552,12 @@ private fun SelectionHeader(
     // Before/After Dialog
     if (showBeforeAfterDialog) {
         PageInputDialog(
-            title = if (dialogMode == "before") "Select Before Page" else "Select After Page",
-            hint = if (dialogMode == "before") "Pages before this will be selected" else "Pages after this will be selected",
+            title = stringResource(
+                if (dialogMode == "before") R.string.select_before_page else R.string.select_after_page
+            ),
+            hint = stringResource(
+                if (dialogMode == "before") R.string.pages_before_selected else R.string.pages_after_selected
+            ),
             totalPages = totalCount,
             onDismiss = { showBeforeAfterDialog = false },
             onConfirm = { page ->
@@ -524,10 +570,14 @@ private fun SelectionHeader(
     // First/Last N Dialog
     if (showFirstLastDialog) {
         PageInputDialog(
-            title = if (dialogMode == "first") "Select First N Pages" else "Select Last N Pages",
-            hint = if (dialogMode == "first") "First N pages will be selected" else "Last N pages will be selected",
+            title = stringResource(
+                if (dialogMode == "first") R.string.select_first_n_pages else R.string.select_last_n_pages
+            ),
+            hint = stringResource(
+                if (dialogMode == "first") R.string.first_n_pages_selected else R.string.last_n_pages_selected
+            ),
             totalPages = totalCount,
-            label = "Number of pages",
+            label = stringResource(R.string.number_of_pages),
             onDismiss = { showFirstLastDialog = false },
             onConfirm = { n ->
                 if (dialogMode == "first") onSelectFirstN(n) else onSelectLastN(n)
@@ -570,6 +620,7 @@ private fun RangeInputDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit
 ) {
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     var startPage by remember { mutableStateOf("1") }
     var endPage by remember { mutableStateOf(totalPages.toString()) }
@@ -581,7 +632,7 @@ private fun RangeInputDialog(
         text = {
             Column {
                 Text(
-                    "Select pages from start to end (inclusive)",
+                    stringResource(R.string.select_pages_range_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -621,9 +672,11 @@ private fun RangeInputDialog(
                 val start = startPage.toIntOrNull() ?: 0
                 val end = endPage.toIntOrNull() ?: 0
                 when {
-                    start < 1 || start > totalPages -> error = "Start page must be 1-$totalPages"
-                    end < 1 || end > totalPages -> error = "End page must be 1-$totalPages"
-                    start > end -> error = "Start must be less than end"
+                    start < 1 || start > totalPages ->
+                        error = context.getString(R.string.validation_start_page_range, totalPages)
+                    end < 1 || end > totalPages ->
+                        error = context.getString(R.string.validation_end_page_range, totalPages)
+                    start > end -> error = context.getString(R.string.validation_start_less_than_end)
                     else -> onConfirm(start, end)
                 }
             }) {
@@ -643,10 +696,11 @@ private fun PageInputDialog(
     title: String,
     hint: String,
     totalPages: Int,
-    label: String = "Page number",
+    label: String = stringResource(R.string.page_number_label),
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit
 ) {
+    val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     var pageInput by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
@@ -681,7 +735,8 @@ private fun PageInputDialog(
             Button(onClick = {
                 val page = pageInput.toIntOrNull() ?: 0
                 when {
-                    page < 1 || page > totalPages -> error = "Value must be 1-$totalPages"
+                    page < 1 || page > totalPages ->
+                        error = context.getString(R.string.validation_value_range, totalPages)
                     else -> onConfirm(page)
                 }
             }) {
@@ -699,8 +754,12 @@ private fun PageInputDialog(
 @Composable
 private fun PageThumbnailItem(
     page: PageInfo,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onVisible: () -> Unit
 ) {
+    LaunchedEffect(page.pageNumber) {
+        onVisible()
+    }
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -836,7 +895,7 @@ private fun RemoveBottomSection(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "Cannot remove all pages",
+                        stringResource(R.string.cannot_remove_all_pages),
                         style = MaterialTheme.typography.bodySmall,
                         color = AccentRed
                     )
@@ -896,7 +955,10 @@ private fun RemoveBottomSection(
                 colors = CheckboxDefaults.colors(checkedColor = AccentBlue)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Overwrite original file", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                stringResource(R.string.overwrite_original_file),
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
 
         // Output filename
@@ -936,7 +998,11 @@ private fun RemoveBottomSection(
                 Spacer(modifier = Modifier.width(8.dp))
             }
             Text(
-                if (isProcessing) "Removing..." else "Remove $selectedCount Page${if (selectedCount != 1) "s" else ""}"
+                if (isProcessing) {
+                    stringResource(R.string.removing_pages)
+                } else {
+                    stringResource(R.string.remove_n_pages_btn, selectedCount)
+                }
             )
         }
     }
@@ -978,7 +1044,7 @@ private fun SuccessState(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Pages Removed!",
+            stringResource(R.string.pages_removed_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
@@ -986,7 +1052,7 @@ private fun SuccessState(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            "${result.removedPages} page${if (result.removedPages > 1) "s" else ""} removed",
+            stringResource(R.string.pages_removed_simple, result.removedPages),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1016,7 +1082,7 @@ private fun SuccessState(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        File(result.outputPath).name,
+                        result.displayName,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
@@ -1024,7 +1090,11 @@ private fun SuccessState(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        "${result.newPageCount} pages • ${formatFileSize(result.fileSize)}",
+                        stringResource(
+                            R.string.pages_size_format,
+                            result.newPageCount,
+                            formatFileSize(result.fileSize)
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1050,7 +1120,7 @@ private fun SuccessState(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "${result.originalPageCount} pages",
+                    stringResource(R.string.pages_count, result.originalPageCount),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -1062,7 +1132,7 @@ private fun SuccessState(
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
-                    "${result.newPageCount} pages",
+                    stringResource(R.string.pages_count, result.newPageCount),
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
@@ -1088,7 +1158,7 @@ private fun SuccessState(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Open", maxLines = 1)
+                Text(stringResource(R.string.open), maxLines = 1)
             }
             OutlinedButton(
                 onClick = onShare,
@@ -1100,7 +1170,7 @@ private fun SuccessState(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Share", maxLines = 1)
+                Text(stringResource(R.string.share), maxLines = 1)
             }
         }
 
@@ -1115,13 +1185,13 @@ private fun SuccessState(
                 onClick = onRemoveMore,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("New File", maxLines = 1)
+                Text(stringResource(R.string.new_file), maxLines = 1)
             }
             Button(
                 onClick = onDone,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Done", maxLines = 1)
+                Text(stringResource(R.string.done), maxLines = 1)
             }
         }
     }
@@ -1157,7 +1227,7 @@ private fun ProcessingOverlay(progress: Float) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    "Removing...",
+                    stringResource(R.string.removing_pages),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Medium
                     )

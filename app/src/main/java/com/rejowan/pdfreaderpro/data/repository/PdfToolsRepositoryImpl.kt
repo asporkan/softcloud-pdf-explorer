@@ -421,11 +421,17 @@ class PdfToolsRepositoryImpl(
     }
 
     override suspend fun getPageCount(inputPath: String): Result<Int> = withContext(Dispatchers.IO) {
+        // PdfRenderer matches home-list counting; iText open failures were mapped to 0 by tools.
         try {
-            val pdfDoc = PdfDocument(PdfReader(inputPath))
-            val count = pdfDoc.numberOfPages
-            pdfDoc.close()
-            Result.success(count)
+            val file = File(inputPath)
+            if (!file.exists()) {
+                return@withContext Result.failure(IllegalArgumentException("PDF file not found: $inputPath"))
+            }
+            ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+                PdfRenderer(fd).use { renderer ->
+                    Result.success(renderer.pageCount)
+                }
+            }
         } catch (e: Exception) {
             Timber.e(e, "Failed to get page count")
             Result.failure(e)

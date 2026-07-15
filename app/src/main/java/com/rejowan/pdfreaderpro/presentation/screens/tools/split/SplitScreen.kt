@@ -128,7 +128,11 @@ fun SplitScreen(
                         Text(stringResource(R.string.tool_split_pdf))
                         state.sourceFile?.let { file ->
                             Text(
-                                "${file.pageCount} pages • ${state.splitMode.toDisplayName()}",
+                                stringResource(
+                                    R.string.pages_and_mode_format,
+                                    file.pageCount,
+                                    stringResource(state.splitMode.displayNameRes())
+                                ),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -184,7 +188,12 @@ fun SplitScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_pdf_chooser)
+                                )
+                            )
                         },
                         onSplitMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }
@@ -367,7 +376,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Split PDF File",
+            stringResource(R.string.split_pdf_file_title),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
@@ -375,7 +384,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            "Select a PDF file to split into multiple parts or extract specific pages",
+            stringResource(R.string.split_pdf_file_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp)
@@ -439,7 +448,11 @@ private fun SourceFileCard(
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
-                    "${sourceFile.pageCount} pages • ${formatFileSize(sourceFile.size)}",
+                    stringResource(
+                        R.string.pages_size_format,
+                        sourceFile.pageCount,
+                        formatFileSize(sourceFile.size)
+                    ),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -485,7 +498,7 @@ private fun SplitModeSection(
 ) {
     Column {
         Text(
-            "Split Mode",
+            stringResource(R.string.split_mode),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -502,15 +515,15 @@ private fun SplitModeSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SplitModeChip(
-                    label = "By Ranges",
-                    description = "Multiple PDFs",
+                    label = stringResource(R.string.split_by_ranges),
+                    description = stringResource(R.string.split_multiple_pdfs),
                     selected = selectedMode == SplitMode.BY_RANGES,
                     onClick = { onModeSelected(SplitMode.BY_RANGES) },
                     modifier = Modifier.weight(1f)
                 )
                 SplitModeChip(
-                    label = "Every N Pages",
-                    description = "Auto split",
+                    label = stringResource(R.string.split_every_n_pages),
+                    description = stringResource(R.string.split_auto_split),
                     selected = selectedMode == SplitMode.EVERY_N_PAGES,
                     onClick = { onModeSelected(SplitMode.EVERY_N_PAGES) },
                     modifier = Modifier.weight(1f)
@@ -523,15 +536,15 @@ private fun SplitModeSection(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SplitModeChip(
-                    label = "Single Pages",
-                    description = "1 page = 1 PDF",
+                    label = stringResource(R.string.split_single_pages),
+                    description = stringResource(R.string.split_one_page_one_pdf),
                     selected = selectedMode == SplitMode.INTO_PAGES,
                     onClick = { onModeSelected(SplitMode.INTO_PAGES) },
                     modifier = Modifier.weight(1f)
                 )
                 SplitModeChip(
-                    label = "Extract Pages",
-                    description = "Single PDF",
+                    label = stringResource(R.string.split_extract_pages),
+                    description = stringResource(R.string.split_single_pdf),
                     selected = selectedMode == SplitMode.SPECIFIC_PAGES,
                     onClick = { onModeSelected(SplitMode.SPECIFIC_PAGES) },
                     modifier = Modifier.weight(1f)
@@ -591,7 +604,7 @@ private fun SplitOptionsSection(
     val focusManager = LocalFocusManager.current
     Column {
         Text(
-            "Options",
+            stringResource(R.string.options),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(bottom = 12.dp)
@@ -642,7 +655,7 @@ private fun SplitOptionsSection(
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    "Will create $rangeCount PDF file${if (rangeCount > 1) "s" else ""}",
+                                    stringResource(R.string.will_create_pdf_files, rangeCount),
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -658,7 +671,7 @@ private fun SplitOptionsSection(
                 val sliderMax = maxPages.coerceAtLeast(1).toFloat()
                 Column {
                     Text(
-                        "Split every ${state.everyNPages} page${if (state.everyNPages > 1) "s" else ""}",
+                        stringResource(R.string.split_every_n_pages_label, state.everyNPages),
                         style = MaterialTheme.typography.bodyMedium,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
@@ -670,7 +683,11 @@ private fun SplitOptionsSection(
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
-                        "Will create ${calculateParts(maxPages, state.everyNPages)} file${if (calculateParts(maxPages, state.everyNPages) > 1) "s" else ""} (max: $maxPages pages)",
+                        stringResource(
+                            R.string.will_create_files_max,
+                            calculateParts(maxPages, state.everyNPages),
+                            maxPages
+                        ),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -700,12 +717,15 @@ private fun SplitOptionsSection(
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text(
-                                "Split into individual pages",
+                                stringResource(R.string.split_into_individual_pages),
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                "Will create ${state.sourceFile?.pageCount ?: 0} separate PDF files",
+                                stringResource(
+                                    R.string.will_create_separate_pdfs,
+                                    state.sourceFile?.pageCount ?: 0
+                                ),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -758,7 +778,7 @@ private fun SplitOptionsSection(
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
-                                    "Will create 1 PDF with $pageCount page${if (pageCount > 1) "s" else ""}",
+                                    stringResource(R.string.will_create_one_pdf_with_pages, pageCount),
                                     style = MaterialTheme.typography.bodySmall,
                                     fontWeight = FontWeight.Medium,
                                     color = MaterialTheme.colorScheme.onSurface
@@ -919,7 +939,7 @@ private fun ProcessingOverlay(progress: Float) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    "Splitting PDF...",
+                    stringResource(R.string.splitting_pdf),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
@@ -987,13 +1007,13 @@ private fun SuccessState(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                "Split Complete!",
+                stringResource(R.string.split_complete),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
 
             Text(
-                "${result.createdFiles.size} files created",
+                stringResource(R.string.files_created_count, result.createdFiles.size),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -1175,11 +1195,12 @@ private fun countRanges(rangesInput: String): Int {
         }
 }
 
-private fun SplitMode.toDisplayName(): String = when (this) {
-    SplitMode.BY_RANGES -> "By Ranges"
-    SplitMode.EVERY_N_PAGES -> "Every N Pages"
-    SplitMode.INTO_PAGES -> "Single Pages"
-    SplitMode.SPECIFIC_PAGES -> "Extract"
+@androidx.annotation.StringRes
+private fun SplitMode.displayNameRes(): Int = when (this) {
+    SplitMode.BY_RANGES -> R.string.split_by_ranges
+    SplitMode.EVERY_N_PAGES -> R.string.split_every_n_pages
+    SplitMode.INTO_PAGES -> R.string.split_single_pages
+    SplitMode.SPECIFIC_PAGES -> R.string.split_extract_short
 }
 
 private fun countExtractedPages(input: String, maxPages: Int): Int {

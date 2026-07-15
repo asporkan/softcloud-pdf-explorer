@@ -173,7 +173,12 @@ fun PdfToImageScreen(
                                 putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share Images"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_images_chooser)
+                                )
+                            )
                         },
                         onShareSingle = { path ->
                             val file = File(path)
@@ -187,7 +192,12 @@ fun PdfToImageScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share Image"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_image_chooser)
+                                )
+                            )
                         },
                         onViewSingle = { path ->
                             val file = File(path)
@@ -200,7 +210,12 @@ fun PdfToImageScreen(
                                 setDataAndType(uri, "image/*")
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(viewIntent, "View Image"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    viewIntent,
+                                    context.getString(R.string.view_image)
+                                )
+                            )
                         },
                         onExportMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }
@@ -569,7 +584,7 @@ private fun FormatCard(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                format.label,
+                stringResource(format.labelRes),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = if (isSelected) AccentPurple else MaterialTheme.colorScheme.onSurface
             )

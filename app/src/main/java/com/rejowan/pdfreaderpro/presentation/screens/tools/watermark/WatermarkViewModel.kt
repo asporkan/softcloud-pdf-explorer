@@ -6,10 +6,12 @@ import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Environment
 import android.os.ParcelFileDescriptor
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.util.Constants
 import kotlinx.coroutines.Dispatchers
@@ -27,15 +29,15 @@ enum class WatermarkType {
     IMAGE
 }
 
-enum class WatermarkPosition(val label: String) {
-    CENTER("Center"),
-    TOP_LEFT("Top Left"),
-    TOP_CENTER("Top Center"),
-    TOP_RIGHT("Top Right"),
-    BOTTOM_LEFT("Bottom Left"),
-    BOTTOM_CENTER("Bottom Center"),
-    BOTTOM_RIGHT("Bottom Right"),
-    TILED("Tiled")
+enum class WatermarkPosition(@StringRes val labelRes: Int) {
+    CENTER(R.string.center),
+    TOP_LEFT(R.string.position_top_left),
+    TOP_CENTER(R.string.position_top_center),
+    TOP_RIGHT(R.string.position_top_right),
+    BOTTOM_LEFT(R.string.position_bottom_left),
+    BOTTOM_CENTER(R.string.position_bottom_center),
+    BOTTOM_RIGHT(R.string.position_bottom_right),
+    TILED(R.string.position_tiled)
 }
 
 enum class PageSelection {
@@ -59,7 +61,7 @@ data class WatermarkState(
     val watermarkType: WatermarkType = WatermarkType.TEXT,
 
     // Text watermark settings
-    val watermarkText: String = "CONFIDENTIAL",
+    val watermarkText: String = "",
     val fontSize: Float = 48f,
     val textColor: Color = Color(0xFF808080),
     val textOpacity: Float = 50f,
@@ -99,7 +101,9 @@ class WatermarkViewModel(
     private val context: Context
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(WatermarkState())
+    private val _state = MutableStateFlow(
+        WatermarkState(watermarkText = context.getString(R.string.watermark_default_text))
+    )
     val state: StateFlow<WatermarkState> = _state.asStateFlow()
 
     fun setSourceFile(uri: Uri) {
@@ -133,11 +137,16 @@ class WatermarkViewModel(
                     val baseName = file.nameWithoutExtension
                     _state.update { it.copy(outputFileName = "${baseName}_watermarked") }
                 } else {
-                    _state.update { it.copy(isLoading = false, error = "Failed to load PDF file") }
+                    _state.update { it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf)) }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
-                _state.update { it.copy(isLoading = false, error = "Failed to load PDF: ${e.message}") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = context.getString(R.string.tool_error_load_pdf_detail, e.message ?: "")
+                    )
+                }
             }
         }
     }
@@ -202,7 +211,7 @@ class WatermarkViewModel(
             if (path != null) {
                 _state.update { it.copy(imagePath = path, imageUri = uri) }
             } else {
-                _state.update { it.copy(error = "Failed to load image") }
+                _state.update { it.copy(error = context.getString(R.string.tool_error_load_image)) }
             }
         }
     }
@@ -241,22 +250,22 @@ class WatermarkViewModel(
         val sourceFile = currentState.sourceFile
 
         if (sourceFile == null) {
-            _state.update { it.copy(error = "Please select a PDF file first") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
             return
         }
 
         if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = "Please enter an output file name") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
             return
         }
 
         if (currentState.watermarkType == WatermarkType.TEXT && currentState.watermarkText.isBlank()) {
-            _state.update { it.copy(error = "Please enter watermark text") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_watermark_text)) }
             return
         }
 
         if (currentState.watermarkType == WatermarkType.IMAGE && currentState.imagePath == null) {
-            _state.update { it.copy(error = "Please select a watermark image") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_watermark_image)) }
             return
         }
 
@@ -333,7 +342,12 @@ class WatermarkViewModel(
                             tempFile.delete()
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to replace original file")
-                            _state.update { it.copy(isProcessing = false, error = "Failed to replace original file") }
+                            _state.update {
+                                it.copy(
+                                    isProcessing = false,
+                                    error = context.getString(R.string.tool_error_replace_original)
+                                )
+                            }
                             return@launch
                         }
                     }
@@ -358,7 +372,8 @@ class WatermarkViewModel(
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = error.message ?: "Failed to add watermark"
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_add_watermark_failed)
                         )
                     }
                 }
@@ -423,7 +438,9 @@ class WatermarkViewModel(
     }
 
     fun reset() {
-        _state.update { WatermarkState() }
+        _state.update {
+            WatermarkState(watermarkText = context.getString(R.string.watermark_default_text))
+        }
     }
 
     private fun getOutputDirectory(): String {

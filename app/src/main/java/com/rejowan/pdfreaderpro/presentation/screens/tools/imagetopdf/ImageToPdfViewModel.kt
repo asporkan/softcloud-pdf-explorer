@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.util.Constants
 import kotlinx.coroutines.Dispatchers
@@ -148,12 +149,12 @@ class ImageToPdfViewModel(
         val currentState = _state.value
 
         if (currentState.images.isEmpty()) {
-            _state.update { it.copy(error = "Please add at least one image") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_add_at_least_one_image)) }
             return
         }
 
         if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = "Please enter an output file name") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
             return
         }
 
@@ -200,7 +201,8 @@ class ImageToPdfViewModel(
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = error.message ?: "Failed to convert images to PDF"
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_convert_images_failed)
                         )
                     }
                 }

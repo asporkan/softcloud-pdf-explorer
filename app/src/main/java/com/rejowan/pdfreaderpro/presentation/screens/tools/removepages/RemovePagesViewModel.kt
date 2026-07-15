@@ -4,12 +4,12 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.Constants
+import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,6 +48,7 @@ data class RemovePagesState(
 
 data class RemovePagesResult(
     val outputPath: String,
+    val displayName: String,
     val originalPageCount: Int,
     val newPageCount: Int,
     val removedPages: Int,
@@ -62,16 +63,44 @@ class RemovePagesViewModel(
     private val _state = MutableStateFlow(RemovePagesState())
     val state: StateFlow<RemovePagesState> = _state.asStateFlow()
 
+    private val thumbnailRequests = mutableSetOf<Int>()
+
+    private val thumbnailCache = object : LinkedHashMap<Int, Bitmap>(32, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, Bitmap>?): Boolean {
+            if (size <= MAX_CACHED_THUMBNAILS) return false
+            val index = eldest?.key ?: return false
+            val bitmap = eldest.value
+            _state.update { current ->
+                current.copy(
+                    sourceFile = current.sourceFile?.copy(
+                        pages = current.sourceFile.pages.map { page ->
+                            if (page.pageNumber == index + 1) page.copy(thumbnail = null) else page
+                        }
+                    )
+                )
+            }
+            if (!bitmap.isRecycled) bitmap.recycle()
+            return true
+        }
+    }
+
     fun setSourceFile(uri: Uri) {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
 
             try {
-                val path = copyUriToCache(uri)
-                if (path != null) {
+                val loaded = withContext(Dispatchers.IO) {
+                    val path = copyUriToCache(uri) ?: return@withContext null
                     val file = File(path)
-                    val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
-                    val pages = generatePageThumbnails(path, pageCount)
+                    val (pageCount, pages) = loadPagePlaceholders(path)
+                    Triple(path, file, pageCount to pages)
+                }
+                if (loaded != null) {
+                    val (path, file, pageData) = loaded
+                    val (pageCount, pages) = pageData
+
+                    synchronized(thumbnailCache) { thumbnailCache.clear() }
+                    thumbnailRequests.clear()
 
                     _state.update {
                         it.copy(
@@ -89,64 +118,103 @@ class RemovePagesViewModel(
                         )
                     }
 
-                    // Generate default output name
                     val baseName = file.nameWithoutExtension
                     _state.update { it.copy(outputFileName = "${baseName}_modified") }
+
+                    pages.take(PREFETCH_THUMBNAILS).forEach { ensureThumbnail(it.pageNumber - 1) }
                 } else {
-                    _state.update { it.copy(isLoading = false, error = "Failed to load PDF file") }
+                    _state.update {
+                        it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf))
+                    }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
-                _state.update { it.copy(isLoading = false, error = "Failed to load PDF: ${e.message}") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = context.getString(
+                            R.string.tool_error_load_pdf_detail,
+                            e.message ?: ""
+                        )
+                    )
+                }
             }
         }
     }
 
-    private suspend fun generatePageThumbnails(
-        pdfPath: String,
-        pageCount: Int
-    ): List<PageInfo> = withContext(Dispatchers.IO) {
-        val pages = mutableListOf<PageInfo>()
-        try {
-            val file = File(pdfPath)
-            val fd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-            val renderer = PdfRenderer(fd)
-
-            for (i in 0 until minOf(pageCount, 100)) { // Limit to 100 pages
-                val page = renderer.openPage(i)
-
-                // Create higher quality thumbnail for readable content
-                val thumbnailSize = 500
-                val aspectRatio = page.width.toFloat() / page.height.toFloat()
-                val width: Int
-                val height: Int
-                if (aspectRatio > 1) {
-                    width = thumbnailSize
-                    height = (thumbnailSize / aspectRatio).toInt()
-                } else {
-                    height = thumbnailSize
-                    width = (thumbnailSize * aspectRatio).toInt()
+    /**
+     * Placeholders for every page; thumbnails load on demand.
+     * Previous hard cap of 100 truncated UI for large PDFs (not lazy loading).
+     */
+    private fun loadPagePlaceholders(pdfPath: String): Pair<Int, List<PageInfo>> {
+        ParcelFileDescriptor.open(File(pdfPath), ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+            PdfRenderer(fd).use { renderer ->
+                val pageCount = renderer.pageCount
+                val pages = List(pageCount) { i ->
+                    PageInfo(pageNumber = i + 1, thumbnail = null, isSelected = false)
                 }
-
-                val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-                page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
-                page.close()
-
-                pages.add(
-                    PageInfo(
-                        pageNumber = i + 1,
-                        thumbnail = bitmap,
-                        isSelected = false
-                    )
-                )
+                return pageCount to pages
             }
-
-            renderer.close()
-            fd.close()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to generate thumbnails")
         }
-        pages
+    }
+
+    fun ensureThumbnail(pageIndex: Int) {
+        val existing = _state.value.sourceFile?.pages?.find { it.pageNumber == pageIndex + 1 }
+        if (existing == null || existing.thumbnail != null) return
+        if (!thumbnailRequests.add(pageIndex)) return
+
+        val path = _state.value.sourceFile?.path ?: run {
+            thumbnailRequests.remove(pageIndex)
+            return
+        }
+
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val bitmap = renderThumbnail(path, pageIndex) ?: return@launch
+                synchronized(thumbnailCache) {
+                    thumbnailCache[pageIndex] = bitmap
+                }
+                _state.update { current ->
+                    current.copy(
+                        sourceFile = current.sourceFile?.copy(
+                            pages = current.sourceFile.pages.map { page ->
+                                if (page.pageNumber == pageIndex + 1) {
+                                    page.copy(thumbnail = bitmap)
+                                } else page
+                            }
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to render thumbnail for page $pageIndex")
+            } finally {
+                thumbnailRequests.remove(pageIndex)
+            }
+        }
+    }
+
+    private fun renderThumbnail(pdfPath: String, pageIndex: Int): Bitmap? {
+        ParcelFileDescriptor.open(File(pdfPath), ParcelFileDescriptor.MODE_READ_ONLY).use { fd ->
+            PdfRenderer(fd).use { renderer ->
+                if (pageIndex !in 0 until renderer.pageCount) return null
+                renderer.openPage(pageIndex).use { page ->
+                    val thumbnailSize = 300
+                    val aspectRatio = page.width.toFloat() / page.height.toFloat()
+                    val width: Int
+                    val height: Int
+                    if (aspectRatio > 1) {
+                        width = thumbnailSize
+                        height = (thumbnailSize / aspectRatio).toInt().coerceAtLeast(1)
+                    } else {
+                        height = thumbnailSize
+                        width = (thumbnailSize * aspectRatio).toInt().coerceAtLeast(1)
+                    }
+                    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+                    return bitmap
+                }
+            }
+        }
     }
 
     fun togglePageSelection(pageNumber: Int) {
@@ -282,104 +350,181 @@ class RemovePagesViewModel(
 
     fun removePages() {
         val currentState = _state.value
-        val sourceFile = currentState.sourceFile
+        if (!validateRemove(currentState)) return
+        if (!currentState.overwriteOriginal) return // Screen launches CreateDocument
 
-        if (sourceFile == null) {
-            _state.update { it.copy(error = "Please select a PDF file first") }
-            return
-        }
+        removePagesOverwrite()
+    }
 
-        if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = "Please enter an output file name") }
-            return
-        }
-
+    fun removePagesToUri(destinationUri: Uri) {
+        val currentState = _state.value
+        if (!validateRemove(currentState, requireFileName = false)) return
+        val sourceFile = currentState.sourceFile ?: return
         val pagesToRemove = sourceFile.pages.filter { it.isSelected }.map { it.pageNumber }
-
-        if (pagesToRemove.isEmpty()) {
-            _state.update { it.copy(error = "Please select at least one page to remove") }
-            return
-        }
-
-        if (pagesToRemove.size >= sourceFile.pageCount) {
-            _state.update { it.copy(error = "Cannot remove all pages from PDF") }
-            return
-        }
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
-
-            val outputPath: String
-            val tempPath: String?
-
-            if (currentState.overwriteOriginal) {
-                tempPath = "${context.cacheDir}/removepages_temp_${System.currentTimeMillis()}.pdf"
-                outputPath = sourceFile.path
-            } else {
-                tempPath = null
-                val outputDir = getOutputDirectory()
-                var path = "$outputDir/${currentState.outputFileName}.pdf"
-                var counter = 1
-                while (File(path).exists()) {
-                    path = "$outputDir/${currentState.outputFileName}_$counter.pdf"
-                    counter++
-                }
-                outputPath = path
-            }
-
-            val targetPath = tempPath ?: outputPath
-
+            val tempFile = File(context.cacheDir, "removepages_out_${System.currentTimeMillis()}.pdf")
             val result = pdfToolsRepository.removePages(
                 inputPath = sourceFile.path,
-                outputPath = targetPath,
+                outputPath = tempFile.absolutePath,
                 pagesToRemove = pagesToRemove,
-                onProgress = { progress ->
-                    _state.update { it.copy(progress = progress) }
-                }
+                onProgress = { progress -> _state.update { it.copy(progress = progress) } }
             )
 
             result.fold(
                 onSuccess = {
-                    if (tempPath != null) {
-                        try {
-                            val tempFile = File(tempPath)
-                            val originalFile = File(outputPath)
-                            originalFile.delete()
-                            tempFile.copyTo(originalFile, overwrite = true)
-                            tempFile.delete()
-                        } catch (e: Exception) {
-                            Timber.e(e, "Failed to replace original file")
-                            _state.update { it.copy(isProcessing = false, error = "Failed to replace original file") }
-                            return@launch
-                        }
-                    }
-
-                    val outputFile = File(outputPath)
-                    val newPageCount = pdfToolsRepository.getPageCount(outputPath).getOrDefault(0)
-                    _state.update {
-                        it.copy(
-                            isProcessing = false,
-                            progress = 1f,
-                            result = RemovePagesResult(
-                                outputPath = outputPath,
-                                originalPageCount = sourceFile.pageCount,
-                                newPageCount = newPageCount,
-                                removedPages = pagesToRemove.size,
-                                fileSize = outputFile.length()
+                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
                             )
-                        )
+                        }
+                        return@launch
                     }
+                    val localCopy = File(
+                        context.cacheDir,
+                        "removepages_result_${System.currentTimeMillis()}.pdf"
+                    )
+                    tempFile.copyTo(localCopy, overwrite = true)
+                    tempFile.delete()
+                    finishRemoveSuccess(
+                        localPath = localCopy.absolutePath,
+                        displayName = getFileNameFromUri(destinationUri)
+                            ?: currentState.outputFileName.ifBlank { sourceFile.name },
+                        originalPageCount = sourceFile.pageCount,
+                        removedCount = pagesToRemove.size
+                    )
                 },
                 onFailure = { error ->
+                    tempFile.delete()
                     Timber.e(error, "Remove pages failed")
-                    tempPath?.let { File(it).delete() }
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = error.message ?: "Failed to remove pages"
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_remove_pages_failed)
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun removePagesOverwrite() {
+        val currentState = _state.value
+        val sourceFile = currentState.sourceFile ?: return
+        val pagesToRemove = sourceFile.pages.filter { it.isSelected }.map { it.pageNumber }
+
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
+            val tempFile = File(context.cacheDir, "removepages_overwrite_${System.currentTimeMillis()}.pdf")
+            val result = pdfToolsRepository.removePages(
+                inputPath = sourceFile.path,
+                outputPath = tempFile.absolutePath,
+                pagesToRemove = pagesToRemove,
+                onProgress = { progress -> _state.update { it.copy(progress = progress) } }
+            )
+
+            result.fold(
+                onSuccess = {
+                    if (!FileOperations.writeFileToUri(context, tempFile, sourceFile.uri)) {
+                        tempFile.delete()
+                        _state.update {
+                            it.copy(
+                                isProcessing = false,
+                                error = context.getString(R.string.tool_error_replace_original)
+                            )
+                        }
+                        return@launch
+                    }
+                    try {
+                        tempFile.copyTo(File(sourceFile.path), overwrite = true)
+                    } catch (e: Exception) {
+                        Timber.e(e, "Failed to refresh cache after overwrite")
+                    }
+                    tempFile.delete()
+                    finishRemoveSuccess(
+                        localPath = sourceFile.path,
+                        displayName = sourceFile.name,
+                        originalPageCount = sourceFile.pageCount,
+                        removedCount = pagesToRemove.size
+                    )
+                },
+                onFailure = { error ->
+                    tempFile.delete()
+                    Timber.e(error, "Remove pages failed")
+                    _state.update {
+                        it.copy(
+                            isProcessing = false,
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_remove_pages_failed)
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun validateRemove(
+        currentState: RemovePagesState,
+        requireFileName: Boolean = true
+    ): Boolean {
+        val sourceFile = currentState.sourceFile
+        if (sourceFile == null) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
+            return false
+        }
+        if (requireFileName &&
+            !currentState.overwriteOriginal &&
+            currentState.outputFileName.isBlank()
+        ) {
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
+            return false
+        }
+        val pagesToRemove = sourceFile.pages.filter { it.isSelected }.map { it.pageNumber }
+        if (pagesToRemove.isEmpty()) {
+            _state.update {
+                it.copy(error = context.getString(R.string.tool_error_select_pages_remove))
+            }
+            return false
+        }
+        if (pagesToRemove.size >= sourceFile.pageCount) {
+            _state.update {
+                it.copy(error = context.getString(R.string.tool_error_cannot_remove_all))
+            }
+            return false
+        }
+        return true
+    }
+
+    private suspend fun finishRemoveSuccess(
+        localPath: String,
+        displayName: String,
+        originalPageCount: Int,
+        removedCount: Int
+    ) {
+        val outputFile = File(localPath)
+        val newPageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        val name = when {
+            displayName.endsWith(".pdf", ignoreCase = true) -> displayName
+            displayName.isNotBlank() -> "$displayName.pdf"
+            else -> outputFile.name
+        }
+        _state.update {
+            it.copy(
+                isProcessing = false,
+                progress = 1f,
+                result = RemovePagesResult(
+                    outputPath = localPath,
+                    displayName = name,
+                    originalPageCount = originalPageCount,
+                    newPageCount = newPageCount,
+                    removedPages = removedCount,
+                    fileSize = outputFile.length()
+                )
             )
         }
     }
@@ -393,16 +538,17 @@ class RemovePagesViewModel(
     }
 
     fun reset() {
+        synchronized(thumbnailCache) {
+            thumbnailCache.values.forEach { if (!it.isRecycled) it.recycle() }
+            thumbnailCache.clear()
+        }
+        thumbnailRequests.clear()
         _state.update { RemovePagesState() }
     }
 
-    private fun getOutputDirectory(): String {
-        val documentsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
-        val pdfToolsDir = File(documentsDir, Constants.OUTPUT_DIR_NAME)
-        if (!pdfToolsDir.exists()) {
-            pdfToolsDir.mkdirs()
-        }
-        return pdfToolsDir.absolutePath
+    companion object {
+        private const val MAX_CACHED_THUMBNAILS = 48
+        private const val PREFETCH_THUMBNAILS = 24
     }
 
     private fun copyUriToCache(uri: Uri): String? {
@@ -411,14 +557,15 @@ class RemovePagesViewModel(
                 return uri.path
             }
 
-            val inputStream = context.contentResolver.openInputStream(uri) ?: return null
             val fileName = getFileNameFromUri(uri) ?: "temp_${System.currentTimeMillis()}.pdf"
             val cacheFile = File(context.cacheDir, "removepages_temp/$fileName")
             cacheFile.parentFile?.mkdirs()
 
-            cacheFile.outputStream().use { output ->
-                inputStream.copyTo(output)
-            }
+            context.contentResolver.openInputStream(uri)?.use { inputStream ->
+                cacheFile.outputStream().use { output ->
+                    inputStream.copyTo(output)
+                }
+            } ?: return null
 
             cacheFile.absolutePath
         } catch (e: Exception) {

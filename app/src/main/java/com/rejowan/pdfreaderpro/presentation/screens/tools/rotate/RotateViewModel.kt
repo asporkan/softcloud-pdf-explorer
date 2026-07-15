@@ -2,13 +2,14 @@ package com.rejowan.pdfreaderpro.presentation.screens.tools.rotate
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Environment
 import android.os.ParcelFileDescriptor
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.util.Constants
 import kotlinx.coroutines.Dispatchers
@@ -27,10 +28,10 @@ import java.util.Locale
 /**
  * Rotation angle options.
  */
-enum class RotationAngle(val degrees: Int, val label: String) {
-    ROTATE_90(90, "90° Right"),
-    ROTATE_180(180, "180°"),
-    ROTATE_270(270, "90° Left")
+enum class RotationAngle(val degrees: Int, @StringRes val labelRes: Int) {
+    ROTATE_90(90, R.string.rotate_angle_90_right),
+    ROTATE_180(180, R.string.rotate_angle_180),
+    ROTATE_270(270, R.string.rotate_angle_90_left)
 }
 
 /**
@@ -44,14 +45,14 @@ enum class PageSelectionMode {
 /**
  * Quick selection options for pages.
  */
-enum class QuickSelection(val label: String) {
-    ALL("All"),
-    ODD("Odd"),
-    EVEN("Even"),
-    FIRST_HALF("First Half"),
-    SECOND_HALF("Second Half"),
-    EVERY_2ND("Every 2nd"),
-    EVERY_3RD("Every 3rd")
+enum class QuickSelection {
+    ALL,
+    ODD,
+    EVEN,
+    FIRST_HALF,
+    SECOND_HALF,
+    EVERY_2ND,
+    EVERY_3RD
 }
 
 data class PageInfo(
@@ -133,11 +134,21 @@ class RotateViewModel(
                     val baseName = file.nameWithoutExtension
                     _state.update { it.copy(outputFileName = "${baseName}_rotated") }
                 } else {
-                    _state.update { it.copy(isLoading = false, error = "Failed to load PDF file") }
+                    _state.update {
+                        it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf))
+                    }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
-                _state.update { it.copy(isLoading = false, error = "Failed to load PDF: ${e.message}") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = context.getString(
+                            R.string.tool_error_load_pdf_detail,
+                            e.message ?: ""
+                        )
+                    )
+                }
             }
         }
     }
@@ -301,12 +312,12 @@ class RotateViewModel(
         val sourceFile = currentState.sourceFile
 
         if (sourceFile == null) {
-            _state.update { it.copy(error = "Please select a PDF file first") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
             return
         }
 
         if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = "Please enter an output file name") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
             return
         }
 
@@ -316,7 +327,9 @@ class RotateViewModel(
             PageSelectionMode.SELECTED_PAGES -> {
                 val selected = sourceFile.pages.filter { it.isSelected }.map { it.pageNumber }
                 if (selected.isEmpty()) {
-                    _state.update { it.copy(error = "Please select at least one page to rotate") }
+                    _state.update {
+                        it.copy(error = context.getString(R.string.tool_error_select_pages_rotate))
+                    }
                     return
                 }
                 selected
@@ -367,7 +380,12 @@ class RotateViewModel(
                             tempFile.delete()
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to replace original file")
-                            _state.update { it.copy(isProcessing = false, error = "Failed to replace original file") }
+                            _state.update {
+                                it.copy(
+                                    isProcessing = false,
+                                    error = context.getString(R.string.tool_error_replace_original)
+                                )
+                            }
                             return@launch
                         }
                     }
@@ -393,7 +411,8 @@ class RotateViewModel(
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = error.message ?: "Rotation failed"
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_rotation_failed)
                         )
                     }
                 }

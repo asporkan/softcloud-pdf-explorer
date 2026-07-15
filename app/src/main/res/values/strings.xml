@@ -1357,4 +1357,203 @@
     <string name="of_files_count">of %d files</string>
     <string name="cd_close_selection">Close selection</string>
 
+    <!-- Sprint 3A — Tools hub categories & short card descriptions -->
+    <string name="tool_category_organize">Organize</string>
+    <string name="tool_category_edit">Edit</string>
+    <string name="tool_category_security">Security</string>
+    <string name="tool_category_convert">Convert</string>
+    <string name="tools_hub_merge_desc">Combine multiple PDF files into one</string>
+    <string name="tools_hub_split_desc">Split a PDF into multiple files</string>
+    <string name="tools_hub_compress_desc">Reduce file size while maintaining quality</string>
+    <string name="tools_hub_rotate_desc">Rotate individual or all pages</string>
+    <string name="tools_hub_reorder_desc">Rearrange page order in PDF</string>
+    <string name="tools_hub_remove_pages_desc">Delete specific pages from PDF</string>
+    <string name="tools_hub_watermark_desc">Add text or image watermark</string>
+    <string name="tools_hub_page_numbers_desc">Insert page numbers to PDF</string>
+    <string name="tools_hub_lock_desc">Add password protection</string>
+    <string name="tools_hub_unlock_desc">Remove password from PDF</string>
+    <string name="tools_hub_image_to_pdf_desc">Convert images to PDF document</string>
+    <string name="tools_hub_pdf_to_images_desc">Export PDF pages as image files</string>
+
+    <!-- Sprint 3B-1 — Shared tool errors -->
+    <string name="tool_error_load_pdf">Failed to load PDF file</string>
+    <string name="tool_error_load_pdf_detail">Failed to load PDF: %s</string>
+    <string name="tool_error_load_file">Failed to load file</string>
+    <string name="tool_error_select_pdf_first">Please select a PDF file first</string>
+    <string name="tool_error_enter_output_name">Please enter an output file name</string>
+    <string name="tool_error_enter_output_name_short">Enter an output file name</string>
+    <string name="tool_error_replace_original">Failed to replace original file</string>
+    <string name="tool_error_merge_failed">Merge failed</string>
+    <string name="tool_error_split_failed">Split failed</string>
+    <string name="tool_error_compress_failed">Compression failed</string>
+    <string name="tool_error_rotation_failed">Rotation failed</string>
+    <string name="tool_error_reorder_failed">Reorder failed</string>
+    <string name="tool_error_remove_pages_failed">Failed to remove pages</string>
+    <string name="tool_error_select_min_merge">Select at least 2 PDF files</string>
+    <string name="tool_error_select_pages_rotate">Please select at least one page to rotate</string>
+    <string name="tool_error_select_pages_remove">Please select at least one page to remove</string>
+    <string name="tool_error_cannot_remove_all">Cannot remove all pages from PDF</string>
+    <string name="tool_error_no_reorder_changes">No changes made to page order</string>
+    <string name="tool_error_enter_output_prefix">Enter an output prefix</string>
+    <string name="tool_error_enter_page_ranges">Enter page ranges</string>
+    <string name="tool_error_enter_pages_extract">Enter pages to extract</string>
+    <string name="tool_error_no_pdf_selected">No PDF file selected</string>
+    <string name="share_pdf_chooser">Share PDF</string>
+    <string name="tool_error_skipped_password">Skipped password-protected: %s</string>
+    <string name="tool_error_no_pages_selected_for">No pages selected for: %s</string>
+    <string name="tool_error_invalid_format">Invalid format: %s</string>
+    <string name="tool_error_page_at_least_one">Page must be at least 1</string>
+    <string name="tool_error_page_exceeds_max">Page %1$d exceeds max (%2$d)</string>
+    <string name="tool_error_invalid_range">Invalid range: %s</string>
+    <string name="tool_error_start_page_at_least_one">Start page must be at least 1</string>
+    <string name="tool_error_end_page_at_least_one">End page must be at least 1</string>
+    <string name="tool_error_start_page_exceeds_max">Start page %1$d exceeds max (%2$d)</string>
+    <string name="tool_error_end_page_exceeds_max">End page %1$d exceeds max (%2$d)</string>
+    <string name="tool_error_invalid_range_start_end">Invalid range: start &gt; end in %s</string>
+    <string name="tool_error_invalid_page">Invalid page: %s</string>
+    <string name="tool_error_invalid_page_ranges">Invalid page ranges</string>
+    <string name="tool_error_invalid_page_selection">Invalid page selection</string>
+
+    <!-- Sprint 3B-1 — Merge -->
+    <string name="merge_pdf_files_title">Merge PDF Files</string>
+    <string name="merge_pdf_files_desc">Select multiple PDF files to combine them into a single document</string>
+    <string name="add_more_files">Add more files</string>
+    <string name="merging_pdfs">Merging PDFs…</string>
+    <string name="merge_complete">Merge Complete!</string>
+    <string name="merge_more_files">Merge More Files</string>
+    <string name="select_pages">Select Pages</string>
+    <string name="total_pages_count">Total: %d pages</string>
+    <string name="selection_mode">Selection Mode</string>
+    <string name="all_pages_will_be_included">All %d pages will be included</string>
+    <string name="pages_range_will_be_included">Pages %1$s to %2$s will be included</string>
+    <string name="pages_partial_count">%1$d/%2$d pages</string>
+    <string name="size_and_pages_format">%1$s • %2$d pages</string>
+    <string name="page_selection_all">All pages (1-%d)</string>
+    <string name="page_selection_range">Pages %1$d-%2$d</string>
+    <string name="page_selection_custom">Pages %s</string>
+    <string name="page_selection_custom_more">Pages %1$s… (%2$d pages)</string>
+
+    <!-- Sprint 3B-1 — Split -->
+    <string name="split_pdf_file_title">Split PDF File</string>
+    <string name="split_pdf_file_desc">Select a PDF file to split into multiple parts or extract specific pages</string>
+    <string name="split_by_ranges">By Ranges</string>
+    <string name="split_every_n_pages">Every N Pages</string>
+    <string name="split_multiple_pdfs">Multiple PDFs</string>
+    <string name="split_auto_split">Auto split</string>
+    <string name="split_one_page_one_pdf">1 page = 1 PDF</string>
+    <string name="split_single_pdf">Single PDF</string>
+    <string name="split_extract_short">Extract</string>
+    <string name="will_create_pdf_files">Will create %d PDF file(s)</string>
+    <string name="split_every_n_pages_label">Split every %d page(s)</string>
+    <string name="will_create_files_max">Will create %1$d file(s) (max: %2$d pages)</string>
+    <string name="split_into_individual_pages">Split into individual pages</string>
+    <string name="will_create_separate_pdfs">Will create %d separate PDF files</string>
+    <string name="will_create_one_pdf_with_pages">Will create 1 PDF with %d page(s)</string>
+    <string name="splitting_pdf">Splitting PDF…</string>
+    <string name="split_complete">Split Complete!</string>
+    <string name="files_created_count">%d files created</string>
+    <string name="pages_and_mode_format">%1$d pages • %2$s</string>
+
+    <!-- Sprint 3B-1 — Compress -->
+    <string name="compress_pdf_file_title">Compress PDF File</string>
+    <string name="compress_pdf_file_desc">Select a PDF file to reduce its file size while maintaining quality</string>
+    <string name="tools_compress_low_desc">Minimal compression, best quality</string>
+    <string name="tools_compress_medium_desc">Balanced compression and quality</string>
+    <string name="tools_compress_high_desc">Maximum compression, smaller file</string>
+    <string name="already_optimized">Already optimized</string>
+    <string name="limited_potential">Limited potential</string>
+    <string name="contains_images_good_compression">Contains images • Good compression potential</string>
+    <string name="mostly_text_content">Mostly text content</string>
+    <string name="compress_save_estimate">(save %1$s • %2$d%%)</string>
+    <string name="compression_complete">Compression Complete!</string>
+    <string name="original_size">Original Size</string>
+    <string name="compressed_size_label">Compressed Size</string>
+    <string name="size_reduced_label">Size Reduced</string>
+    <string name="bytes_saved_format">(%s saved)</string>
+
+    <!-- Sprint 3B-1 — Rotate -->
+    <string name="rotate_angle_90_right">90° Right</string>
+    <string name="rotate_angle_180">180°</string>
+    <string name="rotate_angle_90_left">90° Left</string>
+
+    <!-- Sprint 3B-1 — Remove Pages -->
+    <string name="remove_pages_empty_desc">Select and delete unwanted pages from your PDF</string>
+    <string name="tap_to_select">TAP TO SELECT</string>
+    <string name="selected_pages_will_be_removed">Selected pages will be removed from the PDF</string>
+    <string name="quick_select_first_n">First N</string>
+    <string name="quick_select_last_n">Last N</string>
+    <string name="quick_select_before">Before</string>
+    <string name="quick_select_after">After</string>
+    <string name="select_before_page">Select Before Page</string>
+    <string name="select_after_page">Select After Page</string>
+    <string name="pages_before_selected">Pages before this will be selected</string>
+    <string name="pages_after_selected">Pages after this will be selected</string>
+    <string name="select_first_n_pages">Select First N Pages</string>
+    <string name="select_last_n_pages">Select Last N Pages</string>
+    <string name="first_n_pages_selected">First N pages will be selected</string>
+    <string name="last_n_pages_selected">Last N pages will be selected</string>
+    <string name="number_of_pages">Number of pages</string>
+    <string name="page_number_label">Page number</string>
+    <string name="select_pages_range_hint">Select pages from start to end (inclusive)</string>
+    <string name="validation_start_page_range">Start page must be 1-%d</string>
+    <string name="validation_end_page_range">End page must be 1-%d</string>
+    <string name="validation_start_less_than_end">Start must be less than end</string>
+    <string name="validation_value_range">Value must be 1-%d</string>
+    <string name="cannot_remove_all_pages">Cannot remove all pages</string>
+    <string name="pages_removed_title">Pages Removed!</string>
+    <string name="remove_n_pages_btn">Remove %d Page(s)</string>
+    <string name="pages_removed_simple">%d page(s) removed</string>
+    <string name="selected_for_removal">%1$d of %2$d selected for removal</string>
+
+    <!-- Sprint 3B-2 — Lock/Unlock/Watermark/PageNumbers/ImageToPdf/PdfToImage -->
+    <string name="tool_error_lock_failed">Failed to lock PDF</string>
+    <string name="tool_error_unlock_failed">Failed to unlock PDF</string>
+    <string name="tool_error_enter_password">Please enter the password</string>
+    <string name="tool_error_enter_watermark_text">Please enter watermark text</string>
+    <string name="tool_error_select_watermark_image">Please select a watermark image</string>
+    <string name="tool_error_add_at_least_one_image">Please add at least one image</string>
+    <string name="tool_error_convert_images_failed">Failed to convert images</string>
+    <string name="tool_error_export_images_failed">Failed to export images</string>
+    <string name="tool_error_add_watermark_failed">Failed to add watermark</string>
+    <string name="tool_error_add_page_numbers_failed">Failed to add page numbers</string>
+    <string name="tool_error_load_image">Failed to load image</string>
+    <string name="tool_error_owner_password_required">Owner password is required</string>
+    <string name="tool_error_owner_password_min">Owner password must be at least 4 characters</string>
+    <string name="tool_error_user_password_min">User password must be at least 4 characters</string>
+    <string name="position_tiled">Tiled</string>
+    <string name="section_format">FORMAT</string>
+    <string name="section_margins">MARGINS</string>
+    <string name="section_apply_to_pages">APPLY TO PAGES</string>
+    <string name="pages_all_paren">All (%d)</string>
+    <string name="skip_first">Skip First</string>
+    <string name="horizontal_margin">Horizontal Margin</string>
+    <string name="vertical_margin">Vertical Margin</string>
+    <string name="format_number_only">Number Only</string>
+    <string name="format_number_only_example">1, 2, 3…</string>
+    <string name="format_page_x">Page X</string>
+    <string name="format_page_x_example">Page 1, Page 2…</string>
+    <string name="format_x_of_y">X of Y</string>
+    <string name="format_x_of_y_example">1 of 10, 2 of 10…</string>
+    <string name="format_dash_x">- X -</string>
+    <string name="format_dash_x_example">- 1 -, - 2 -…</string>
+    <string name="format_custom_example">Custom prefix/suffix</string>
+    <string name="format_dash_preview">- %d -</string>
+    <string name="format_x_of_y_preview">%1$d of %2$d</string>
+    <string name="number_format_meta">%1$s • %2$dpt • %3$s</string>
+    <string name="tap_to_select_image">Tap to select image</string>
+    <string name="watermark_sample">Sample</string>
+    <string name="watermark_default_text">CONFIDENTIAL</string>
+    <string name="watermark_complete">Watermark Added!</string>
+    <string name="applied_to_pages">Applied to %d pages</string>
+    <string name="numbered_pages_of">Numbered %1$d of %2$d pages</string>
+    <string name="adding_numbers">Adding Numbers…</string>
+    <string name="pick_color">Pick Color</string>
+    <string name="custom_watermark_color">Custom watermark color</string>
+    <string name="page_number_color">Page number color</string>
+    <string name="rgb_values">RGB(%1$d, %2$d, %3$d)</string>
+    <string name="share_images_chooser">Share Images</string>
+    <string name="share_image_chooser">Share Image</string>
+    <string name="view_image">View Image</string>
+    <string name="images_section_count">IMAGES (%d)</string>
+
 </resources>

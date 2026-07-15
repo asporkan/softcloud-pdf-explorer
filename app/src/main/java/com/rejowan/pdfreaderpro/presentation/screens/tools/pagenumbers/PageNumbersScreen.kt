@@ -196,7 +196,12 @@ fun PageNumbersScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_pdf_chooser)
+                                )
+                            )
                         },
                         onNumberMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }
@@ -289,7 +294,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Add Page Numbers",
+            stringResource(R.string.tool_add_page_numbers),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
@@ -297,7 +302,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            "Insert page numbers to your PDF document",
+            stringResource(R.string.tool_page_numbers_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -359,7 +364,7 @@ private fun PageNumbersContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Position selector (compact)
-        SectionLabel("POSITION")
+        SectionLabel(stringResource(R.string.section_position))
         Spacer(modifier = Modifier.height(8.dp))
         CompactPositionSelector(
             selectedPosition = state.position,
@@ -369,7 +374,7 @@ private fun PageNumbersContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Format selector
-        SectionLabel("FORMAT")
+        SectionLabel(stringResource(R.string.section_format))
         Spacer(modifier = Modifier.height(8.dp))
         FormatSelector(
             selectedFormat = state.format,
@@ -411,12 +416,12 @@ private fun PageNumbersContent(
         Spacer(modifier = Modifier.height(16.dp))
 
         // Appearance settings
-        SectionLabel("APPEARANCE")
+        SectionLabel(stringResource(R.string.section_appearance))
         Spacer(modifier = Modifier.height(8.dp))
 
         // Font size
         SettingSlider(
-            label = "Font Size",
+            label = stringResource(R.string.font_size),
             value = state.fontSize,
             valueRange = 8f..72f,
             valueLabel = "${state.fontSize.toInt()}pt",
@@ -429,7 +434,7 @@ private fun PageNumbersContent(
         var showColorPicker by remember { mutableStateOf(false) }
 
         Text(
-            "Color",
+            stringResource(R.string.color),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -504,11 +509,11 @@ private fun PageNumbersContent(
         Spacer(modifier = Modifier.height(20.dp))
 
         // Margins
-        SectionLabel("MARGINS")
+        SectionLabel(stringResource(R.string.section_margins))
         Spacer(modifier = Modifier.height(8.dp))
 
         SettingSlider(
-            label = "Horizontal Margin",
+            label = stringResource(R.string.horizontal_margin),
             value = state.marginX,
             valueRange = 0f..200f,
             valueLabel = "${state.marginX.toInt()}pt",
@@ -518,7 +523,7 @@ private fun PageNumbersContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         SettingSlider(
-            label = "Vertical Margin",
+            label = stringResource(R.string.vertical_margin),
             value = state.marginY,
             valueRange = 0f..200f,
             valueLabel = "${state.marginY.toInt()}pt",
@@ -528,7 +533,7 @@ private fun PageNumbersContent(
         Spacer(modifier = Modifier.height(20.dp))
 
         // Page selection
-        SectionLabel("APPLY TO PAGES")
+        SectionLabel(stringResource(R.string.section_apply_to_pages))
         Spacer(modifier = Modifier.height(8.dp))
         PageSelector(
             selectedSelection = state.pageSelection,
@@ -594,7 +599,7 @@ private fun PageNumbersContent(
                 colors = CheckboxDefaults.colors(checkedColor = AccentOrange)
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Overwrite original file", style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.overwrite_original_file), style = MaterialTheme.typography.bodyMedium)
         }
 
         // Output filename
@@ -658,14 +663,7 @@ private fun CompactPositionSelector(
                 onClick = { onPositionChange(position) },
                 label = {
                     Text(
-                        when (position) {
-                            NumberPosition.TOP_LEFT -> "Top Left"
-                            NumberPosition.TOP_CENTER -> "Top Center"
-                            NumberPosition.TOP_RIGHT -> "Top Right"
-                            NumberPosition.BOTTOM_LEFT -> "Bottom Left"
-                            NumberPosition.BOTTOM_CENTER -> "Bottom Center"
-                            NumberPosition.BOTTOM_RIGHT -> "Bottom Right"
-                        },
+                        stringResource(position.labelRes),
                         style = MaterialTheme.typography.labelSmall
                     )
                 },
@@ -691,7 +689,7 @@ private fun FormatSelector(
         onExpandedChange = { expanded = it }
     ) {
         OutlinedTextField(
-            value = "${selectedFormat.label} (${selectedFormat.example})",
+            value = "${stringResource(selectedFormat.labelRes)} (${stringResource(selectedFormat.exampleRes)})",
             onValueChange = {},
             readOnly = true,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
@@ -708,9 +706,9 @@ private fun FormatSelector(
                 DropdownMenuItem(
                     text = {
                         Column {
-                            Text(format.label, fontWeight = FontWeight.Medium)
+                            Text(stringResource(format.labelRes), fontWeight = FontWeight.Medium)
                             Text(
-                                format.example,
+                                stringResource(format.exampleRes),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -805,9 +803,9 @@ private fun PageNumberPreview(
 ) {
     val previewText = when (format) {
         NumberFormat.NUMBER_ONLY -> "$startNumber"
-        NumberFormat.PAGE_X -> "Page $startNumber"
-        NumberFormat.X_OF_Y -> "$startNumber of 10"
-        NumberFormat.DASH_X_DASH -> "- $startNumber -"
+        NumberFormat.PAGE_X -> stringResource(R.string.page_number_title, startNumber)
+        NumberFormat.X_OF_Y -> stringResource(R.string.format_x_of_y_preview, startNumber, 10)
+        NumberFormat.DASH_X_DASH -> stringResource(R.string.format_dash_preview, startNumber)
         NumberFormat.CUSTOM -> "$customPrefix$startNumber$customSuffix"
     }
 
@@ -871,7 +869,12 @@ private fun PageNumberPreview(
             }
             Spacer(modifier = Modifier.height(6.dp))
             Text(
-                "${format.label} • ${fontSize.toInt()}pt • ${position.name.replace("_", " ")}",
+                stringResource(
+                    R.string.number_format_meta,
+                    stringResource(format.labelRes),
+                    fontSize.toInt(),
+                    stringResource(position.labelRes)
+                ),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -962,12 +965,12 @@ private fun ColorPickerSheet(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            "Pick Color",
+                            stringResource(R.string.pick_color),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            "Page number color",
+                            stringResource(R.string.page_number_color),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1001,7 +1004,7 @@ private fun ColorPickerSheet(
                             color = AccentOrange
                         )
                         Text(
-                            "RGB($red, $green, $blue)",
+                            stringResource(R.string.rgb_values, red, green, blue),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1095,15 +1098,15 @@ private fun ColorPickerSheet(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // RGB Sliders
-                ColorSlider(label = "R", value = red.toFloat(), color = Color.Red, onValueChange = {
+                ColorSlider(label = stringResource(R.string.color_r), value = red.toFloat(), color = Color.Red, onValueChange = {
                     red = it.toInt(); redText = red.toString(); updateHexFromRgb()
                 })
                 Spacer(modifier = Modifier.height(4.dp))
-                ColorSlider(label = "G", value = green.toFloat(), color = Color.Green, onValueChange = {
+                ColorSlider(label = stringResource(R.string.color_g), value = green.toFloat(), color = Color.Green, onValueChange = {
                     green = it.toInt(); greenText = green.toString(); updateHexFromRgb()
                 })
                 Spacer(modifier = Modifier.height(4.dp))
-                ColorSlider(label = "B", value = blue.toFloat(), color = Color.Blue, onValueChange = {
+                ColorSlider(label = stringResource(R.string.color_b), value = blue.toFloat(), color = Color.Blue, onValueChange = {
                     blue = it.toInt(); blueText = blue.toString(); updateHexFromRgb()
                 })
 
@@ -1213,7 +1216,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.ALL,
                 onClick = { onSelectionChange(PageSelection.ALL) },
-                label = { Text("All ($totalPages)", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.pages_all_paren, totalPages),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
                     selectedLabelColor = AccentOrange
@@ -1222,7 +1230,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.ODD,
                 onClick = { onSelectionChange(PageSelection.ODD) },
-                label = { Text("Odd", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.quick_select_odd),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
                     selectedLabelColor = AccentOrange
@@ -1231,7 +1244,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.EVEN,
                 onClick = { onSelectionChange(PageSelection.EVEN) },
-                label = { Text("Even", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.quick_select_even),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
                     selectedLabelColor = AccentOrange
@@ -1240,7 +1258,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.SKIP_FIRST,
                 onClick = { onSelectionChange(PageSelection.SKIP_FIRST) },
-                label = { Text("Skip First", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.skip_first),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
                     selectedLabelColor = AccentOrange
@@ -1249,7 +1272,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.CUSTOM,
                 onClick = { onSelectionChange(PageSelection.CUSTOM) },
-                label = { Text("Custom", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.custom),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
                     selectedLabelColor = AccentOrange
@@ -1325,7 +1353,7 @@ private fun SuccessState(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Page Numbers Added!",
+            stringResource(R.string.page_numbers_added),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
@@ -1333,7 +1361,7 @@ private fun SuccessState(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            "Numbered ${result.numberedPages} of ${result.pageCount} pages",
+            stringResource(R.string.numbered_pages_of, result.numberedPages, result.pageCount),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1371,7 +1399,11 @@ private fun SuccessState(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        "${result.pageCount} pages - ${formatFileSize(result.fileSize)}",
+                        stringResource(
+                            R.string.pages_size_format,
+                            result.pageCount,
+                            formatFileSize(result.fileSize)
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1396,7 +1428,7 @@ private fun SuccessState(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Open", maxLines = 1)
+                Text(stringResource(R.string.open), maxLines = 1)
             }
             OutlinedButton(
                 onClick = onShare,
@@ -1408,7 +1440,7 @@ private fun SuccessState(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Share", maxLines = 1)
+                Text(stringResource(R.string.share), maxLines = 1)
             }
         }
 
@@ -1423,13 +1455,13 @@ private fun SuccessState(
                 onClick = onNumberMore,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("New File", maxLines = 1)
+                Text(stringResource(R.string.new_file), maxLines = 1)
             }
             Button(
                 onClick = onDone,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Done", maxLines = 1)
+                Text(stringResource(R.string.done), maxLines = 1)
             }
         }
     }
@@ -1465,7 +1497,7 @@ private fun ProcessingOverlay(progress: Float) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    "Adding Numbers...",
+                    stringResource(R.string.adding_numbers),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Medium
                     )

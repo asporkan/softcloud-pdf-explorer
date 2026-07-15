@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Environment
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.util.Constants
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,7 +73,11 @@ class UnlockViewModel(
                                 isPasswordProtected = isProtected
                             ),
                             isLoading = false,
-                            error = if (!isProtected) "This PDF is not password protected" else null,
+                            error = if (!isProtected) {
+                                context.getString(R.string.pdf_not_protected)
+                            } else {
+                                null
+                            },
                             result = null
                         )
                     }
@@ -81,11 +86,16 @@ class UnlockViewModel(
                     val baseName = file.nameWithoutExtension
                     _state.update { it.copy(outputFileName = "${baseName}_unlocked") }
                 } else {
-                    _state.update { it.copy(isLoading = false, error = "Failed to load PDF file") }
+                    _state.update { it.copy(isLoading = false, error = context.getString(R.string.tool_error_load_pdf)) }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
-                _state.update { it.copy(isLoading = false, error = "Failed to load PDF: ${e.message}") }
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = context.getString(R.string.tool_error_load_pdf_detail, e.message ?: "")
+                    )
+                }
             }
         }
     }
@@ -107,22 +117,22 @@ class UnlockViewModel(
         val sourceFile = currentState.sourceFile
 
         if (sourceFile == null) {
-            _state.update { it.copy(error = "Please select a PDF file first") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
             return
         }
 
         if (!sourceFile.isPasswordProtected) {
-            _state.update { it.copy(error = "This PDF is not password protected") }
+            _state.update { it.copy(error = context.getString(R.string.pdf_not_protected)) }
             return
         }
 
         if (currentState.password.isBlank()) {
-            _state.update { it.copy(error = "Please enter the password") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_password)) }
             return
         }
 
         if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = "Please enter an output file name") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
             return
         }
 
@@ -169,7 +179,12 @@ class UnlockViewModel(
                             tempFile.delete()
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to replace original file")
-                            _state.update { it.copy(isProcessing = false, error = "Failed to replace original file") }
+                            _state.update {
+                                it.copy(
+                                    isProcessing = false,
+                                    error = context.getString(R.string.tool_error_replace_original)
+                                )
+                            }
                             return@launch
                         }
                     }
@@ -194,7 +209,7 @@ class UnlockViewModel(
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = error.message ?: "Failed to unlock PDF"
+                            error = error.message ?: context.getString(R.string.tool_error_unlock_failed)
                         )
                     }
                 }

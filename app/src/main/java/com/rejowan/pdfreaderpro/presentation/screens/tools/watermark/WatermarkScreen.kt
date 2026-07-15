@@ -205,7 +205,12 @@ fun WatermarkScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_pdf_chooser)
+                                )
+                            )
                         },
                         onWatermarkMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }
@@ -299,7 +304,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Add Watermark",
+            stringResource(R.string.tool_add_watermark),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
@@ -307,7 +312,7 @@ private fun EmptyState(onSelectFile: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            "Add text or image watermark to your PDF pages",
+            stringResource(R.string.tool_watermark_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
@@ -521,7 +526,7 @@ private fun WatermarkContent(
                     colors = CheckboxDefaults.colors(checkedColor = AccentCyan)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Overwrite original file", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.overwrite_original_file), style = MaterialTheme.typography.bodyMedium)
             }
 
             // Output filename
@@ -583,7 +588,7 @@ private fun WatermarkTypeTabs(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    "Text",
+                    stringResource(R.string.watermark_type_text),
                     style = MaterialTheme.typography.labelLarge,
                     color = if (selectedType == WatermarkType.TEXT)
                         AccentCyan else MaterialTheme.colorScheme.onSurfaceVariant
@@ -615,7 +620,7 @@ private fun WatermarkTypeTabs(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    "Image",
+                    stringResource(R.string.watermark_type_image),
                     style = MaterialTheme.typography.labelLarge,
                     color = if (selectedType == WatermarkType.IMAGE)
                         AccentCyan else MaterialTheme.colorScheme.onSurfaceVariant
@@ -656,7 +661,7 @@ private fun TextWatermarkSettings(
 
         // Font size slider
         SettingSlider(
-            label = "Font Size",
+            label = stringResource(R.string.font_size),
             value = fontSize,
             valueRange = 12f..200f,
             valueLabel = "${fontSize.toInt()}pt",
@@ -669,7 +674,7 @@ private fun TextWatermarkSettings(
         var showColorPicker by remember { mutableStateOf(false) }
 
         Text(
-            "Color",
+            stringResource(R.string.color),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -726,7 +731,7 @@ private fun TextWatermarkSettings(
 
         // Opacity slider
         SettingSlider(
-            label = "Opacity",
+            label = stringResource(R.string.opacity),
             value = opacity,
             valueRange = 1f..100f,
             valueLabel = "${opacity.toInt()}%",
@@ -737,7 +742,7 @@ private fun TextWatermarkSettings(
 
         // Rotation slider
         SettingSlider(
-            label = "Rotation",
+            label = stringResource(R.string.rotation),
             value = rotation,
             valueRange = -180f..180f,
             valueLabel = "${rotation.toInt()}°",
@@ -793,7 +798,7 @@ private fun ImageWatermarkSettings(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            "Tap to select image",
+                            stringResource(R.string.tap_to_select_image),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -806,7 +811,7 @@ private fun ImageWatermarkSettings(
 
         // Scale slider
         SettingSlider(
-            label = "Scale",
+            label = stringResource(R.string.scale),
             value = scale,
             valueRange = 1f..100f,
             valueLabel = "${scale.toInt()}%",
@@ -817,7 +822,7 @@ private fun ImageWatermarkSettings(
 
         // Opacity slider
         SettingSlider(
-            label = "Opacity",
+            label = stringResource(R.string.opacity),
             value = opacity,
             valueRange = 1f..100f,
             valueLabel = "${opacity.toInt()}%",
@@ -980,12 +985,12 @@ private fun ColorPickerSheet(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            "Pick Color",
+                            stringResource(R.string.pick_color),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
                         Text(
-                            "Custom watermark color",
+                            stringResource(R.string.custom_watermark_color),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1019,7 +1024,7 @@ private fun ColorPickerSheet(
                             color = AccentCyan
                         )
                         Text(
-                            "RGB($red, $green, $blue)",
+                            stringResource(R.string.rgb_values, red, green, blue),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -1114,7 +1119,7 @@ private fun ColorPickerSheet(
 
                 // RGB Sliders
                 ColorSlider(
-                    label = "R",
+                    label = stringResource(R.string.color_r),
                     value = red.toFloat(),
                     color = Color.Red,
                     onValueChange = {
@@ -1125,7 +1130,7 @@ private fun ColorPickerSheet(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 ColorSlider(
-                    label = "G",
+                    label = stringResource(R.string.color_g),
                     value = green.toFloat(),
                     color = Color.Green,
                     onValueChange = {
@@ -1136,7 +1141,7 @@ private fun ColorPickerSheet(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 ColorSlider(
-                    label = "B",
+                    label = stringResource(R.string.color_b),
                     value = blue.toFloat(),
                     color = Color.Blue,
                     onValueChange = {
@@ -1257,7 +1262,7 @@ private fun PositionSelector(
 ) {
     Column {
         Text(
-            "POSITION",
+            stringResource(R.string.section_position),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing * 1.5f
@@ -1276,7 +1281,12 @@ private fun PositionSelector(
                 FilterChip(
                     selected = selectedPosition == position,
                     onClick = { onPositionChange(position) },
-                    label = { Text(position.label, style = MaterialTheme.typography.labelSmall) },
+                    label = {
+                        Text(
+                            stringResource(position.labelRes),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    },
                     colors = FilterChipDefaults.filterChipColors(
                         selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
                         selectedLabelColor = AccentCyan
@@ -1417,7 +1427,7 @@ private fun WatermarkElement(
 ) {
     when (watermarkType) {
         WatermarkType.TEXT -> {
-            val displayText = text.ifEmpty { "Sample" }
+            val displayText = text.ifEmpty { stringResource(R.string.watermark_sample) }
             Text(
                 text = displayText,
                 fontSize = fontSize.coerceIn(5f, if (isTiled) 10f else 16f).sp,
@@ -1464,7 +1474,7 @@ private fun PageSelector(
 
     Column {
         Text(
-            "APPLY TO PAGES",
+            stringResource(R.string.section_apply_to_pages),
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing * 1.5f
@@ -1481,7 +1491,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.ALL,
                 onClick = { onSelectionChange(PageSelection.ALL) },
-                label = { Text("All ($totalPages)", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.pages_all_paren, totalPages),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
                     selectedLabelColor = AccentCyan
@@ -1490,7 +1505,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.ODD,
                 onClick = { onSelectionChange(PageSelection.ODD) },
-                label = { Text("Odd", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.quick_select_odd),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
                     selectedLabelColor = AccentCyan
@@ -1499,7 +1519,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.EVEN,
                 onClick = { onSelectionChange(PageSelection.EVEN) },
-                label = { Text("Even", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.quick_select_even),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
                     selectedLabelColor = AccentCyan
@@ -1508,7 +1533,12 @@ private fun PageSelector(
             FilterChip(
                 selected = selectedSelection == PageSelection.CUSTOM,
                 onClick = { onSelectionChange(PageSelection.CUSTOM) },
-                label = { Text("Custom", style = MaterialTheme.typography.labelSmall) },
+                label = {
+                    Text(
+                        stringResource(R.string.custom),
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                },
                 colors = FilterChipDefaults.filterChipColors(
                     selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
                     selectedLabelColor = AccentCyan
@@ -1569,7 +1599,7 @@ private fun SuccessState(
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            "Watermark Added!",
+            stringResource(R.string.watermark_complete),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold
         )
@@ -1577,7 +1607,7 @@ private fun SuccessState(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            "Applied to ${result.pageCount} pages",
+            stringResource(R.string.applied_to_pages, result.pageCount),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -1615,7 +1645,11 @@ private fun SuccessState(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        "${result.pageCount} pages - ${formatFileSize(result.fileSize)}",
+                        stringResource(
+                            R.string.pages_size_format,
+                            result.pageCount,
+                            formatFileSize(result.fileSize)
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -1640,7 +1674,7 @@ private fun SuccessState(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Open", maxLines = 1)
+                Text(stringResource(R.string.open), maxLines = 1)
             }
             OutlinedButton(
                 onClick = onShare,
@@ -1652,7 +1686,7 @@ private fun SuccessState(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Share", maxLines = 1)
+                Text(stringResource(R.string.share), maxLines = 1)
             }
         }
 
@@ -1667,13 +1701,13 @@ private fun SuccessState(
                 onClick = onWatermarkMore,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("New File", maxLines = 1)
+                Text(stringResource(R.string.new_file), maxLines = 1)
             }
             Button(
                 onClick = onDone,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Done", maxLines = 1)
+                Text(stringResource(R.string.done), maxLines = 1)
             }
         }
     }
@@ -1709,7 +1743,7 @@ private fun ProcessingOverlay(progress: Float) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    "Adding Watermark...",
+                    stringResource(R.string.adding_watermark),
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Medium
                     )

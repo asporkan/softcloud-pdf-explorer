@@ -190,7 +190,9 @@ fun RotateScreen(
                                 setDataAndType(uri, "application/pdf")
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(intent, "Open with"))
+                            context.startActivity(
+                                Intent.createChooser(intent, context.getString(R.string.open_with))
+                            )
                         },
                         onShare = {
                             val file = File(result.outputPath)
@@ -204,7 +206,12 @@ fun RotateScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_pdf_chooser)
+                                )
+                            )
                         },
                         onRotateMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }
@@ -490,7 +497,7 @@ private fun RotationChip(
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
-                angle.label,
+                stringResource(angle.labelRes),
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                 ),

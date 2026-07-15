@@ -6,8 +6,10 @@ import android.graphics.pdf.PdfRenderer
 import android.net.Uri
 import android.os.Environment
 import android.os.ParcelFileDescriptor
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.util.Constants
 import kotlinx.coroutines.Dispatchers
@@ -27,13 +29,13 @@ import java.util.Locale
  * Compression quality levels with their corresponding quality values.
  */
 enum class CompressionLevel(
-    val label: String,
-    val description: String,
+    @StringRes val labelRes: Int,
+    @StringRes val descriptionRes: Int,
     val quality: Float
 ) {
-    LOW("Low", "Minimal compression, best quality", 0.8f),
-    MEDIUM("Medium", "Balanced compression and quality", 0.5f),
-    HIGH("High", "Maximum compression, smaller file", 0.2f)
+    LOW(R.string.compression_low, R.string.tools_compress_low_desc, 0.8f),
+    MEDIUM(R.string.compression_medium, R.string.tools_compress_medium_desc, 0.5f),
+    HIGH(R.string.compression_high, R.string.tools_compress_high_desc, 0.2f)
 }
 
 data class CompressionEstimate(
@@ -138,11 +140,18 @@ class CompressViewModel(
                     val baseName = file.nameWithoutExtension
                     _state.update { it.copy(outputFileName = "${baseName}_compressed") }
                 } else {
-                    _state.update { it.copy(error = "Failed to load PDF file") }
+                    _state.update { it.copy(error = context.getString(R.string.tool_error_load_pdf)) }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
-                _state.update { it.copy(error = "Failed to load PDF: ${e.message}") }
+                _state.update {
+                    it.copy(
+                        error = context.getString(
+                            R.string.tool_error_load_pdf_detail,
+                            e.message ?: ""
+                        )
+                    )
+                }
             }
         }
     }
@@ -202,12 +211,12 @@ class CompressViewModel(
         val sourceFile = currentState.sourceFile
 
         if (sourceFile == null) {
-            _state.update { it.copy(error = "Please select a PDF file first") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_select_pdf_first)) }
             return
         }
 
         if (currentState.outputFileName.isBlank()) {
-            _state.update { it.copy(error = "Please enter an output file name") }
+            _state.update { it.copy(error = context.getString(R.string.tool_error_enter_output_name)) }
             return
         }
 
@@ -261,7 +270,7 @@ class CompressViewModel(
                             _state.update {
                                 it.copy(
                                     isProcessing = false,
-                                    error = "Failed to replace original file"
+                                    error = context.getString(R.string.tool_error_replace_original)
                                 )
                             }
                             return@launch
@@ -289,7 +298,8 @@ class CompressViewModel(
                     _state.update {
                         it.copy(
                             isProcessing = false,
-                            error = error.message ?: "Compression failed"
+                            error = error.message
+                                ?: context.getString(R.string.tool_error_compress_failed)
                         )
                     }
                 }

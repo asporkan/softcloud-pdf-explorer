@@ -1358,4 +1358,203 @@
     <string name="of_files_count">%d dosyadan</string>
     <string name="cd_close_selection">Seçimi kapat</string>
 
+    <!-- Sprint 3A — Tools hub categories & short card descriptions -->
+    <string name="tool_category_organize">Düzenle</string>
+    <string name="tool_category_edit">Düzenleme</string>
+    <string name="tool_category_security">Güvenlik</string>
+    <string name="tool_category_convert">Dönüştür</string>
+    <string name="tools_hub_merge_desc">Birden fazla PDF dosyasını tek dosyada birleştirin</string>
+    <string name="tools_hub_split_desc">Bir PDF\'yi birden fazla dosyaya bölün</string>
+    <string name="tools_hub_compress_desc">Kaliteyi koruyarak dosya boyutunu küçültün</string>
+    <string name="tools_hub_rotate_desc">Tek tek veya tüm sayfaları döndürün</string>
+    <string name="tools_hub_reorder_desc">PDF\'deki sayfa sırasını yeniden düzenleyin</string>
+    <string name="tools_hub_remove_pages_desc">PDF\'den belirli sayfaları silin</string>
+    <string name="tools_hub_watermark_desc">Metin veya görsel filigranı ekleyin</string>
+    <string name="tools_hub_page_numbers_desc">PDF\'ye sayfa numaraları ekleyin</string>
+    <string name="tools_hub_lock_desc">Şifre koruması ekleyin</string>
+    <string name="tools_hub_unlock_desc">PDF\'deki şifreyi kaldırın</string>
+    <string name="tools_hub_image_to_pdf_desc">Görselleri PDF belgesine dönüştürün</string>
+    <string name="tools_hub_pdf_to_images_desc">PDF sayfalarını görsel dosyası olarak dışa aktarın</string>
+
+    <!-- Sprint 3B-1 — Shared tool errors -->
+    <string name="tool_error_load_pdf">PDF dosyası yüklenemedi</string>
+    <string name="tool_error_load_pdf_detail">PDF yüklenemedi: %s</string>
+    <string name="tool_error_load_file">Dosya yüklenemedi</string>
+    <string name="tool_error_select_pdf_first">Önce bir PDF dosyası seçin</string>
+    <string name="tool_error_enter_output_name">Lütfen bir çıktı dosya adı girin</string>
+    <string name="tool_error_enter_output_name_short">Çıktı dosya adını girin</string>
+    <string name="tool_error_replace_original">Orijinal dosya değiştirilemedi</string>
+    <string name="tool_error_merge_failed">Birleştirme başarısız</string>
+    <string name="tool_error_split_failed">Bölme başarısız</string>
+    <string name="tool_error_compress_failed">Sıkıştırma başarısız</string>
+    <string name="tool_error_rotation_failed">Döndürme başarısız</string>
+    <string name="tool_error_reorder_failed">Yeniden sıralama başarısız</string>
+    <string name="tool_error_remove_pages_failed">Sayfalar silinemedi</string>
+    <string name="tool_error_select_min_merge">En az 2 PDF dosyası seçin</string>
+    <string name="tool_error_select_pages_rotate">Döndürmek için en az bir sayfa seçin</string>
+    <string name="tool_error_select_pages_remove">Silmek için en az bir sayfa seçin</string>
+    <string name="tool_error_cannot_remove_all">PDF\'deki tüm sayfalar silinemez</string>
+    <string name="tool_error_no_reorder_changes">Sayfa sırasında değişiklik yok</string>
+    <string name="tool_error_enter_output_prefix">Çıktı önekini girin</string>
+    <string name="tool_error_enter_page_ranges">Sayfa aralıklarını girin</string>
+    <string name="tool_error_enter_pages_extract">Ayıklanacak sayfaları girin</string>
+    <string name="tool_error_no_pdf_selected">PDF dosyası seçilmedi</string>
+    <string name="share_pdf_chooser">PDF Paylaş</string>
+    <string name="tool_error_skipped_password">Şifre korumalı atlandı: %s</string>
+    <string name="tool_error_no_pages_selected_for">Sayfa seçilmedi: %s</string>
+    <string name="tool_error_invalid_format">Geçersiz biçim: %s</string>
+    <string name="tool_error_page_at_least_one">Sayfa en az 1 olmalıdır</string>
+    <string name="tool_error_page_exceeds_max">Sayfa %1$d üst sınırı aşıyor (%2$d)</string>
+    <string name="tool_error_invalid_range">Geçersiz aralık: %s</string>
+    <string name="tool_error_start_page_at_least_one">Başlangıç sayfası en az 1 olmalıdır</string>
+    <string name="tool_error_end_page_at_least_one">Bitiş sayfası en az 1 olmalıdır</string>
+    <string name="tool_error_start_page_exceeds_max">Başlangıç sayfası %1$d üst sınırı aşıyor (%2$d)</string>
+    <string name="tool_error_end_page_exceeds_max">Bitiş sayfası %1$d üst sınırı aşıyor (%2$d)</string>
+    <string name="tool_error_invalid_range_start_end">Geçersiz aralık: başlangıç &gt; bitiş (%s)</string>
+    <string name="tool_error_invalid_page">Geçersiz sayfa: %s</string>
+    <string name="tool_error_invalid_page_ranges">Geçersiz sayfa aralıkları</string>
+    <string name="tool_error_invalid_page_selection">Geçersiz sayfa seçimi</string>
+
+    <!-- Sprint 3B-1 — Merge -->
+    <string name="merge_pdf_files_title">PDF Dosyalarını Birleştir</string>
+    <string name="merge_pdf_files_desc">Tek belgede birleştirmek için birden fazla PDF dosyası seçin</string>
+    <string name="add_more_files">Daha fazla dosya ekle</string>
+    <string name="merging_pdfs">PDF\'ler birleştiriliyor…</string>
+    <string name="merge_complete">Birleştirme Tamamlandı!</string>
+    <string name="merge_more_files">Daha Fazla Birleştir</string>
+    <string name="select_pages">Sayfa Seç</string>
+    <string name="total_pages_count">Toplam: %d sayfa</string>
+    <string name="selection_mode">Seçim Modu</string>
+    <string name="all_pages_will_be_included">Tüm %d sayfa dahil edilecek</string>
+    <string name="pages_range_will_be_included">%1$s ile %2$s arası sayfalar dahil edilecek</string>
+    <string name="pages_partial_count">%1$d/%2$d sayfa</string>
+    <string name="size_and_pages_format">%1$s • %2$d sayfa</string>
+    <string name="page_selection_all">Tüm sayfalar (1-%d)</string>
+    <string name="page_selection_range">Sayfalar %1$d-%2$d</string>
+    <string name="page_selection_custom">Sayfalar %s</string>
+    <string name="page_selection_custom_more">Sayfalar %1$s… (%2$d sayfa)</string>
+
+    <!-- Sprint 3B-1 — Split -->
+    <string name="split_pdf_file_title">PDF Dosyasını Böl</string>
+    <string name="split_pdf_file_desc">Birden fazla parçaya bölmek veya belirli sayfaları ayıklamak için bir PDF seçin</string>
+    <string name="split_by_ranges">Aralıklara Göre</string>
+    <string name="split_every_n_pages">Her N Sayfada</string>
+    <string name="split_multiple_pdfs">Birden fazla PDF</string>
+    <string name="split_auto_split">Otomatik böl</string>
+    <string name="split_one_page_one_pdf">1 sayfa = 1 PDF</string>
+    <string name="split_single_pdf">Tek PDF</string>
+    <string name="split_extract_short">Ayıkla</string>
+    <string name="will_create_pdf_files">%d PDF dosyası oluşturulacak</string>
+    <string name="split_every_n_pages_label">Her %d sayfada böl</string>
+    <string name="will_create_files_max">%1$d dosya oluşturulacak (en fazla: %2$d sayfa)</string>
+    <string name="split_into_individual_pages">Tek tek sayfalara böl</string>
+    <string name="will_create_separate_pdfs">%d ayrı PDF dosyası oluşturulacak</string>
+    <string name="will_create_one_pdf_with_pages">%d sayfalı 1 PDF oluşturulacak</string>
+    <string name="splitting_pdf">PDF bölünüyor…</string>
+    <string name="split_complete">Bölme Tamamlandı!</string>
+    <string name="files_created_count">%d dosya oluşturuldu</string>
+    <string name="pages_and_mode_format">%1$d sayfa • %2$s</string>
+
+    <!-- Sprint 3B-1 — Compress -->
+    <string name="compress_pdf_file_title">PDF Dosyasını Sıkıştır</string>
+    <string name="compress_pdf_file_desc">Kaliteyi koruyarak dosya boyutunu küçültmek için bir PDF seçin</string>
+    <string name="tools_compress_low_desc">Minimal sıkıştırma, en iyi kalite</string>
+    <string name="tools_compress_medium_desc">Dengeli sıkıştırma ve kalite</string>
+    <string name="tools_compress_high_desc">Maksimum sıkıştırma, daha küçük dosya</string>
+    <string name="already_optimized">Zaten optimize</string>
+    <string name="limited_potential">Sınırlı potansiyel</string>
+    <string name="contains_images_good_compression">Görsel içeriyor • İyi sıkıştırma potansiyeli</string>
+    <string name="mostly_text_content">Çoğunlukla metin içeriği</string>
+    <string name="compress_save_estimate">(%1$s tasarruf • %2$d%%)</string>
+    <string name="compression_complete">Sıkıştırma Tamamlandı!</string>
+    <string name="original_size">Orijinal Boyut</string>
+    <string name="compressed_size_label">Sıkıştırılmış Boyut</string>
+    <string name="size_reduced_label">Boyut Azaldı</string>
+    <string name="bytes_saved_format">(%s tasarruf)</string>
+
+    <!-- Sprint 3B-1 — Rotate -->
+    <string name="rotate_angle_90_right">90° Sağa</string>
+    <string name="rotate_angle_180">180°</string>
+    <string name="rotate_angle_90_left">90° Sola</string>
+
+    <!-- Sprint 3B-1 — Remove Pages -->
+    <string name="remove_pages_empty_desc">PDF\'nizden istenmeyen sayfaları seçip silin</string>
+    <string name="tap_to_select">SEÇMEK İÇİN DOKUNUN</string>
+    <string name="selected_pages_will_be_removed">Seçilen sayfalar PDF\'den silinecek</string>
+    <string name="quick_select_first_n">İlk N</string>
+    <string name="quick_select_last_n">Son N</string>
+    <string name="quick_select_before">Önceki</string>
+    <string name="quick_select_after">Sonraki</string>
+    <string name="select_before_page">Sayfadan Öncekileri Seç</string>
+    <string name="select_after_page">Sayfadan Sonrakileri Seç</string>
+    <string name="pages_before_selected">Bu sayfadan önceki sayfalar seçilecek</string>
+    <string name="pages_after_selected">Bu sayfadan sonraki sayfalar seçilecek</string>
+    <string name="select_first_n_pages">İlk N Sayfayı Seç</string>
+    <string name="select_last_n_pages">Son N Sayfayı Seç</string>
+    <string name="first_n_pages_selected">İlk N sayfa seçilecek</string>
+    <string name="last_n_pages_selected">Son N sayfa seçilecek</string>
+    <string name="number_of_pages">Sayfa sayısı</string>
+    <string name="page_number_label">Sayfa numarası</string>
+    <string name="select_pages_range_hint">Başlangıçtan bitişe (dahil) sayfaları seçin</string>
+    <string name="validation_start_page_range">Başlangıç sayfası 1-%d olmalıdır</string>
+    <string name="validation_end_page_range">Bitiş sayfası 1-%d olmalıdır</string>
+    <string name="validation_start_less_than_end">Başlangıç bitişten küçük olmalıdır</string>
+    <string name="validation_value_range">Değer 1-%d olmalıdır</string>
+    <string name="cannot_remove_all_pages">Tüm sayfalar silinemez</string>
+    <string name="pages_removed_title">Sayfalar Silindi!</string>
+    <string name="remove_n_pages_btn">%d Sayfa Sil</string>
+    <string name="pages_removed_simple">%d sayfa silindi</string>
+    <string name="selected_for_removal">Silinmek üzere %1$d / %2$d seçildi</string>
+
+    <!-- Sprint 3B-2 — Lock/Unlock/Watermark/PageNumbers/ImageToPdf/PdfToImage -->
+    <string name="tool_error_lock_failed">PDF kilitlenemedi</string>
+    <string name="tool_error_unlock_failed">PDF kilidi açılamadı</string>
+    <string name="tool_error_enter_password">Lütfen şifreyi girin</string>
+    <string name="tool_error_enter_watermark_text">Lütfen filigran metnini girin</string>
+    <string name="tool_error_select_watermark_image">Lütfen bir filigran görseli seçin</string>
+    <string name="tool_error_add_at_least_one_image">Lütfen en az bir görsel ekleyin</string>
+    <string name="tool_error_convert_images_failed">Görseller dönüştürülemedi</string>
+    <string name="tool_error_export_images_failed">Görseller dışa aktarılamadı</string>
+    <string name="tool_error_add_watermark_failed">Filigran eklenemedi</string>
+    <string name="tool_error_add_page_numbers_failed">Sayfa numaraları eklenemedi</string>
+    <string name="tool_error_load_image">Görsel yüklenemedi</string>
+    <string name="tool_error_owner_password_required">Sahip şifresi gerekli</string>
+    <string name="tool_error_owner_password_min">Sahip şifresi en az 4 karakter olmalıdır</string>
+    <string name="tool_error_user_password_min">Kullanıcı şifresi en az 4 karakter olmalıdır</string>
+    <string name="position_tiled">Döşeli</string>
+    <string name="section_format">BİÇİM</string>
+    <string name="section_margins">KENAR BOŞLUKLARI</string>
+    <string name="section_apply_to_pages">UYGULANACAK SAYFALAR</string>
+    <string name="pages_all_paren">Tümü (%d)</string>
+    <string name="skip_first">İlkini Atla</string>
+    <string name="horizontal_margin">Yatay Kenar Boşluğu</string>
+    <string name="vertical_margin">Dikey Kenar Boşluğu</string>
+    <string name="format_number_only">Yalnızca Numara</string>
+    <string name="format_number_only_example">1, 2, 3…</string>
+    <string name="format_page_x">Sayfa X</string>
+    <string name="format_page_x_example">Sayfa 1, Sayfa 2…</string>
+    <string name="format_x_of_y">X / Y</string>
+    <string name="format_x_of_y_example">1 / 10, 2 / 10…</string>
+    <string name="format_dash_x">- X -</string>
+    <string name="format_dash_x_example">- 1 -, - 2 -…</string>
+    <string name="format_custom_example">Özel önek/sonek</string>
+    <string name="format_dash_preview">- %d -</string>
+    <string name="format_x_of_y_preview">%1$d / %2$d</string>
+    <string name="number_format_meta">%1$s • %2$dpt • %3$s</string>
+    <string name="tap_to_select_image">Görsel seçmek için dokunun</string>
+    <string name="watermark_sample">Örnek</string>
+    <string name="watermark_default_text">GİZLİ</string>
+    <string name="watermark_complete">Filigran Eklendi!</string>
+    <string name="applied_to_pages">%d sayfaya uygulandı</string>
+    <string name="numbered_pages_of">%2$d sayfanın %1$d tanesi numaralandırıldı</string>
+    <string name="adding_numbers">Numaralar Ekleniyor…</string>
+    <string name="pick_color">Renk Seç</string>
+    <string name="custom_watermark_color">Özel filigran rengi</string>
+    <string name="page_number_color">Sayfa numarası rengi</string>
+    <string name="rgb_values">RGB(%1$d, %2$d, %3$d)</string>
+    <string name="share_images_chooser">Görselleri Paylaş</string>
+    <string name="share_image_chooser">Görseli Paylaş</string>
+    <string name="view_image">Görseli Görüntüle</string>
+    <string name="images_section_count">GÖRSELLER (%d)</string>
+
 </resources>

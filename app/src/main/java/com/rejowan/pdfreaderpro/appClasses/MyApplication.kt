@@ -3,11 +3,13 @@ package com.rejowan.pdfreaderpro.appClasses
 import android.app.Application
 import android.os.Handler
 import android.os.Looper
+import com.itextpdf.kernel.utils.XmlProcessorCreator
 import com.rejowan.pdfreaderpro.BuildConfig
 import com.rejowan.pdfreaderpro.di.dataStoreModule
 import com.rejowan.pdfreaderpro.di.databaseModule
 import com.rejowan.pdfreaderpro.di.repositoryModule
 import com.rejowan.pdfreaderpro.di.viewModelModule
+import com.rejowan.pdfreaderpro.util.AndroidSafeXmlParserFactory
 import com.rejowan.pdfreaderpro.util.GlobalErrorHandler
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -22,6 +24,9 @@ class MyApplication : Application() {
 
         // Critical path: Initialize Timber first for error logging
         initTimber()
+
+        // iText XMP on Android — before any PDF tool opens a document
+        XmlProcessorCreator.setXmlParserFactory(AndroidSafeXmlParserFactory())
 
         // Critical path: Initialize Koin (required for dependency injection)
         initKoin()

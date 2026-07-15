@@ -166,7 +166,12 @@ fun ImageToPdfScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_pdf_chooser)
+                                )
+                            )
                         },
                         onConvertMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }
@@ -312,7 +317,7 @@ private fun ImageListContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        stringResource(R.string.section_images) + " (${state.images.size})",
+                        stringResource(R.string.images_section_count, state.images.size),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = MaterialTheme.typography.labelSmall.letterSpacing * 1.5f

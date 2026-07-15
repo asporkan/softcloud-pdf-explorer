@@ -65,6 +65,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -90,6 +91,7 @@ import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyGridState
@@ -116,7 +118,16 @@ fun ReorderScreen(
     val pdfPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri ->
-        uri?.let { viewModel.setSourceFile(it) }
+        uri?.let {
+            FileOperations.takePersistableReadWritePermission(context, it)
+            viewModel.setSourceFile(it)
+        }
+    }
+
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        uri?.let { viewModel.reorderToUri(it) }
     }
 
     Scaffold(
@@ -168,10 +179,17 @@ fun ReorderScreen(
                 }
         ) {
             when {
-                state.sourceFile == null && state.result == null -> {
-                    EmptyState(
-                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
-                    )
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            CircularProgressIndicator(color = AccentIndigo)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(stringResource(R.string.loading_pages))
+                        }
+                    }
                 }
                 state.result != null -> {
                     val result = requireNotNull(state.result)
@@ -189,7 +207,9 @@ fun ReorderScreen(
                                 setDataAndType(uri, "application/pdf")
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(intent, "Open with"))
+                            context.startActivity(
+                                Intent.createChooser(intent, context.getString(R.string.open_with))
+                            )
                         },
                         onShare = {
                             val file = File(result.outputPath)
@@ -203,23 +223,21 @@ fun ReorderScreen(
                                 putExtra(Intent.EXTRA_STREAM, uri)
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    shareIntent,
+                                    context.getString(R.string.share_pdf_chooser)
+                                )
+                            )
                         },
                         onReorderMore = { viewModel.reset() },
                         onDone = { navController.popBackStack() }
                     )
                 }
-                state.isLoading -> {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentIndigo)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(stringResource(R.string.loading_pages))
-                        }
-                    }
+                state.sourceFile == null -> {
+                    EmptyState(
+                        onSelectFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
+                    )
                 }
                 else -> {
                     Column(modifier = Modifier.fillMaxSize()) {
@@ -275,7 +293,8 @@ fun ReorderScreen(
                                         isDragging = isDragging,
                                         hasChanged = page.originalIndex != index,
                                         modifier = Modifier.longPressDraggableHandle(),
-                                        onTap = { focusManager.clearFocus() }
+                                        onTap = { focusManager.clearFocus() },
+                                        onVisible = { viewModel.ensureThumbnail(page.originalIndex) }
                                     )
                                 }
                             }
@@ -291,7 +310,20 @@ fun ReorderScreen(
                             progress = state.progress,
                             canSave = state.sourceFile != null && state.hasChanges,
                             error = state.error,
-                            onSave = { viewModel.reorder() },
+                            onSave = {
+                                if (state.overwriteOriginal) {
+                                    viewModel.reorder()
+                                } else {
+                                    val suggested = state.outputFileName
+                                        .ifBlank { state.sourceFile?.name?.substringBeforeLast('.') ?: "reordered" }
+                                    val name = if (suggested.endsWith(".pdf", ignoreCase = true)) {
+                                        suggested
+                                    } else {
+                                        "$suggested.pdf"
+                                    }
+                                    createDocumentLauncher.launch(name)
+                                }
+                            },
                             onClearError = { viewModel.clearError() }
                         )
                     }
@@ -385,8 +417,12 @@ private fun PageThumbnailItem(
     isDragging: Boolean,
     hasChanged: Boolean,
     modifier: Modifier = Modifier,
-    onTap: () -> Unit
+    onTap: () -> Unit,
+    onVisible: () -> Unit
 ) {
+    LaunchedEffect(page.originalIndex) {
+        onVisible()
+    }
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -609,7 +645,15 @@ private fun ReorderBottomSection(
                 Icon(Icons.Default.SwapVert, contentDescription = stringResource(R.string.cd_decorative))
                 Spacer(modifier = Modifier.width(8.dp))
             }
-            Text(stringResource(if (isProcessing) R.string.saving else R.string.save_reordered_pdf))
+            Text(
+                stringResource(
+                    when {
+                        isProcessing -> R.string.saving
+                        overwriteOriginal -> R.string.save_reordered_pdf
+                        else -> R.string.save_as
+                    }
+                )
+            )
         }
     }
 }
@@ -689,7 +733,7 @@ private fun SuccessState(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        File(result.outputPath).name,
+                        result.displayName,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
