@@ -33,6 +33,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Bookmark
+import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.MoreHoriz
 import androidx.compose.material.icons.rounded.Numbers
@@ -84,6 +85,7 @@ fun MoreOptionsSheet(
     onPrintClick: () -> Unit,
     onShareClick: () -> Unit,
     onDocumentInfoClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val configuration = LocalConfiguration.current
@@ -97,6 +99,7 @@ fun MoreOptionsSheet(
             onPrintClick = onPrintClick,
             onShareClick = onShareClick,
             onDocumentInfoClick = onDocumentInfoClick,
+            onDeleteClick = onDeleteClick,
             onDismiss = onDismiss
         )
     } else {
@@ -107,6 +110,7 @@ fun MoreOptionsSheet(
             onPrintClick = onPrintClick,
             onShareClick = onShareClick,
             onDocumentInfoClick = onDocumentInfoClick,
+            onDeleteClick = onDeleteClick,
             onDismiss = onDismiss
         )
     }
@@ -121,6 +125,7 @@ private fun MoreOptionsBottomSheet(
     onPrintClick: () -> Unit,
     onShareClick: () -> Unit,
     onDocumentInfoClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState()
@@ -139,8 +144,11 @@ private fun MoreOptionsBottomSheet(
             onPrintClick = onPrintClick,
             onShareClick = onShareClick,
             onDocumentInfoClick = onDocumentInfoClick,
+            onDeleteClick = onDeleteClick,
             onDismiss = onDismiss,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -153,6 +161,7 @@ private fun MoreOptionsSideSheet(
     onPrintClick: () -> Unit,
     onShareClick: () -> Unit,
     onDocumentInfoClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
     var isVisible by remember { mutableStateOf(false) }
@@ -207,6 +216,7 @@ private fun MoreOptionsSideSheet(
                     onPrintClick = onPrintClick,
                     onShareClick = onShareClick,
                     onDocumentInfoClick = onDocumentInfoClick,
+                    onDeleteClick = onDeleteClick,
                     onDismiss = onDismiss,
                     modifier = Modifier
                         .fillMaxSize()
@@ -229,6 +239,7 @@ private fun MoreOptionsSheetContent(
     onPrintClick: () -> Unit,
     onShareClick: () -> Unit,
     onDocumentInfoClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -337,6 +348,30 @@ private fun MoreOptionsSheetContent(
             },
             animationDelay = 250
         )
+
+        Spacer(modifier = Modifier.height(10.dp))
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // File Management Section
+        SectionLabel(text = stringResource(R.string.file_management))
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        OptionItem(
+            icon = Icons.Rounded.DeleteForever,
+            title = stringResource(R.string.delete),
+            subtitle = stringResource(R.string.delete_file_permanently),
+            accentColor = MaterialTheme.colorScheme.error,
+            isDestructive = true,
+            onClick = {
+                onDismiss()
+                onDeleteClick()
+            },
+            animationDelay = 300
+        )
     }
 }
 
@@ -404,7 +439,8 @@ private fun OptionItem(
     accentColor: Color,
     onClick: () -> Unit,
     animationDelay: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDestructive: Boolean = false
 ) {
     var isVisible by remember { mutableStateOf(false) }
 
@@ -463,7 +499,7 @@ private fun OptionItem(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = if (isDestructive) accentColor else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,

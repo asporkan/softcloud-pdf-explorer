@@ -67,6 +67,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -283,9 +284,11 @@ private fun TocSheetContent(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 val subtitle = when {
-                    selectedTab == 0 && items.isNotEmpty() -> "${items.size} ${if (items.size == 1) "section" else "sections"}"
-                    selectedTab == 1 && attachments.isNotEmpty() -> "${attachments.size} ${if (attachments.size == 1) "file" else "files"}"
-                    else -> "Browse document structure"
+                    selectedTab == 0 && items.isNotEmpty() ->
+                        pluralStringResource(R.plurals.reader_toc_sections, items.size, items.size)
+                    selectedTab == 1 && attachments.isNotEmpty() ->
+                        pluralStringResource(R.plurals.reader_attachment_files, attachments.size, attachments.size)
+                    else -> stringResource(R.string.reader_toc_browse_structure)
                 }
                 Text(
                     text = subtitle,
@@ -631,9 +634,10 @@ private fun AttachmentListItem(
             Spacer(modifier = Modifier.width(10.dp))
 
             // File name
+            val attachmentTitle = attachment.title.ifBlank { stringResource(R.string.unknown) }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = attachment.title,
+                    text = attachmentTitle,
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontWeight = FontWeight.Medium
                     ),
@@ -642,9 +646,13 @@ private fun AttachmentListItem(
                     overflow = TextOverflow.Ellipsis
                 )
                 // Show file extension as subtitle with tap hint
-                val extension = attachment.title.substringAfterLast('.', "").uppercase()
+                val extension = attachmentTitle.substringAfterLast('.', "").uppercase()
                 Text(
-                    text = if (extension.isNotEmpty() && extension.length <= 4) "$extension file · Tap to open" else "Tap to open",
+                    text = if (extension.isNotEmpty() && extension.length <= 4) {
+                        stringResource(R.string.reader_attachment_tap_open_ext, extension)
+                    } else {
+                        stringResource(R.string.reader_attachment_tap_open)
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                 )

@@ -43,6 +43,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,7 +64,8 @@ fun PageScrubber(
     onPageChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
     isHorizontal: Boolean = false,
-    isDarkMode: Boolean = true
+    isDarkMode: Boolean = true,
+    bottomClearance: Dp = 80.dp
 ) {
     if (isHorizontal) {
         HorizontalPageScrubber(
@@ -81,7 +83,8 @@ fun PageScrubber(
             isVisible = isVisible,
             onPageChange = onPageChange,
             modifier = modifier,
-            isDarkMode = isDarkMode
+            isDarkMode = isDarkMode,
+            bottomClearance = bottomClearance
         )
     }
 }
@@ -93,7 +96,8 @@ private fun VerticalPageScrubber(
     isVisible: Boolean,
     onPageChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    isDarkMode: Boolean = true
+    isDarkMode: Boolean = true,
+    bottomClearance: Dp = 80.dp
 ) {
     val density = LocalDensity.current
 
@@ -134,7 +138,7 @@ private fun VerticalPageScrubber(
     ) {
         Column(
             modifier = Modifier
-                .padding(end = 6.dp, top = 86.dp, bottom = 80.dp),
+                .padding(end = 6.dp, top = 86.dp, bottom = bottomClearance),
             horizontalAlignment = Alignment.End
         ) {
             // Track area with droplet

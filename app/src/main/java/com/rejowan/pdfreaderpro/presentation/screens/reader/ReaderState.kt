@@ -1,5 +1,6 @@
 package com.rejowan.pdfreaderpro.presentation.screens.reader
 
+import androidx.annotation.StringRes
 import com.rejowan.pdfreaderpro.data.local.database.entity.BookmarkEntity
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.AttachmentItem
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.OutlineItem
@@ -10,7 +11,7 @@ import com.rejowan.pdfreaderpro.presentation.screens.reader.components.OutlineIt
 data class ReaderState(
     // Loading and error states
     val isLoading: Boolean = true,
-    val error: String? = null,
+    val error: ReaderError? = null,
 
     // Document info
     val documentPath: String = "",
@@ -118,6 +119,12 @@ data class ReaderState(
 }
 
 /**
+ * Load failure shown on the error screen. Carries a string resource, not text,
+ * so the UI resolves it in the current locale.
+ */
+data class ReaderError(@StringRes val messageRes: Int)
+
+/**
  * Scroll mode for PDF viewer.
  */
 enum class ScrollMode {
@@ -148,14 +155,16 @@ enum class ReadingTheme {
  * Reader events for one-time actions.
  */
 sealed class ReaderEvent {
-    data class ShowMessage(val message: String) : ReaderEvent()
+    /** [messageRes] and [args] are resolved by the UI so texts follow the active locale. */
+    data class ShowMessage(@StringRes val messageRes: Int, val args: List<Any> = emptyList()) : ReaderEvent()
     data class NavigateToPage(val page: Int) : ReaderEvent()
     data object DocumentClosed : ReaderEvent()
     data object DocumentDeleted : ReaderEvent()
     data object ShareDocument : ReaderEvent()
+    data object OpenWithExternal : ReaderEvent()
     data object SaveDocumentPicker : ReaderEvent()
     data object FavoriteAdded : ReaderEvent()
-    data class Error(val message: String) : ReaderEvent()
+    data class Error(@StringRes val messageRes: Int, val args: List<Any> = emptyList()) : ReaderEvent()
 }
 
 /**

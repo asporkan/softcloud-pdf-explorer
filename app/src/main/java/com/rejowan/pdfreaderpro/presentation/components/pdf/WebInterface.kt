@@ -76,7 +76,9 @@ internal class WebInterface(private val pdfViewer: PdfViewer) {
 
     @JavascriptInterface
     fun onFindMatchChange(current: Int, total: Int) = post {
-        if (findMatchStarted) pdfViewer.listeners.forEach { it.onFindMatchChange(current, total) }
+        // Not gated on findMatchStarted: next/previous only change the current match after the
+        // search completed, and the listener ignores updates when no query is active.
+        pdfViewer.listeners.forEach { it.onFindMatchChange(current, total) }
     }
 
     @JavascriptInterface

@@ -13,6 +13,7 @@ import com.rejowan.pdfreaderpro.domain.model.ReadingTheme as DomainReadingTheme
 import com.rejowan.pdfreaderpro.domain.model.ScreenOrientation as DomainScreenOrientation
 import com.rejowan.pdfreaderpro.domain.model.ScrollMode as DomainScrollMode
 import com.rejowan.pdfreaderpro.domain.repository.FavoriteRepository
+import com.rejowan.pdfreaderpro.domain.repository.PdfFileRepository
 import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
 import com.rejowan.pdfreaderpro.domain.repository.RecentRepository
 import kotlinx.coroutines.flow.first
@@ -22,6 +23,7 @@ import com.rejowan.pdfreaderpro.presentation.screens.reader.components.Attachmen
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.OutlineItem
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.PdfInfo
 import android.os.Environment
+import com.rejowan.pdfreaderpro.presentation.components.pdf.InvalidPDFException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,6 +41,7 @@ class ReaderViewModel(
     private val favoriteRepository: FavoriteRepository,
     private val preferencesRepository: PreferencesRepository,
     private val bookmarkDao: BookmarkDao,
+    private val pdfFileRepository: PdfFileRepository,
     private val applicationContext: Context,
     savedStateHandle: SavedStateHandle,
     private val passwordStorage: PasswordStorage = PasswordStorage(applicationContext)
@@ -219,10 +222,16 @@ class ReaderViewModel(
                 }
             },
             onPageLoadFailed = { exception ->
+                Timber.w(exception, "PDF load failed")
+                val messageRes = if (exception is InvalidPDFException) {
+                    R.string.error_invalid_pdf
+                } else {
+                    R.string.error_loading_pdf
+                }
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        error = exception.message ?: "Failed to load PDF"
+                        error = ReaderError(messageRes)
                     )
                 }
             },
@@ -299,12 +308,7 @@ class ReaderViewModel(
                 _state.update { it.copy(isSearching = true) }
             },
             onFindMatchChange = { current, total ->
-                _state.update {
-                    it.copy(
-                        searchResultCount = total,
-                        currentSearchIndex = current
-                    )
-                }
+                onSearchMatchChanged(current, total)
             },
             onFindMatchComplete = { found ->
                 _state.update { it.copy(isSearching = false) }
@@ -325,13 +329,13 @@ class ReaderViewModel(
                     )
                 }
                 viewModelScope.launch {
-                    _events.send(ReaderEvent.ShowMessage("Reached end of document"))
+                    _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_end_of_document))
                 }
             },
             onLoadAttachments = { sidebarItems ->
                 val attachmentItems = sidebarItems.map { item ->
                     AttachmentItem(
-                        title = item.title ?: "Unknown",
+                        title = item.title.orEmpty(),
                         id = item.id,
                         dest = item.dest
                     )
@@ -352,6 +356,17 @@ class ReaderViewModel(
                 onAction(ReaderAction.OpenLink(link))
             }
         )
+    }
+
+    /**
+     * PDF.js reports the current match 1-based (0 when there is none); the state keeps it
+     * 0-based because the search bar adds one for display and uses it to enable prev/next.
+     */
+    internal fun onSearchMatchChanged(current: Int, total: Int) {
+        if (_state.value.searchQuery.isBlank()) return
+        val count = total.coerceAtLeast(0)
+        val index = if (count == 0) 0 else (current - 1).coerceIn(0, count - 1)
+        _state.update { it.copy(searchResultCount = count, currentSearchIndex = index) }
     }
 
     private fun flattenOutline(
@@ -777,32 +792,12 @@ class ReaderViewModel(
             _state.update { it.copy(isRemoveFavoriteDialogVisible = false) }
             favoriteRepository.removeFavorite(pdfPath)
             _state.update { it.copy(isFavorite = false) }
-            _events.send(ReaderEvent.ShowMessage("Removed from favourites"))
+            _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_removed_from_favourites))
         }
     }
 
     private fun openWithExternal() {
-        viewModelScope.launch {
-            try {
-                val file = File(pdfPath)
-                val uri = androidx.core.content.FileProvider.getUriForFile(
-                    applicationContext,
-                    "${applicationContext.packageName}.provider",
-                    file
-                )
-                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
-                    setDataAndType(uri, "application/pdf")
-                    addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                // Create chooser to let user pick the app
-                val chooser = android.content.Intent.createChooser(intent, "Open with")
-                chooser.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-                applicationContext.startActivity(chooser)
-            } catch (e: Exception) {
-                _events.send(ReaderEvent.Error("Failed to open with external app: ${e.message}"))
-            }
-        }
+        viewModelScope.launch { _events.send(ReaderEvent.OpenWithExternal) }
     }
 
     private fun openLink(url: String) {
@@ -814,7 +809,7 @@ class ReaderViewModel(
                 }
                 applicationContext.startActivity(intent)
             } catch (e: Exception) {
-                _events.send(ReaderEvent.Error("Failed to open link: ${e.message}"))
+                _events.send(ReaderEvent.Error(R.string.reader_err_open_link, listOf(e.detail())))
             }
         }
     }
@@ -837,9 +832,9 @@ class ReaderViewModel(
                 }
 
                 sourceFile.copyTo(finalFile)
-                _events.send(ReaderEvent.ShowMessage("Saved to Downloads: ${finalFile.name}"))
+                _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_saved_to_downloads, listOf(finalFile.name)))
             } catch (e: Exception) {
-                _events.send(ReaderEvent.Error("Failed to save document: ${e.message}"))
+                _events.send(ReaderEvent.Error(R.string.reader_err_save_document, listOf(e.detail())))
             }
         }
     }
@@ -847,19 +842,17 @@ class ReaderViewModel(
     private fun deleteDocument() {
         viewModelScope.launch {
             _state.update { it.copy(isDeleteDialogVisible = false) }
-            try {
-                val file = File(pdfPath)
-                if (file.exists() && file.delete()) {
+            pdfFileRepository.deletePdf(pdfPath)
+                .onSuccess {
                     recentRepository.removeRecent(pdfPath)
                     favoriteRepository.removeFavorite(pdfPath)
                     passwordStorage.removePassword(pdfPath)
                     _events.send(ReaderEvent.DocumentDeleted)
-                } else {
-                    _events.send(ReaderEvent.Error("Failed to delete file"))
                 }
-            } catch (e: Exception) {
-                _events.send(ReaderEvent.Error("Error: ${e.message}"))
-            }
+                .onFailure { e ->
+                    Timber.w(e, "Failed to delete document")
+                    _events.send(ReaderEvent.Error(R.string.reader_err_delete_file))
+                }
         }
     }
 
@@ -870,9 +863,9 @@ class ReaderViewModel(
             val file = File(downloadsDir, finalFileName)
 
             file.writeBytes(fileBytes)
-            _events.send(ReaderEvent.ShowMessage("Saved to Downloads: $finalFileName"))
+            _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_saved_to_downloads, listOf(finalFileName)))
         } catch (e: Exception) {
-            _events.send(ReaderEvent.Error("Failed to save attachment: ${e.message}"))
+            _events.send(ReaderEvent.Error(R.string.reader_err_save_attachment, listOf(e.detail())))
         }
     }
 
@@ -911,11 +904,11 @@ class ReaderViewModel(
                 applicationContext.startActivity(intent)
             } else {
                 // No app found, offer to save instead
-                _events.send(ReaderEvent.ShowMessage("No app found to open this file. Saving to Downloads..."))
+                _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_no_app_for_attachment))
                 saveAttachmentFile(fileBytes, fileName)
             }
         } catch (e: Exception) {
-            _events.send(ReaderEvent.Error("Failed to open attachment: ${e.message}"))
+            _events.send(ReaderEvent.Error(R.string.reader_err_open_attachment, listOf(e.detail())))
         }
     }
 
@@ -925,7 +918,7 @@ class ReaderViewModel(
             pdfViewer?.printFile(fileName)
         } catch (e: Exception) {
             viewModelScope.launch {
-                _events.send(ReaderEvent.Error("Print error: ${e.message}"))
+                _events.send(ReaderEvent.Error(R.string.reader_err_print, listOf(e.detail())))
             }
         }
     }
@@ -967,9 +960,9 @@ class ReaderViewModel(
                         inputStream.copyTo(outputStream)
                     }
                 }
-                _events.send(ReaderEvent.ShowMessage("Document saved successfully"))
+                _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_document_saved))
             } catch (e: Exception) {
-                _events.send(ReaderEvent.Error("Failed to save: ${e.message}"))
+                _events.send(ReaderEvent.Error(R.string.reader_err_save, listOf(e.detail())))
             }
         }
     }
@@ -977,4 +970,6 @@ class ReaderViewModel(
     fun getDocumentFileName(): String {
         return File(pdfPath).name
     }
+
+    private fun Throwable.detail(): String = localizedMessage ?: javaClass.simpleName
 }

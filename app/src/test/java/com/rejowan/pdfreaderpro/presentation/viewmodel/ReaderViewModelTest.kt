@@ -10,6 +10,7 @@ import com.rejowan.pdfreaderpro.data.local.database.entity.BookmarkEntity
 import com.rejowan.pdfreaderpro.domain.model.AppPreferences
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
 import com.rejowan.pdfreaderpro.domain.repository.FavoriteRepository
+import com.rejowan.pdfreaderpro.domain.repository.PdfFileRepository
 import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
 import com.rejowan.pdfreaderpro.domain.repository.RecentRepository
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ReaderAction
@@ -47,6 +48,7 @@ class ReaderViewModelTest {
     private lateinit var favoriteRepository: FavoriteRepository
     private lateinit var preferencesRepository: PreferencesRepository
     private lateinit var bookmarkDao: BookmarkDao
+    private lateinit var pdfFileRepository: PdfFileRepository
     private lateinit var applicationContext: Context
     private lateinit var savedStateHandle: SavedStateHandle
     private lateinit var passwordStorage: PasswordStorage
@@ -63,6 +65,7 @@ class ReaderViewModelTest {
         favoriteRepository = mockk(relaxed = true)
         preferencesRepository = mockk(relaxed = true)
         bookmarkDao = mockk(relaxed = true)
+        pdfFileRepository = mockk(relaxed = true)
         applicationContext = mockk(relaxed = true)
         passwordStorage = mockk(relaxed = true)
 
@@ -91,6 +94,7 @@ class ReaderViewModelTest {
             favoriteRepository = favoriteRepository,
             preferencesRepository = preferencesRepository,
             bookmarkDao = bookmarkDao,
+            pdfFileRepository = pdfFileRepository,
             applicationContext = applicationContext,
             savedStateHandle = savedStateHandle,
             passwordStorage = passwordStorage
@@ -461,6 +465,55 @@ class ReaderViewModelTest {
 
         assertTrue(viewModel.state.value.isSearchActive)
     }
+
+    @Test
+    fun `single search match is reported as first of one`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onAction(ReaderAction.Search("rare"))
+
+        // PDF.js reports the current match 1-based
+        viewModel.onSearchMatchChanged(current = 1, total = 1)
+
+        assertEquals(1, viewModel.state.value.searchResultCount)
+        // State is 0-based, the search bar displays index + 1 => "1/1"
+        assertEquals(0, viewModel.state.value.currentSearchIndex)
+    }
+
+    @Test
+    fun `multiple search matches keep current index zero based`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onAction(ReaderAction.Search("common"))
+
+        viewModel.onSearchMatchChanged(current = 3, total = 5)
+
+        assertEquals(5, viewModel.state.value.searchResultCount)
+        assertEquals(2, viewModel.state.value.currentSearchIndex)
+    }
+
+    @Test
+    fun `search without matches reports zero count`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onAction(ReaderAction.Search("missing"))
+
+        viewModel.onSearchMatchChanged(current = 0, total = 0)
+
+        assertEquals(0, viewModel.state.value.searchResultCount)
+        assertEquals(0, viewModel.state.value.currentSearchIndex)
+    }
+
+    @Test
+    fun `search match updates are ignored when no query is active`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onSearchMatchChanged(current = 1, total = 4)
+
+        assertEquals(0, viewModel.state.value.searchResultCount)
+        assertEquals(0, viewModel.state.value.currentSearchIndex)
+    }
     // endregion
 
     // region Auto Scroll Tests
@@ -622,4 +675,31 @@ class ReaderViewModelTest {
         assertEquals("test.pdf", result)
     }
     // endregion
+
+    @Test
+    fun `confirm delete uses repository and cleans up recent and favorites`() = runTest {
+        coEvery { pdfFileRepository.deletePdf(testPdfPath) } returns Result.success(Unit)
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onAction(ReaderAction.ConfirmDelete)
+        advanceUntilIdle()
+
+        coVerify { pdfFileRepository.deletePdf(testPdfPath) }
+        coVerify { recentRepository.removeRecent(testPdfPath) }
+        coVerify { favoriteRepository.removeFavorite(testPdfPath) }
+    }
+
+    @Test
+    fun `failed delete keeps recent and favorites`() = runTest {
+        coEvery { pdfFileRepository.deletePdf(testPdfPath) } returns Result.failure(SecurityException("denied"))
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onAction(ReaderAction.ConfirmDelete)
+        advanceUntilIdle()
+
+        coVerify(exactly = 0) { recentRepository.removeRecent(testPdfPath) }
+        coVerify(exactly = 0) { favoriteRepository.removeFavorite(testPdfPath) }
+    }
 }

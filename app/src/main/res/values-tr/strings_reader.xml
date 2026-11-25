@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Reader: messages and errors (resolved in the UI layer) -->
+    <string name="reader_msg_end_of_document">Belgenin sonuna ulaşıldı</string>
+    <string name="reader_msg_removed_from_favourites">Favorilerden kaldırıldı</string>
+    <string name="reader_msg_added_to_favourites">Favorilere eklendi</string>
+    <string name="reader_msg_saved_to_downloads">İndirilenler klasörüne kaydedildi: %1$s</string>
+    <string name="reader_msg_document_saved">Belge başarıyla kaydedildi</string>
+    <string name="reader_msg_no_app_for_attachment">Bu dosyayı açacak uygulama bulunamadı. İndirilenler klasörüne kaydediliyor…</string>
+    <string name="reader_err_open_external">Harici uygulamayla açılamadı: %1$s</string>
+    <string name="reader_err_open_link">Bağlantı açılamadı: %1$s</string>
+    <string name="reader_err_save_document">Belge kaydedilemedi: %1$s</string>
+    <string name="reader_err_delete_file">Dosya silinemedi</string>
+    <string name="reader_err_save">Kaydedilemedi: %1$s</string>
+    <string name="reader_err_save_attachment">Ek kaydedilemedi: %1$s</string>
+    <string name="reader_err_open_attachment">Ek açılamadı: %1$s</string>
+    <string name="reader_err_print">Yazdırma hatası: %1$s</string>
+    <string name="reader_err_share">Paylaşılamadı: %1$s</string>
+
+    <!-- Reader: labels -->
+    <string name="reader_cd_resume">Sürdür</string>
+    <string name="reader_speed_very_fast">Çok hızlı</string>
+    <string name="reader_toc_browse_structure">Belge yapısına göz at</string>
+    <string name="reader_attachment_tap_open_ext">%1$s dosyası · Açmak için dokun</string>
+    <string name="reader_attachment_tap_open">Açmak için dokun</string>
+    <string name="reader_delete_fallback_name">bu PDF</string>
+    <plurals name="reader_toc_sections">
+        <item quantity="one">%1$d bölüm</item>
+        <item quantity="other">%1$d bölüm</item>
+    </plurals>
+    <plurals name="reader_attachment_files">
+        <item quantity="one">%1$d dosya</item>
+        <item quantity="other">%1$d dosya</item>
+    </plurals>
+</resources>

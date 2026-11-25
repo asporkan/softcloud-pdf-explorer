@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.material3.CircularProgressIndicator
@@ -232,7 +233,7 @@ fun ReaderScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is ReaderEvent.ShowMessage -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(context.getString(event.messageRes, *event.args.toTypedArray()))
                 }
                 is ReaderEvent.NavigateToPage -> { }
                 is ReaderEvent.DocumentClosed -> {
@@ -254,19 +255,46 @@ fun ReaderScreen(
                             putExtra(Intent.EXTRA_STREAM, uri)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share PDF"))
+                        context.startActivity(
+                            Intent.createChooser(shareIntent, context.getString(R.string.share_pdf_chooser))
+                        )
                     } catch (e: Exception) {
-                        snackbarHostState.showSnackbar("Failed to share: ${e.message}")
+                        snackbarHostState.showSnackbar(
+                            context.getString(R.string.reader_err_share, e.localizedMessage ?: e.javaClass.simpleName)
+                        )
+                    }
+                }
+                is ReaderEvent.OpenWithExternal -> {
+                    try {
+                        val uri = FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.provider",
+                            File(path)
+                        )
+                        val viewIntent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, "application/pdf")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(
+                            Intent.createChooser(viewIntent, context.getString(R.string.open_with))
+                        )
+                    } catch (e: Exception) {
+                        snackbarHostState.showSnackbar(
+                            context.getString(
+                                R.string.reader_err_open_external,
+                                e.localizedMessage ?: e.javaClass.simpleName
+                            )
+                        )
                     }
                 }
                 is ReaderEvent.SaveDocumentPicker -> {
                     saveDocumentLauncher.launch(viewModel.getDocumentFileName())
                 }
                 is ReaderEvent.FavoriteAdded -> {
-                    snackbarHostState.showSnackbar("Added to favourites")
+                    snackbarHostState.showSnackbar(context.getString(R.string.reader_msg_added_to_favourites))
                 }
                 is ReaderEvent.Error -> {
-                    snackbarHostState.showSnackbar(event.message)
+                    snackbarHostState.showSnackbar(context.getString(event.messageRes, *event.args.toTypedArray()))
                 }
             }
         }
@@ -289,7 +317,7 @@ fun ReaderScreen(
     state.error?.let { error ->
         if (!state.isLoading) {
             ErrorState(
-                message = error,
+                message = stringResource(error.messageRes),
                 onRetry = { },
                 onBack = { navController.popBackStack() }
             )
@@ -414,13 +442,18 @@ fun ReaderScreen(
                     onPageChange = { viewModel.onAction(ReaderAction.GoToPage(it)) },
                     isHorizontal = isHorizontalScroll,
                     isDarkMode = isDarkMode,
+                    // Vertical track keeps clear of the system bars and the floating control bar
+                    // (bar 66dp + 16dp margin + nav inset) so the page bubble never overlaps it.
+                    bottomClearance = if (toolbarVisible) 96.dp else 16.dp,
                     modifier = if (isHorizontalScroll) {
                         Modifier
                             .align(Alignment.BottomCenter)
                             .windowInsetsPadding(WindowInsets.navigationBars)
                             .padding(bottom = if (toolbarVisible) 80.dp else 8.dp)
                     } else {
-                        Modifier.align(Alignment.TopEnd)
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .windowInsetsPadding(WindowInsets.systemBars)
                     }
                 )
 
@@ -523,7 +556,7 @@ fun ReaderScreen(
     // Delete confirmation dialog
     if (state.isDeleteDialogVisible) {
         DeleteConfirmDialog(
-            fileName = state.documentTitle ?: "this PDF",
+            fileName = state.documentTitle ?: stringResource(R.string.reader_delete_fallback_name),
             onConfirm = { viewModel.onAction(ReaderAction.ConfirmDelete) },
             onDismiss = { viewModel.onAction(ReaderAction.HideDeleteDialog) }
         )
@@ -621,6 +654,9 @@ fun ReaderScreen(
             },
             onDocumentInfoClick = {
                 viewModel.onAction(ReaderAction.ShowInfoDialog)
+            },
+            onDeleteClick = {
+                viewModel.onAction(ReaderAction.ShowDeleteDialog)
             },
             onDismiss = { viewModel.onAction(ReaderAction.HideMoreOptionsSheet) }
         )

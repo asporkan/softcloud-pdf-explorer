@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Reader: messages and errors (resolved in the UI layer) -->
+    <string name="reader_msg_end_of_document">Reached end of document</string>
+    <string name="reader_msg_removed_from_favourites">Removed from favourites</string>
+    <string name="reader_msg_added_to_favourites">Added to favourites</string>
+    <string name="reader_msg_saved_to_downloads">Saved to Downloads: %1$s</string>
+    <string name="reader_msg_document_saved">Document saved successfully</string>
+    <string name="reader_msg_no_app_for_attachment">No app found to open this file. Saving to Downloads…</string>
+    <string name="reader_err_open_external">Failed to open with external app: %1$s</string>
+    <string name="reader_err_open_link">Failed to open link: %1$s</string>
+    <string name="reader_err_save_document">Failed to save document: %1$s</string>
+    <string name="reader_err_delete_file">Failed to delete file</string>
+    <string name="reader_err_save">Failed to save: %1$s</string>
+    <string name="reader_err_save_attachment">Failed to save attachment: %1$s</string>
+    <string name="reader_err_open_attachment">Failed to open attachment: %1$s</string>
+    <string name="reader_err_print">Print error: %1$s</string>
+    <string name="reader_err_share">Failed to share: %1$s</string>
+
+    <!-- Reader: labels -->
+    <string name="reader_cd_resume">Resume</string>
+    <string name="reader_speed_very_fast">Very fast</string>
+    <string name="reader_toc_browse_structure">Browse document structure</string>
+    <string name="reader_attachment_tap_open_ext">%1$s file · Tap to open</string>
+    <string name="reader_attachment_tap_open">Tap to open</string>
+    <string name="reader_delete_fallback_name">this PDF</string>
+    <plurals name="reader_toc_sections">
+        <item quantity="one">%1$d section</item>
+        <item quantity="other">%1$d sections</item>
+    </plurals>
+    <plurals name="reader_attachment_files">
+        <item quantity="one">%1$d file</item>
+        <item quantity="other">%1$d files</item>
+    </plurals>
+</resources>

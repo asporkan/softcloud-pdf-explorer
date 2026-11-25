@@ -31,7 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.rejowan.pdfreaderpro.R
 
 @Composable
 fun AutoScrollOverlay(
@@ -71,7 +73,7 @@ fun AutoScrollOverlay(
                 // Decrease speed
                 OverlayIconButton(
                     icon = Icons.Rounded.Remove,
-                    contentDescription = "Slower",
+                    contentDescription = stringResource(R.string.slower),
                     iconColor = iconColor,
                     onClick = {
                         val newSpeed = (currentSpeed - 10f).coerceAtLeast(10f)
@@ -82,7 +84,7 @@ fun AutoScrollOverlay(
                 // Play/Pause button
                 OverlayIconButton(
                     icon = if (isPaused) Icons.Rounded.PlayArrow else Icons.Rounded.Pause,
-                    contentDescription = if (isPaused) "Resume" else "Pause",
+                    contentDescription = if (isPaused) stringResource(R.string.reader_cd_resume) else stringResource(R.string.cd_pause),
                     iconColor = iconColor,
                     onClick = onTogglePause
                 )
@@ -90,7 +92,7 @@ fun AutoScrollOverlay(
                 // Increase speed
                 OverlayIconButton(
                     icon = Icons.Rounded.Add,
-                    contentDescription = "Faster",
+                    contentDescription = stringResource(R.string.faster),
                     iconColor = iconColor,
                     onClick = {
                         val newSpeed = (currentSpeed + 10f).coerceAtMost(200f)
@@ -101,7 +103,7 @@ fun AutoScrollOverlay(
                 // Stop button
                 OverlayIconButton(
                     icon = Icons.Rounded.Close,
-                    contentDescription = "Stop",
+                    contentDescription = stringResource(R.string.cd_stop),
                     iconColor = iconColor,
                     onClick = onStop
                 )

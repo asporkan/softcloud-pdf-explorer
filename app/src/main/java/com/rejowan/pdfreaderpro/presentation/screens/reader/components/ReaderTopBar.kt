@@ -33,9 +33,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.rejowan.pdfreaderpro.R
 
 private val AccentPurple = Color(0xFF9575CD)
 
@@ -128,7 +130,7 @@ private fun TopBarContent(
             // Back button
             TopBarIconButton(
                 icon = Icons.AutoMirrored.Rounded.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = stringResource(R.string.cd_back),
                 onClick = onBackClick,
                 contentColor = contentColor
             )
@@ -150,7 +152,7 @@ private fun TopBarContent(
             // Search button
             TopBarIconButton(
                 icon = Icons.Rounded.Search,
-                contentDescription = "Search",
+                contentDescription = stringResource(R.string.cd_search),
                 onClick = onSearchClick,
                 contentColor = contentColor
             )
@@ -158,7 +160,7 @@ private fun TopBarContent(
             // More button - opens slide panel
             TopBarIconButton(
                 icon = Icons.Rounded.MoreVert,
-                contentDescription = "More options",
+                contentDescription = stringResource(R.string.more_options),
                 onClick = onMenuClick,
                 contentColor = contentColor
             )
