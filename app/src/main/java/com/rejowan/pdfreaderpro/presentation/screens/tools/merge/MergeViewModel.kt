@@ -9,7 +9,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolOutputWriter
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -83,7 +84,8 @@ data class MergeResult(
     val outputPath: String,
     val displayName: String,
     val pageCount: Int,
-    val fileSize: Long
+    val fileSize: Long,
+    val locationLabel: String = ""
 )
 
 class MergeViewModel(
@@ -248,6 +250,7 @@ class MergeViewModel(
                 }
 
                 val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                bitmap.eraseColor(android.graphics.Color.WHITE)
                 page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                 page.close()
                 renderer.close()
@@ -305,7 +308,10 @@ class MergeViewModel(
 
     fun mergeToUri(destinationUri: Uri) {
         val currentState = _state.value
-        if (!validateMerge()) return
+        if (!validateMerge()) {
+            SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
+            return
+        }
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
@@ -329,8 +335,8 @@ class MergeViewModel(
 
             result.fold(
                 onSuccess = {
-                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
-                        tempFile.delete()
+                    val committed = ToolOutputWriter.commit(context, tempFile, destinationUri)
+                    if (committed == null) {
                         _state.update {
                             it.copy(
                                 isProcessing = false,
@@ -342,21 +348,15 @@ class MergeViewModel(
 
                     cleanupTempFiles()
 
-                    val localCopy = File(
-                        context.cacheDir,
-                        "merge_result_${System.currentTimeMillis()}.pdf"
-                    )
-                    tempFile.copyTo(localCopy, overwrite = true)
-                    tempFile.delete()
-
                     finishMergeSuccess(
-                        localPath = localCopy.absolutePath,
-                        displayName = FileOperations.getFileNameFromUri(context, destinationUri)
-                            ?: currentState.outputFileName.ifBlank { "merged" }
+                        localPath = committed.localCopy.absolutePath,
+                        displayName = committed.displayName,
+                        locationLabel = committed.locationLabel
                     )
                 },
                 onFailure = { error ->
                     tempFile.delete()
+                    SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
                     Timber.e(error, "Merge failed")
                     _state.update {
                         it.copy(
@@ -395,7 +395,7 @@ class MergeViewModel(
         return true
     }
 
-    private suspend fun finishMergeSuccess(localPath: String, displayName: String) {
+    private suspend fun finishMergeSuccess(localPath: String, displayName: String, locationLabel: String) {
         val outputFile = File(localPath)
         val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
         val name = when {
@@ -411,7 +411,8 @@ class MergeViewModel(
                     outputPath = localPath,
                     displayName = name,
                     pageCount = pageCount,
-                    fileSize = outputFile.length()
+                    fileSize = outputFile.length(),
+                    locationLabel = locationLabel
                 )
             )
         }

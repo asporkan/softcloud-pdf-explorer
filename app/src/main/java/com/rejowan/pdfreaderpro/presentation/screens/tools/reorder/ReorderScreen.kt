@@ -93,6 +93,10 @@ import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
@@ -127,11 +131,9 @@ fun ReorderScreen(
         }
     }
 
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.reorderToUri(it) }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFileDestination = { viewModel.reorderToUri(it) }
+    )
 
     Scaffold(
         topBar = {
@@ -310,6 +312,11 @@ fun ReorderScreen(
                         }
 
                         // Bottom section
+                        OutputLocationRow(
+                            saver = outputSaver,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            visible = !state.overwriteOriginal
+                        )
                         ReorderBottomSection(
                             outputFileName = state.outputFileName,
                             onFileNameChange = { viewModel.setOutputFileName(it) },
@@ -330,7 +337,7 @@ fun ReorderScreen(
                                     } else {
                                         "$suggested.pdf"
                                     }
-                                    createDocumentLauncher.launch(name)
+                                    if (viewModel.validateForSave()) outputSaver.saveFile(name)
                                 }
                             },
                             onClearError = { viewModel.clearError() }
@@ -754,6 +761,7 @@ private fun SuccessState(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    ResultLocationText(result.locationLabel)
                 }
             }
         }

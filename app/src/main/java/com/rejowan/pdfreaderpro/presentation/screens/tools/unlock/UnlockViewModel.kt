@@ -6,7 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolOutputWriter
 import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +36,7 @@ data class UnlockState(
     val isProcessing: Boolean = false,
     val progress: Float = 0f,
     val error: String? = null,
+    val readyToSave: Boolean = false,
     val result: UnlockResult? = null
 )
 
@@ -39,7 +44,8 @@ data class UnlockResult(
     val outputPath: String,
     val displayName: String,
     val pageCount: Int,
-    val fileSize: Long
+    val fileSize: Long,
+    val locationLabel: String = ""
 )
 
 class UnlockViewModel(
@@ -47,6 +53,7 @@ class UnlockViewModel(
     private val context: Context
 ) : ViewModel() {
 
+    private var pendingTemp: File? = null
     private val _state = MutableStateFlow(UnlockState())
     val state: StateFlow<UnlockState> = _state.asStateFlow()
 
@@ -112,21 +119,28 @@ class UnlockViewModel(
         _state.update { it.copy(overwriteOriginal = overwrite) }
     }
 
+    /**
+     * Overwrite mode writes back to the source document. Save As mode first unlocks into a cache
+     * file, so a wrong password fails here, before any target file exists; on success
+     * [UnlockState.readyToSave] asks the screen for a destination, then [commitPendingTo] saves it.
+     */
     fun unlock() {
         val currentState = _state.value
         if (!validateUnlock(currentState)) return
-        if (!currentState.overwriteOriginal) return
-
-        unlockOverwrite()
+        if (currentState.overwriteOriginal) {
+            unlockOverwrite()
+        } else {
+            unlockToPending()
+        }
     }
 
-    fun unlockToUri(destinationUri: Uri) {
+    private fun unlockToPending() {
         val currentState = _state.value
-        if (!validateUnlock(currentState, requireFileName = false)) return
         val sourceFile = currentState.sourceFile ?: return
 
         viewModelScope.launch {
-            _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
+            _state.update { it.copy(isProcessing = true, progress = 0f, error = null, readyToSave = false) }
+            discardPending()
 
             val tempFile = File(context.cacheDir, "unlock_out_${System.currentTimeMillis()}.pdf")
             val result = pdfToolsRepository.unlockPdf(
@@ -138,29 +152,8 @@ class UnlockViewModel(
 
             result.fold(
                 onSuccess = {
-                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
-                        tempFile.delete()
-                        _state.update {
-                            it.copy(
-                                isProcessing = false,
-                                error = context.getString(R.string.tool_error_replace_original)
-                            )
-                        }
-                        return@launch
-                    }
-
-                    val localCopy = File(
-                        context.cacheDir,
-                        "unlock_result_${System.currentTimeMillis()}.pdf"
-                    )
-                    tempFile.copyTo(localCopy, overwrite = true)
-                    tempFile.delete()
-
-                    finishUnlockSuccess(
-                        localPath = localCopy.absolutePath,
-                        displayName = getFileNameFromUri(destinationUri)
-                            ?: currentState.outputFileName.ifBlank { sourceFile.name }
-                    )
+                    pendingTemp = tempFile
+                    _state.update { it.copy(isProcessing = false, readyToSave = true) }
                 },
                 onFailure = { error ->
                     tempFile.delete()
@@ -174,6 +167,53 @@ class UnlockViewModel(
                 }
             )
         }
+    }
+
+    /** The screen has started asking for a destination; the unlocked cache file stays pending. */
+    fun markSaveRequested() {
+        _state.update { it.copy(readyToSave = false) }
+    }
+
+    /** Writes the already-unlocked cache file to the destination the user chose. */
+    fun commitPendingTo(destinationUri: Uri) {
+        val tempFile = pendingTemp
+        if (tempFile == null || !tempFile.exists()) {
+            SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
+            _state.update { it.copy(error = context.getString(R.string.tool_error_unlock_failed)) }
+            return
+        }
+        pendingTemp = null
+
+        viewModelScope.launch {
+            _state.update { it.copy(isProcessing = true, error = null) }
+            val committed = withContext(Dispatchers.IO) {
+                ToolOutputWriter.commit(context, tempFile, destinationUri)
+            }
+            if (committed == null) {
+                _state.update {
+                    it.copy(
+                        isProcessing = false,
+                        error = context.getString(R.string.tool_error_replace_original)
+                    )
+                }
+                return@launch
+            }
+            finishUnlockSuccess(
+                localPath = committed.localCopy.absolutePath,
+                displayName = committed.displayName,
+                locationLabel = committed.locationLabel
+            )
+        }
+    }
+
+    private fun discardPending() {
+        pendingTemp?.delete()
+        pendingTemp = null
+    }
+
+    override fun onCleared() {
+        discardPending()
+        super.onCleared()
     }
 
     private fun unlockOverwrite() {
@@ -257,7 +297,7 @@ class UnlockViewModel(
         return true
     }
 
-    private suspend fun finishUnlockSuccess(localPath: String, displayName: String) {
+    private suspend fun finishUnlockSuccess(localPath: String, displayName: String, locationLabel: String = "") {
         val outputFile = File(localPath)
         val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
         val name = when {
@@ -273,7 +313,8 @@ class UnlockViewModel(
                     outputPath = localPath,
                     displayName = name,
                     pageCount = pageCount,
-                    fileSize = outputFile.length()
+                    fileSize = outputFile.length(),
+                    locationLabel = locationLabel
                 )
             )
         }
@@ -288,6 +329,7 @@ class UnlockViewModel(
     }
 
     fun reset() {
+        discardPending()
         _state.update { UnlockState() }
     }
 

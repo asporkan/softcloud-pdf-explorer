@@ -10,7 +10,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolOutputWriter
 import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -85,7 +87,8 @@ data class RotateResult(
     val outputPath: String,
     val pageCount: Int,
     val fileSize: Long,
-    val rotatedPages: Int
+    val rotatedPages: Int,
+    val locationLabel: String = ""
 )
 
 class RotateViewModel(
@@ -200,6 +203,7 @@ class RotateViewModel(
                             }
 
                             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                            bitmap.eraseColor(android.graphics.Color.WHITE)
                             page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
 
                             pages.add(
@@ -341,9 +345,15 @@ class RotateViewModel(
         rotateOverwrite()
     }
 
+    /** Validates the request before a destination is chosen, so an invalid request never creates a target file. */
+    fun validateForSave(): Boolean = validateRotate(_state.value, requireFileName = false)
+
     fun rotateToUri(destinationUri: Uri) {
         val currentState = _state.value
-        if (!validateRotate(currentState, requireFileName = false)) return
+        if (!validateRotate(currentState, requireFileName = false)) {
+            SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
+            return
+        }
 
         val sourceFile = currentState.sourceFile ?: return
         val pagesToRotate = resolvePagesToRotate(currentState)
@@ -364,8 +374,8 @@ class RotateViewModel(
 
             result.fold(
                 onSuccess = {
-                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
-                        tempFile.delete()
+                    val committed = ToolOutputWriter.commit(context, tempFile, destinationUri)
+                    if (committed == null) {
                         _state.update {
                             it.copy(
                                 isProcessing = false,
@@ -375,20 +385,15 @@ class RotateViewModel(
                         return@launch
                     }
 
-                    val localCopy = File(
-                        context.cacheDir,
-                        "rotate_result_${System.currentTimeMillis()}.pdf"
-                    )
-                    tempFile.copyTo(localCopy, overwrite = true)
-                    tempFile.delete()
-
                     finishRotateSuccess(
-                        localPath = localCopy.absolutePath,
-                        rotatedPages = pagesToRotate?.size ?: sourceFile.pageCount
+                        localPath = committed.localCopy.absolutePath,
+                        rotatedPages = pagesToRotate?.size ?: sourceFile.pageCount,
+                        locationLabel = committed.locationLabel
                     )
                 },
                 onFailure = { error ->
                     tempFile.delete()
+                    SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
                     Timber.e(error, "Rotation failed")
                     _state.update {
                         it.copy(
@@ -499,7 +504,7 @@ class RotateViewModel(
         }
     }
 
-    private suspend fun finishRotateSuccess(localPath: String, rotatedPages: Int) {
+    private suspend fun finishRotateSuccess(localPath: String, rotatedPages: Int, locationLabel: String = "") {
         val outputFile = File(localPath)
         val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
         _state.update {
@@ -510,7 +515,8 @@ class RotateViewModel(
                     outputPath = localPath,
                     pageCount = pageCount,
                     fileSize = outputFile.length(),
-                    rotatedPages = rotatedPages
+                    rotatedPages = rotatedPages,
+                    locationLabel = locationLabel
                 )
             )
         }

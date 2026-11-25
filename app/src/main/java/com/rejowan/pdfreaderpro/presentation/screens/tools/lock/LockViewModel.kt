@@ -9,7 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolOutputWriter
 import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,7 +53,8 @@ data class LockResult(
     val outputPath: String,
     val displayName: String,
     val pageCount: Int,
-    val fileSize: Long
+    val fileSize: Long,
+    val locationLabel: String = ""
 )
 
 class LockViewModel(
@@ -136,6 +139,7 @@ class LockViewModel(
             }
 
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            bitmap.eraseColor(android.graphics.Color.WHITE)
             page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
             page.close()
             renderer.close()
@@ -188,9 +192,15 @@ class LockViewModel(
         lockOverwrite()
     }
 
+    /** Validates passwords/name before the destination is chosen, so no target file is created for an invalid request. */
+    fun validateForSave(): Boolean = validateLock(_state.value, requireFileName = false)
+
     fun lockToUri(destinationUri: Uri) {
         val currentState = _state.value
-        if (!validateLock(currentState, requireFileName = false)) return
+        if (!validateLock(currentState, requireFileName = false)) {
+            SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
+            return
+        }
         val sourceFile = currentState.sourceFile ?: return
 
         viewModelScope.launch {
@@ -201,8 +211,8 @@ class LockViewModel(
 
             result.fold(
                 onSuccess = {
-                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
-                        tempFile.delete()
+                    val committed = ToolOutputWriter.commit(context, tempFile, destinationUri)
+                    if (committed == null) {
                         _state.update {
                             it.copy(
                                 isProcessing = false,
@@ -212,21 +222,15 @@ class LockViewModel(
                         return@launch
                     }
 
-                    val localCopy = File(
-                        context.cacheDir,
-                        "lock_result_${System.currentTimeMillis()}.pdf"
-                    )
-                    tempFile.copyTo(localCopy, overwrite = true)
-                    tempFile.delete()
-
                     finishLockSuccess(
-                        localPath = localCopy.absolutePath,
-                        displayName = getFileNameFromUri(destinationUri)
-                            ?: currentState.outputFileName.ifBlank { sourceFile.name }
+                        localPath = committed.localCopy.absolutePath,
+                        displayName = committed.displayName,
+                        locationLabel = committed.locationLabel
                     )
                 },
                 onFailure = { error ->
                     tempFile.delete()
+                    SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
                     Timber.e(error, "Lock failed")
                     _state.update {
                         it.copy(
@@ -338,9 +342,11 @@ class LockViewModel(
         return true
     }
 
-    private suspend fun finishLockSuccess(localPath: String, displayName: String) {
+    private suspend fun finishLockSuccess(localPath: String, displayName: String, locationLabel: String = "") {
         val outputFile = File(localPath)
-        val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        // Encrypted output cannot be re-read; locking keeps every page, so reuse the source count.
+        val counted = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
+        val pageCount = if (counted > 0) counted else _state.value.sourceFile?.pageCount ?: 0
         val name = when {
             displayName.endsWith(".pdf", ignoreCase = true) -> displayName
             displayName.isNotBlank() -> "$displayName.pdf"
@@ -354,7 +360,8 @@ class LockViewModel(
                     outputPath = localPath,
                     displayName = name,
                     pageCount = pageCount,
-                    fileSize = outputFile.length()
+                    fileSize = outputFile.length(),
+                    locationLabel = locationLabel
                 )
             )
         }

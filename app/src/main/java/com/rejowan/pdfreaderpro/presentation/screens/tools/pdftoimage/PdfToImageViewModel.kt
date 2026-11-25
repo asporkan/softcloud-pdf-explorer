@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,7 +60,8 @@ data class PdfToImageResult(
     val outputDir: String,
     val imagePaths: List<String>,
     val imageCount: Int,
-    val format: String
+    val format: String,
+    val locationLabel: String = ""
 )
 
 class PdfToImageViewModel(
@@ -135,6 +136,7 @@ class PdfToImageViewModel(
                 page.height * scale,
                 Bitmap.Config.ARGB_8888
             )
+            bitmap.eraseColor(android.graphics.Color.WHITE)
             page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
             page.close()
 
@@ -208,10 +210,10 @@ class PdfToImageViewModel(
             result.fold(
                 onSuccess = { tempFiles ->
                     val files = tempFiles.map { File(it) }
-                    val written = withContext(Dispatchers.IO) {
-                        FileOperations.writeFilesToTree(context, treeUri, files, mimeType)
+                    val created = withContext(Dispatchers.IO) {
+                        SafOutputHelper.writeFilesToFolder(context, treeUri, files, mimeType)
                     }
-                    if (!written) {
+                    if (created == null) {
                         tempDir.deleteRecursively()
                         _state.update {
                             it.copy(
@@ -221,8 +223,14 @@ class PdfToImageViewModel(
                         }
                         return@launch
                     }
+                    SafOutputHelper.scanSaved(context, created, mimeType)
 
-                    val localFiles = copyToResultCache(tempFiles, "pdftoimage")
+                    val localFiles = withContext(Dispatchers.IO) {
+                        created.mapIndexed { index, uri ->
+                            val name = SafOutputHelper.displayName(context, uri) ?: files[index].name
+                            SafOutputHelper.namedLocalCopy(context, files[index], name).absolutePath
+                        }
+                    }
                     tempDir.deleteRecursively()
 
                     _state.update {
@@ -233,7 +241,11 @@ class PdfToImageViewModel(
                                 outputDir = File(localFiles.first()).parent ?: "",
                                 imagePaths = localFiles,
                                 imageCount = localFiles.size,
-                                format = currentState.imageFormat.extension.uppercase()
+                                format = currentState.imageFormat.extension.uppercase(),
+                                locationLabel = SafOutputHelper.readableFolder(
+                                    treeUri,
+                                    context.getString(R.string.tools_output_root)
+                                )
                             )
                         )
                     }
@@ -253,15 +265,6 @@ class PdfToImageViewModel(
         }
     }
 
-    private fun copyToResultCache(tempFiles: List<String>, prefix: String): List<String> {
-        val resultDir = File(context.cacheDir, "${prefix}_result_${System.currentTimeMillis()}").apply { mkdirs() }
-        return tempFiles.map { path ->
-            val src = File(path)
-            val dest = File(resultDir, src.name)
-            src.copyTo(dest, overwrite = true)
-            dest.absolutePath
-        }
-    }
 
     private fun calculatePages(
         selection: PageSelection,

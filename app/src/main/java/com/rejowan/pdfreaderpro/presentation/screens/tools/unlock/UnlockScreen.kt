@@ -62,6 +62,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -87,6 +88,10 @@ import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -118,10 +123,19 @@ fun UnlockScreen(
         }
     }
 
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.unlockToUri(it) }
+    val outputSaver = rememberOutputSaver(
+        onFileDestination = { viewModel.commitPendingTo(it) }
+    )
+
+    // The password was verified on a cache file; only now is a destination requested.
+    LaunchedEffect(state.readyToSave) {
+        if (state.readyToSave) {
+            viewModel.markSaveRequested()
+            val suggested = state.outputFileName.ifBlank {
+                state.sourceFile?.name?.substringBeforeLast('.') ?: "unlocked"
+            }
+            outputSaver.saveFile(suggested)
+        }
     }
 
     Scaffold(
@@ -208,24 +222,20 @@ fun UnlockScreen(
                     )
                 }
                 else -> {
-                    UnlockContent(
-                        state = state,
-                        onPasswordChange = { viewModel.setPassword(it) },
-                        onOutputFileNameChange = { viewModel.setOutputFileName(it) },
-                        onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
-                        onUnlock = {
-                            if (state.overwriteOriginal) {
-                                viewModel.unlock()
-                            } else {
-                                val suggested = state.outputFileName.ifBlank {
-                                    state.sourceFile?.name?.substringBeforeLast('.') ?: "unlocked"
-                                }
-                                createDocumentLauncher.launch(FileOperations.ensurePdfExtension(suggested))
-                            }
-                        },
-                        onClearError = { viewModel.clearError() },
-                        onChangeFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
-                    )
+                    ToolContentWithLocation(
+                        saver = outputSaver,
+                        showLocation = !state.overwriteOriginal
+                    ) {
+                        UnlockContent(
+                            state = state,
+                            onPasswordChange = { viewModel.setPassword(it) },
+                            onOutputFileNameChange = { viewModel.setOutputFileName(it) },
+                            onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
+                            onUnlock = { viewModel.unlock() },
+                            onClearError = { viewModel.clearError() },
+                            onChangeFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }
+                        )
+                    }
                 }
             }
 
@@ -691,6 +701,7 @@ private fun SuccessState(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    ResultLocationText(result.locationLabel)
                 }
                 Icon(
                     Icons.Default.LockOpen,

@@ -2,11 +2,13 @@ package com.rejowan.pdfreaderpro.presentation.viewmodel.tools
 
 import android.content.Context
 import app.cash.turbine.test
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.presentation.screens.tools.compress.CompressionLevel
 import com.rejowan.pdfreaderpro.presentation.screens.tools.compress.CompressResult
 import com.rejowan.pdfreaderpro.presentation.screens.tools.compress.CompressViewModel
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +37,7 @@ class CompressViewModelTest {
 
         pdfToolsRepository = mockk(relaxed = true)
         context = mockk(relaxed = true)
+        every { context.getString(R.string.tool_error_select_pdf_first) } returns "Please select a PDF file first"
 
         coEvery { pdfToolsRepository.getPageCount(any()) } returns Result.success(10)
     }
@@ -299,22 +302,22 @@ class CompressViewModelTest {
     // region CompressionLevel enum Tests
     @Test
     fun `CompressionLevel LOW has correct properties`() {
-        assertEquals("Low", CompressionLevel.LOW.label)
-        assertEquals("Minimal compression, best quality", CompressionLevel.LOW.description)
+        assertEquals(R.string.compression_low, CompressionLevel.LOW.labelRes)
+        assertEquals(R.string.tools_compress_low_desc, CompressionLevel.LOW.descriptionRes)
         assertEquals(0.8f, CompressionLevel.LOW.quality)
     }
 
     @Test
     fun `CompressionLevel MEDIUM has correct properties`() {
-        assertEquals("Medium", CompressionLevel.MEDIUM.label)
-        assertEquals("Balanced compression and quality", CompressionLevel.MEDIUM.description)
+        assertEquals(R.string.compression_medium, CompressionLevel.MEDIUM.labelRes)
+        assertEquals(R.string.tools_compress_medium_desc, CompressionLevel.MEDIUM.descriptionRes)
         assertEquals(0.5f, CompressionLevel.MEDIUM.quality)
     }
 
     @Test
     fun `CompressionLevel HIGH has correct properties`() {
-        assertEquals("High", CompressionLevel.HIGH.label)
-        assertEquals("Maximum compression, smaller file", CompressionLevel.HIGH.description)
+        assertEquals(R.string.compression_high, CompressionLevel.HIGH.labelRes)
+        assertEquals(R.string.tools_compress_high_desc, CompressionLevel.HIGH.descriptionRes)
         assertEquals(0.2f, CompressionLevel.HIGH.quality)
     }
 

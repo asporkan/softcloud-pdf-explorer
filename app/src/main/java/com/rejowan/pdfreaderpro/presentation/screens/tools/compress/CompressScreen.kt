@@ -95,6 +95,10 @@ import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -128,11 +132,9 @@ fun CompressScreen(
         }
     }
 
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.compressToUri(it) }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFileDestination = { viewModel.compressToUri(it) }
+    )
 
     Scaffold(
         topBar = {
@@ -325,6 +327,11 @@ fun CompressScreen(
                         }
 
                         // Bottom section
+                        OutputLocationRow(
+                            saver = outputSaver,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            visible = !state.overwriteOriginal
+                        )
                         CompressBottomSection(
                             outputFileName = state.outputFileName,
                             onFileNameChange = { viewModel.setOutputFileName(it) },
@@ -343,9 +350,7 @@ fun CompressScreen(
                                             state.sourceFile?.name?.substringBeforeLast('.')
                                                 ?: "compressed"
                                         }
-                                    createDocumentLauncher.launch(
-                                        FileOperations.ensurePdfExtension(suggested)
-                                    )
+                                    if (viewModel.validateForSave()) outputSaver.saveFile(suggested)
                                 }
                             },
                             onClearError = { viewModel.clearError() }
@@ -961,6 +966,7 @@ private fun SuccessState(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    ResultLocationText(result.locationLabel)
                 }
             }
         }

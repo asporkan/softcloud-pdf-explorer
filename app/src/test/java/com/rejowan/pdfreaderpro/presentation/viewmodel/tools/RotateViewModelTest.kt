@@ -2,12 +2,14 @@ package com.rejowan.pdfreaderpro.presentation.viewmodel.tools
 
 import android.content.Context
 import app.cash.turbine.test
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.presentation.screens.tools.rotate.PageSelectionMode
 import com.rejowan.pdfreaderpro.presentation.screens.tools.rotate.QuickSelection
 import com.rejowan.pdfreaderpro.presentation.screens.tools.rotate.RotateViewModel
 import com.rejowan.pdfreaderpro.presentation.screens.tools.rotate.RotationAngle
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -36,6 +38,7 @@ class RotateViewModelTest {
 
         pdfToolsRepository = mockk(relaxed = true)
         context = mockk(relaxed = true)
+        every { context.getString(R.string.tool_error_select_pdf_first) } returns "Please select a PDF file first"
 
         coEvery { pdfToolsRepository.getPageCount(any()) } returns Result.success(10)
     }
@@ -345,19 +348,19 @@ class RotateViewModelTest {
     @Test
     fun `RotationAngle ROTATE_90 has correct properties`() {
         assertEquals(90, RotationAngle.ROTATE_90.degrees)
-        assertEquals("90° Right", RotationAngle.ROTATE_90.label)
+        assertEquals(R.string.rotate_angle_90_right, RotationAngle.ROTATE_90.labelRes)
     }
 
     @Test
     fun `RotationAngle ROTATE_180 has correct properties`() {
         assertEquals(180, RotationAngle.ROTATE_180.degrees)
-        assertEquals("180°", RotationAngle.ROTATE_180.label)
+        assertEquals(R.string.rotate_angle_180, RotationAngle.ROTATE_180.labelRes)
     }
 
     @Test
     fun `RotationAngle ROTATE_270 has correct properties`() {
         assertEquals(270, RotationAngle.ROTATE_270.degrees)
-        assertEquals("90° Left", RotationAngle.ROTATE_270.label)
+        assertEquals(R.string.rotate_angle_90_left, RotationAngle.ROTATE_270.labelRes)
     }
 
     @Test
@@ -385,38 +388,38 @@ class RotateViewModelTest {
 
     // region QuickSelection enum Tests
     @Test
-    fun `QuickSelection ALL has correct label`() {
-        assertEquals("All", QuickSelection.ALL.label)
+    fun `QuickSelection ALL entry exists`() {
+        assertEquals("ALL", QuickSelection.ALL.name)
     }
 
     @Test
-    fun `QuickSelection ODD has correct label`() {
-        assertEquals("Odd", QuickSelection.ODD.label)
+    fun `QuickSelection ODD entry exists`() {
+        assertEquals("ODD", QuickSelection.ODD.name)
     }
 
     @Test
-    fun `QuickSelection EVEN has correct label`() {
-        assertEquals("Even", QuickSelection.EVEN.label)
+    fun `QuickSelection EVEN entry exists`() {
+        assertEquals("EVEN", QuickSelection.EVEN.name)
     }
 
     @Test
-    fun `QuickSelection FIRST_HALF has correct label`() {
-        assertEquals("First Half", QuickSelection.FIRST_HALF.label)
+    fun `QuickSelection FIRST_HALF entry exists`() {
+        assertEquals("FIRST_HALF", QuickSelection.FIRST_HALF.name)
     }
 
     @Test
-    fun `QuickSelection SECOND_HALF has correct label`() {
-        assertEquals("Second Half", QuickSelection.SECOND_HALF.label)
+    fun `QuickSelection SECOND_HALF entry exists`() {
+        assertEquals("SECOND_HALF", QuickSelection.SECOND_HALF.name)
     }
 
     @Test
-    fun `QuickSelection EVERY_2ND has correct label`() {
-        assertEquals("Every 2nd", QuickSelection.EVERY_2ND.label)
+    fun `QuickSelection EVERY_2ND entry exists`() {
+        assertEquals("EVERY_2ND", QuickSelection.EVERY_2ND.name)
     }
 
     @Test
-    fun `QuickSelection EVERY_3RD has correct label`() {
-        assertEquals("Every 3rd", QuickSelection.EVERY_3RD.label)
+    fun `QuickSelection EVERY_3RD entry exists`() {
+        assertEquals("EVERY_3RD", QuickSelection.EVERY_3RD.name)
     }
 
     @Test

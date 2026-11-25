@@ -9,7 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolOutputWriter
 import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -52,7 +54,8 @@ data class ReorderResult(
     val outputPath: String,
     val displayName: String,
     val pageCount: Int,
-    val fileSize: Long
+    val fileSize: Long,
+    val locationLabel: String = ""
 )
 
 class ReorderViewModel(
@@ -223,6 +226,7 @@ class ReorderViewModel(
                         width = (thumbnailSize * aspectRatio).toInt().coerceAtLeast(1)
                     }
                     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    bitmap.eraseColor(android.graphics.Color.WHITE)
                     page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                     return bitmap
                 }
@@ -273,9 +277,15 @@ class ReorderViewModel(
         reorderOverwrite()
     }
 
+    /** Validates the request before a destination is chosen, so an invalid request never creates a target file. */
+    fun validateForSave(): Boolean = validateReorder(_state.value, requireFileName = false)
+
     fun reorderToUri(destinationUri: Uri) {
         val currentState = _state.value
-        if (!validateReorder(currentState, requireFileName = false)) return
+        if (!validateReorder(currentState, requireFileName = false)) {
+            SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
+            return
+        }
 
         val sourceFile = currentState.sourceFile ?: return
         val newOrder = currentState.pages.map { it.originalIndex + 1 }
@@ -293,8 +303,8 @@ class ReorderViewModel(
 
             result.fold(
                 onSuccess = {
-                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
-                        tempFile.delete()
+                    val committed = ToolOutputWriter.commit(context, tempFile, destinationUri)
+                    if (committed == null) {
                         _state.update {
                             it.copy(
                                 isProcessing = false,
@@ -304,22 +314,15 @@ class ReorderViewModel(
                         return@launch
                     }
 
-                    // Local copy for in-app open/share (destination URI is the real output)
-                    val localCopy = File(
-                        context.cacheDir,
-                        "reorder_result_${System.currentTimeMillis()}.pdf"
-                    )
-                    tempFile.copyTo(localCopy, overwrite = true)
-                    tempFile.delete()
-
                     finishReorderSuccess(
-                        localPath = localCopy.absolutePath,
-                        displayName = getFileNameFromUri(destinationUri)
-                            ?: currentState.outputFileName.ifBlank { sourceFile.name }
+                        localPath = committed.localCopy.absolutePath,
+                        displayName = committed.displayName,
+                        locationLabel = committed.locationLabel
                     )
                 },
                 onFailure = { error ->
                     tempFile.delete()
+                    SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
                     Timber.e(error, "Reorder failed")
                     _state.update {
                         it.copy(
@@ -414,7 +417,7 @@ class ReorderViewModel(
         return true
     }
 
-    private suspend fun finishReorderSuccess(localPath: String, displayName: String) {
+    private suspend fun finishReorderSuccess(localPath: String, displayName: String, locationLabel: String = "") {
         val outputFile = File(localPath)
         val pageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
         val name = when {
@@ -430,7 +433,8 @@ class ReorderViewModel(
                     outputPath = localPath,
                     displayName = name,
                     pageCount = pageCount,
-                    fileSize = outputFile.length()
+                    fileSize = outputFile.length(),
+                    locationLabel = locationLabel
                 )
             )
         }

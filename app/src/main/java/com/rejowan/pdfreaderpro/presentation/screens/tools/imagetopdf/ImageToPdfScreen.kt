@@ -85,6 +85,10 @@ import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -114,11 +118,9 @@ fun ImageToPdfScreen(
         }
     }
 
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.convertToPdfToUri(it) }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFileDestination = { viewModel.convertToPdfToUri(it) }
+    )
 
     Scaffold(
         topBar = {
@@ -200,20 +202,22 @@ fun ImageToPdfScreen(
                     )
                 }
                 else -> {
-                    ImageListContent(
-                        state = state,
-                        onAddMore = { imagePickerLauncher.launch(arrayOf("image/*")) },
-                        onRemoveImage = { viewModel.removeImage(it) },
-                        onOutputFileNameChange = { viewModel.setOutputFileName(it) },
-                        onConvert = {
-                            if (viewModel.convertToPdf()) {
-                                createDocumentLauncher.launch(
-                                    FileOperations.ensurePdfExtension(state.outputFileName)
-                                )
-                            }
-                        },
-                        onClearError = { viewModel.clearError() }
-                    )
+                    ToolContentWithLocation(saver = outputSaver) {
+                        ImageListContent(
+                            state = state,
+                            onAddMore = { imagePickerLauncher.launch(arrayOf("image/*")) },
+                            onRemoveImage = { viewModel.removeImage(it) },
+                            onOutputFileNameChange = { viewModel.setOutputFileName(it) },
+                            onConvert = {
+                                if (viewModel.convertToPdf()) {
+                                    outputSaver.saveFile(
+                                        FileOperations.ensurePdfExtension(state.outputFileName)
+                                    )
+                                }
+                            },
+                            onClearError = { viewModel.clearError() }
+                        )
+                    }
                 }
             }
 
@@ -441,21 +445,29 @@ private fun ImageThumbnailItem(
                 )
             }
 
-            // Remove button
-            IconButton(
-                onClick = onRemove,
+            // Remove button: plain clickable box kept fully inside the thumbnail
+            // (IconButton enforces a 48dp touch target that pushed the circle outside and clipped it).
+            Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .size(28.dp)
-                    .padding(4.dp)
-                    .background(AccentRed, CircleShape)
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onRemove),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = stringResource(R.string.cd_remove),
-                    modifier = Modifier.size(14.dp),
-                    tint = Color.White
-                )
+                Box(
+                    modifier = Modifier
+                        .size(22.dp)
+                        .background(AccentRed, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = stringResource(R.string.cd_remove),
+                        modifier = Modifier.size(14.dp),
+                        tint = Color.White
+                    )
+                }
             }
         }
     }
@@ -624,6 +636,7 @@ private fun SuccessState(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    ResultLocationText(result.locationLabel)
                 }
             }
         }

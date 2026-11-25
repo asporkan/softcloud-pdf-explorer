@@ -3,6 +3,7 @@ package com.rejowan.pdfreaderpro.presentation.viewmodel.tools
 import android.content.Context
 import android.net.Uri
 import app.cash.turbine.test
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.presentation.screens.tools.merge.MergeFile
 import com.rejowan.pdfreaderpro.presentation.screens.tools.merge.MergeState
@@ -39,6 +40,7 @@ class MergeViewModelTest {
 
         pdfToolsRepository = mockk(relaxed = true)
         context = mockk(relaxed = true)
+        every { context.getString(R.string.tool_error_select_min_merge) } returns "Select at least 2 PDF files"
 
         // Default mocks
         coEvery { pdfToolsRepository.getPageCount(any()) } returns Result.success(10)
@@ -321,25 +323,31 @@ class MergeViewModelTest {
     @Test
     fun `PageSelection All toDisplayString returns correct string`() {
         val selection = PageSelection.All
-        assertEquals("All pages (1-10)", selection.toDisplayString(10))
+        every { context.getString(R.string.page_selection_all, 10) } returns "All pages (1-10)"
+        assertEquals("All pages (1-10)", selection.toDisplayString(context, 10))
     }
 
     @Test
     fun `PageSelection Range toDisplayString returns correct string`() {
         val selection = PageSelection.Range(1, 5)
-        assertEquals("Pages 1-5", selection.toDisplayString(10))
+        every { context.getString(R.string.page_selection_range, 1, 5) } returns "Pages 1-5"
+        assertEquals("Pages 1-5", selection.toDisplayString(context, 10))
     }
 
     @Test
     fun `PageSelection Custom toDisplayString returns correct string for few pages`() {
         val selection = PageSelection.Custom(listOf(1, 3, 5))
-        assertEquals("Pages 1, 3, 5", selection.toDisplayString(10))
+        every { context.getString(R.string.page_selection_custom, "1, 3, 5") } returns "Pages 1, 3, 5"
+        assertEquals("Pages 1, 3, 5", selection.toDisplayString(context, 10))
     }
 
     @Test
     fun `PageSelection Custom toDisplayString truncates for many pages`() {
         val selection = PageSelection.Custom(listOf(1, 2, 3, 4, 5, 6, 7))
-        val display = selection.toDisplayString(10)
+        every {
+            context.getString(R.string.page_selection_custom_more, "1, 2, 3, 4", 7)
+        } returns "Pages 1, 2, 3, 4... (7 pages)"
+        val display = selection.toDisplayString(context, 10)
         assertTrue(display.contains("..."))
         assertTrue(display.contains("7 pages"))
     }

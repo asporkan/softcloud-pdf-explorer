@@ -111,6 +111,10 @@ import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -153,11 +157,9 @@ fun MergeScreen(
         viewModel.addFiles(uris)
     }
 
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.mergeToUri(it) }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFileDestination = { viewModel.mergeToUri(it) }
+    )
 
     // Page Selection Sheet (hybrid: bottom sheet in portrait, side panel in landscape)
     selectedFileForPageSelection?.let { selectedFile ->
@@ -177,7 +179,7 @@ fun MergeScreen(
                 title = {
                     Column {
                         Text(stringResource(R.string.tool_merge_pdfs))
-                        if (state.selectedFiles.isNotEmpty()) {
+                        if (state.selectedFiles.isNotEmpty() && state.result == null) {
                             Text(
                                 stringResource(R.string.files_selected, state.selectedFiles.size),
                                 style = MaterialTheme.typography.labelSmall,
@@ -330,6 +332,11 @@ fun MergeScreen(
                     }
 
                     // Bottom section: filename input and merge button
+                    OutputLocationRow(
+                        saver = outputSaver,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        visible = true
+                    )
                     MergeBottomSection(
                         outputFileName = state.outputFileName,
                         onFileNameChange = { viewModel.setOutputFileName(it) },
@@ -339,7 +346,7 @@ fun MergeScreen(
                         error = state.error,
                         onMerge = {
                             if (viewModel.merge()) {
-                                createDocumentLauncher.launch(
+                                outputSaver.saveFile(
                                     FileOperations.ensurePdfExtension(state.outputFileName)
                                 )
                             }
@@ -965,6 +972,7 @@ private fun SuccessState(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                ResultLocationText(result.locationLabel)
             }
         }
 

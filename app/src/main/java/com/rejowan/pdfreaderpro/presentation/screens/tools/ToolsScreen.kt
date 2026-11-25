@@ -52,6 +52,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.annotation.StringRes
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -82,10 +83,10 @@ enum class ToolCategory(
     @param:StringRes val titleRes: Int,
     val accentColor: Color
 ) {
-    ORGANIZE(R.string.tool_category_organize, AccentPurple),
-    EDIT(R.string.tool_category_edit, AccentBlue),
-    SECURITY(R.string.tool_category_security, AccentAmber),
-    CONVERT(R.string.tool_category_convert, AccentTeal)
+    ORGANIZE(R.string.tools_category_organize, AccentPurple),
+    EDIT(R.string.tools_category_edit, AccentBlue),
+    SECURITY(R.string.tools_category_security, AccentAmber),
+    CONVERT(R.string.tools_category_convert, AccentTeal)
 }
 
 data class PdfTool(
@@ -277,7 +278,8 @@ private fun SectionLabel(
     )
 
     Text(
-        text = text.uppercase(),
+        // Uppercase with the UI locale so Turkish i/I become İ/ı correctly.
+        text = text.uppercase(LocalConfiguration.current.locales[0] ?: java.util.Locale.getDefault()),
         style = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.SemiBold,
             letterSpacing = MaterialTheme.typography.labelMedium.letterSpacing * 1.5f

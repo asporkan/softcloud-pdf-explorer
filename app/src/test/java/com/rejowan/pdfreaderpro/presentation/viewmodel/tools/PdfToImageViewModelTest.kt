@@ -2,11 +2,13 @@ package com.rejowan.pdfreaderpro.presentation.viewmodel.tools
 
 import android.content.Context
 import app.cash.turbine.test
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.presentation.screens.tools.pdftoimage.ImageFormat
 import com.rejowan.pdfreaderpro.presentation.screens.tools.pdftoimage.PageSelection
 import com.rejowan.pdfreaderpro.presentation.screens.tools.pdftoimage.PdfToImageViewModel
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -35,6 +37,7 @@ class PdfToImageViewModelTest {
 
         pdfToolsRepository = mockk(relaxed = true)
         context = mockk(relaxed = true)
+        every { context.getString(R.string.tool_error_select_pdf_first) } returns "Please select a PDF file first"
 
         coEvery { pdfToolsRepository.getPageCount(any()) } returns Result.success(10)
     }
@@ -312,13 +315,13 @@ class PdfToImageViewModelTest {
     @Test
     fun `ImageFormat PNG has correct properties`() {
         assertEquals("png", ImageFormat.PNG.extension)
-        assertEquals("PNG", ImageFormat.PNG.label)
+        assertEquals(R.string.format_png, ImageFormat.PNG.labelRes)
     }
 
     @Test
     fun `ImageFormat JPG has correct properties`() {
         assertEquals("jpg", ImageFormat.JPG.extension)
-        assertEquals("JPG", ImageFormat.JPG.label)
+        assertEquals(R.string.format_jpg, ImageFormat.JPG.labelRes)
     }
 
     @Test

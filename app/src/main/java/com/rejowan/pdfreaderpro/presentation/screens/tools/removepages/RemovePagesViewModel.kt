@@ -9,7 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolOutputWriter
 import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +55,8 @@ data class RemovePagesResult(
     val originalPageCount: Int,
     val newPageCount: Int,
     val removedPages: Int,
-    val fileSize: Long
+    val fileSize: Long,
+    val locationLabel: String = ""
 )
 
 class RemovePagesViewModel(
@@ -220,6 +223,7 @@ class RemovePagesViewModel(
                         width = (thumbnailSize * aspectRatio).toInt().coerceAtLeast(1)
                     }
                     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+                    bitmap.eraseColor(android.graphics.Color.WHITE)
                     page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
                     return bitmap
                 }
@@ -366,9 +370,15 @@ class RemovePagesViewModel(
         removePagesOverwrite()
     }
 
+    /** Validates the request before a destination is chosen, so an invalid request never creates a target file. */
+    fun validateForSave(): Boolean = validateRemove(_state.value, requireFileName = false)
+
     fun removePagesToUri(destinationUri: Uri) {
         val currentState = _state.value
-        if (!validateRemove(currentState, requireFileName = false)) return
+        if (!validateRemove(currentState, requireFileName = false)) {
+            SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
+            return
+        }
         val sourceFile = currentState.sourceFile ?: return
         val pagesToRemove = sourceFile.pages.filter { it.isSelected }.map { it.pageNumber }
 
@@ -384,8 +394,8 @@ class RemovePagesViewModel(
 
             result.fold(
                 onSuccess = {
-                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
-                        tempFile.delete()
+                    val committed = ToolOutputWriter.commit(context, tempFile, destinationUri)
+                    if (committed == null) {
                         _state.update {
                             it.copy(
                                 isProcessing = false,
@@ -394,22 +404,18 @@ class RemovePagesViewModel(
                         }
                         return@launch
                     }
-                    val localCopy = File(
-                        context.cacheDir,
-                        "removepages_result_${System.currentTimeMillis()}.pdf"
-                    )
-                    tempFile.copyTo(localCopy, overwrite = true)
-                    tempFile.delete()
+
                     finishRemoveSuccess(
-                        localPath = localCopy.absolutePath,
-                        displayName = getFileNameFromUri(destinationUri)
-                            ?: currentState.outputFileName.ifBlank { sourceFile.name },
+                        localPath = committed.localCopy.absolutePath,
+                        displayName = committed.displayName,
                         originalPageCount = sourceFile.pageCount,
-                        removedCount = pagesToRemove.size
+                        removedCount = pagesToRemove.size,
+                        locationLabel = committed.locationLabel
                     )
                 },
                 onFailure = { error ->
                     tempFile.delete()
+                    SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
                     Timber.e(error, "Remove pages failed")
                     _state.update {
                         it.copy(
@@ -514,7 +520,8 @@ class RemovePagesViewModel(
         localPath: String,
         displayName: String,
         originalPageCount: Int,
-        removedCount: Int
+        removedCount: Int,
+        locationLabel: String = ""
     ) {
         val outputFile = File(localPath)
         val newPageCount = pdfToolsRepository.getPageCount(localPath).getOrDefault(0)
@@ -533,7 +540,8 @@ class RemovePagesViewModel(
                     originalPageCount = originalPageCount,
                     newPageCount = newPageCount,
                     removedPages = removedCount,
-                    fileSize = outputFile.length()
+                    fileSize = outputFile.length(),
+                    locationLabel = locationLabel
                 )
             )
         }

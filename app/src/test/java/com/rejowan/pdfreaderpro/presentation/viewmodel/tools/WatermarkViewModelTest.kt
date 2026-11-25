@@ -3,12 +3,14 @@ package com.rejowan.pdfreaderpro.presentation.viewmodel.tools
 import android.content.Context
 import androidx.compose.ui.graphics.Color
 import app.cash.turbine.test
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.presentation.screens.tools.watermark.PageSelection
 import com.rejowan.pdfreaderpro.presentation.screens.tools.watermark.WatermarkPosition
 import com.rejowan.pdfreaderpro.presentation.screens.tools.watermark.WatermarkType
 import com.rejowan.pdfreaderpro.presentation.screens.tools.watermark.WatermarkViewModel
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,6 +39,8 @@ class WatermarkViewModelTest {
 
         pdfToolsRepository = mockk(relaxed = true)
         context = mockk(relaxed = true)
+        every { context.getString(R.string.tool_error_select_pdf_first) } returns "Please select a PDF file first"
+        every { context.getString(R.string.watermark_default_text) } returns "CONFIDENTIAL"
 
         coEvery { pdfToolsRepository.getPageCount(any()) } returns Result.success(10)
     }
@@ -751,42 +755,42 @@ class WatermarkViewModelTest {
     // region WatermarkPosition enum Tests
     @Test
     fun `WatermarkPosition CENTER has correct label`() {
-        assertEquals("Center", WatermarkPosition.CENTER.label)
+        assertEquals(R.string.center, WatermarkPosition.CENTER.labelRes)
     }
 
     @Test
     fun `WatermarkPosition TOP_LEFT has correct label`() {
-        assertEquals("Top Left", WatermarkPosition.TOP_LEFT.label)
+        assertEquals(R.string.position_top_left, WatermarkPosition.TOP_LEFT.labelRes)
     }
 
     @Test
     fun `WatermarkPosition TOP_CENTER has correct label`() {
-        assertEquals("Top Center", WatermarkPosition.TOP_CENTER.label)
+        assertEquals(R.string.position_top_center, WatermarkPosition.TOP_CENTER.labelRes)
     }
 
     @Test
     fun `WatermarkPosition TOP_RIGHT has correct label`() {
-        assertEquals("Top Right", WatermarkPosition.TOP_RIGHT.label)
+        assertEquals(R.string.position_top_right, WatermarkPosition.TOP_RIGHT.labelRes)
     }
 
     @Test
     fun `WatermarkPosition BOTTOM_LEFT has correct label`() {
-        assertEquals("Bottom Left", WatermarkPosition.BOTTOM_LEFT.label)
+        assertEquals(R.string.position_bottom_left, WatermarkPosition.BOTTOM_LEFT.labelRes)
     }
 
     @Test
     fun `WatermarkPosition BOTTOM_CENTER has correct label`() {
-        assertEquals("Bottom Center", WatermarkPosition.BOTTOM_CENTER.label)
+        assertEquals(R.string.position_bottom_center, WatermarkPosition.BOTTOM_CENTER.labelRes)
     }
 
     @Test
     fun `WatermarkPosition BOTTOM_RIGHT has correct label`() {
-        assertEquals("Bottom Right", WatermarkPosition.BOTTOM_RIGHT.label)
+        assertEquals(R.string.position_bottom_right, WatermarkPosition.BOTTOM_RIGHT.labelRes)
     }
 
     @Test
     fun `WatermarkPosition TILED has correct label`() {
-        assertEquals("Tiled", WatermarkPosition.TILED.label)
+        assertEquals(R.string.position_tiled, WatermarkPosition.TILED.labelRes)
     }
 
     @Test

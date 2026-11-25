@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Output location (PDF tools) -->
+    <string name="tools_output_root">Dahili depolama</string>
+    <string name="tools_output_location">Kayıt yeri: %1$s</string>
+    <string name="tools_output_ask_every_time">Her seferinde sor</string>
+    <string name="tools_output_not_chosen">Henüz seçilmedi</string>
+    <string name="tools_output_change">Değiştir</string>
+    <string name="tools_output_dialog_title">Kayıt klasörü seçin</string>
+    <string name="tools_output_dialog_message">Download içinde bir alt klasör seçin ya da oluşturun. Download klasörünün kendisi seçilemez. Dosyalarınız buraya kaydedilir, istediğiniz zaman değiştirebilirsiniz.</string>
+    <string name="tools_output_dialog_confirm">Klasör seç</string>
+
+    <!-- Sonuçlar -->
+    <string name="tools_result_encrypted_size">Şifreli • %1$s</string>
+
+    <!-- Araçlar ekranı kategorileri -->
+    <string name="tools_category_organize">Dosya ve sayfalar</string>
+    <string name="tools_category_edit">Ekle ve çıkar</string>
+    <string name="tools_category_security">Güvenlik</string>
+    <string name="tools_category_convert">Dönüştür</string>
+</resources>

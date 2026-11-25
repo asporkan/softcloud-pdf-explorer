@@ -8,7 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolOutputWriter
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -45,7 +46,8 @@ data class ImageToPdfResult(
     val outputPath: String,
     val displayName: String,
     val pageCount: Int,
-    val fileSize: Long
+    val fileSize: Long,
+    val locationLabel: String = ""
 )
 
 class ImageToPdfViewModel(
@@ -167,7 +169,10 @@ class ImageToPdfViewModel(
 
     fun convertToPdfToUri(destinationUri: Uri) {
         val currentState = _state.value
-        if (!convertToPdf()) return
+        if (!convertToPdf()) {
+            SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
+            return
+        }
 
         viewModelScope.launch {
             _state.update { it.copy(isProcessing = true, progress = 0f, error = null) }
@@ -185,8 +190,8 @@ class ImageToPdfViewModel(
 
             result.fold(
                 onSuccess = {
-                    if (!FileOperations.writeFileToUri(context, tempFile, destinationUri)) {
-                        tempFile.delete()
+                    val committed = ToolOutputWriter.commit(context, tempFile, destinationUri)
+                    if (committed == null) {
                         _state.update {
                             it.copy(
                                 isProcessing = false,
@@ -196,36 +201,23 @@ class ImageToPdfViewModel(
                         return@launch
                     }
 
-                    val localCopy = File(
-                        context.cacheDir,
-                        "imagetopdf_result_${System.currentTimeMillis()}.pdf"
-                    )
-                    tempFile.copyTo(localCopy, overwrite = true)
-                    tempFile.delete()
-
-                    val displayName = FileOperations.getFileNameFromUri(context, destinationUri)
-                        ?: currentState.outputFileName.ifBlank { "document" }
-                    val name = when {
-                        displayName.endsWith(".pdf", ignoreCase = true) -> displayName
-                        displayName.isNotBlank() -> "$displayName.pdf"
-                        else -> localCopy.name
-                    }
-
                     _state.update {
                         it.copy(
                             isProcessing = false,
                             progress = 1f,
                             result = ImageToPdfResult(
-                                outputPath = localCopy.absolutePath,
-                                displayName = name,
+                                outputPath = committed.localCopy.absolutePath,
+                                displayName = committed.displayName,
                                 pageCount = currentState.images.size,
-                                fileSize = localCopy.length()
+                                fileSize = committed.localCopy.length(),
+                                locationLabel = committed.locationLabel
                             )
                         )
                     }
                 },
                 onFailure = { error ->
                     tempFile.delete()
+                    SafOutputHelper.deleteDocumentQuietly(context, destinationUri)
                     Timber.e(error, "Image to PDF conversion failed")
                     _state.update {
                         it.copy(

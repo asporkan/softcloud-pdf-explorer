@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
-import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,7 +55,8 @@ data class SourceFile(
 data class SplitResult(
     val outputDir: String,
     val createdFiles: List<String>,
-    val totalPages: Int
+    val totalPages: Int,
+    val locationLabel: String = ""
 )
 
 class SplitViewModel(
@@ -277,17 +278,17 @@ class SplitViewModel(
             }
 
             result.fold(
-                onSuccess = { tempFiles ->
+                onSuccess = { producedFiles ->
+                    val tempFiles = applyOutputPrefix(
+                        producedFiles,
+                        File(sourceFile.path).nameWithoutExtension,
+                        currentState.outputPrefix.trim()
+                    )
                     val files = tempFiles.map { File(it) }
-                    val written = withContext(Dispatchers.IO) {
-                        FileOperations.writeFilesToTree(
-                            context,
-                            treeUri,
-                            files,
-                            "application/pdf"
-                        )
+                    val created = withContext(Dispatchers.IO) {
+                        SafOutputHelper.writeFilesToFolder(context, treeUri, files, "application/pdf")
                     }
-                    if (!written) {
+                    if (created == null) {
                         tempDir.deleteRecursively()
                         _state.update {
                             it.copy(
@@ -297,8 +298,14 @@ class SplitViewModel(
                         }
                         return@launch
                     }
+                    SafOutputHelper.scanSaved(context, created, "application/pdf")
 
-                    val localFiles = copyToResultCache(tempFiles, "split")
+                    val localFiles = withContext(Dispatchers.IO) {
+                        created.mapIndexed { index, uri ->
+                            val name = SafOutputHelper.displayName(context, uri) ?: files[index].name
+                            SafOutputHelper.namedLocalCopy(context, files[index], name).absolutePath
+                        }
+                    }
                     tempDir.deleteRecursively()
 
                     _state.update {
@@ -308,7 +315,11 @@ class SplitViewModel(
                             result = SplitResult(
                                 outputDir = File(localFiles.first()).parent ?: "",
                                 createdFiles = localFiles,
-                                totalPages = localFiles.size
+                                totalPages = localFiles.size,
+                                locationLabel = SafOutputHelper.readableFolder(
+                                    treeUri,
+                                    context.getString(R.string.tools_output_root)
+                                )
                             )
                         )
                     }
@@ -368,13 +379,19 @@ class SplitViewModel(
         return true
     }
 
-    private fun copyToResultCache(tempFiles: List<String>, prefix: String): List<String> {
-        val resultDir = File(context.cacheDir, "${prefix}_result_${System.currentTimeMillis()}").apply { mkdirs() }
-        return tempFiles.map { path ->
-            val src = File(path)
-            val dest = File(resultDir, src.name)
-            src.copyTo(dest, overwrite = true)
-            dest.absolutePath
+    /**
+     * The repository names parts after the source file (`<source>_part1.pdf`). Renames them so the
+     * output prefix typed by the user is what ends up in the destination folder.
+     */
+    private fun applyOutputPrefix(files: List<String>, sourceBase: String, prefix: String): List<String> {
+        if (prefix.isBlank()) return files
+        return files.map { path ->
+            val file = File(path)
+            val name = file.name
+            val head = "${sourceBase}_"
+            if (!name.startsWith(head)) return@map path
+            val renamed = File(file.parentFile, "${prefix}_${name.removePrefix(head)}")
+            if (renamed.exists() || !file.renameTo(renamed)) path else renamed.absolutePath
         }
     }
 

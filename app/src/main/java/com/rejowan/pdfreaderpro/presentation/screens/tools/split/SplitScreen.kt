@@ -89,6 +89,10 @@ import androidx.core.content.FileProvider
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.navigation.NavController
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
@@ -126,14 +130,9 @@ fun SplitScreen(
         }
     }
 
-    val openDocumentTreeLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree()
-    ) { uri ->
-        uri?.let {
-            FileOperations.takePersistableTreePermission(context, it)
-            viewModel.splitToTree(it)
-        }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFolderDestination = { viewModel.splitToTree(it) }
+    )
 
     Scaffold(
         topBar = {
@@ -343,6 +342,10 @@ fun SplitScreen(
                         }
 
                         // Bottom section
+                        OutputLocationRow(
+                            saver = outputSaver,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
                         SplitBottomSection(
                             outputPrefix = state.outputPrefix,
                             onPrefixChange = { viewModel.setOutputPrefix(it) },
@@ -352,7 +355,7 @@ fun SplitScreen(
                             error = state.error,
                             onSplit = {
                                 if (viewModel.split()) {
-                                    openDocumentTreeLauncher.launch(null)
+                                    outputSaver.requestFolder()
                                 }
                             },
                             onClearError = { viewModel.clearError() }
@@ -1027,6 +1030,7 @@ private fun SuccessState(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            ResultLocationText(result.locationLabel)
         }
 
         // Files list

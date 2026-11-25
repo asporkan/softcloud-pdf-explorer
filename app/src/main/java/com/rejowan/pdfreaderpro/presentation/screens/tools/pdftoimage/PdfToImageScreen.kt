@@ -86,6 +86,10 @@ import com.rejowan.pdfreaderpro.presentation.components.ToolLoadErrorDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -116,14 +120,9 @@ fun PdfToImageScreen(
         }
     }
 
-    val openDocumentTreeLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree()
-    ) { uri ->
-        uri?.let {
-            FileOperations.takePersistableTreePermission(context, it)
-            viewModel.exportImagesToTree(it)
-        }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFolderDestination = { viewModel.exportImagesToTree(it) }
+    )
 
     Scaffold(
         topBar = {
@@ -255,18 +254,20 @@ fun PdfToImageScreen(
                     )
                 }
                 else -> {
-                    ExportContent(
-                        state = state,
-                        onFormatChange = { viewModel.setImageFormat(it) },
-                        onPageSelectionChange = { viewModel.setPageSelection(it) },
-                        onCustomPagesChange = { viewModel.setCustomPages(it) },
-                        onExport = {
-                            if (viewModel.exportImages()) {
-                                openDocumentTreeLauncher.launch(null)
-                            }
-                        },
-                        onClearError = { viewModel.clearError() }
-                    )
+                    ToolContentWithLocation(saver = outputSaver) {
+                        ExportContent(
+                            state = state,
+                            onFormatChange = { viewModel.setImageFormat(it) },
+                            onPageSelectionChange = { viewModel.setPageSelection(it) },
+                            onCustomPagesChange = { viewModel.setCustomPages(it) },
+                            onExport = {
+                                if (viewModel.exportImages()) {
+                                    outputSaver.requestFolder()
+                                }
+                            },
+                            onClearError = { viewModel.clearError() }
+                        )
+                    }
                 }
             }
 
@@ -535,7 +536,11 @@ private fun SourceFileCard(sourceFile: SourceFile) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    "${sourceFile.pageCount} pages - ${formatFileSize(sourceFile.size)}",
+                    stringResource(
+                        R.string.pages_size_format,
+                        sourceFile.pageCount,
+                        formatFileSize(sourceFile.size)
+                    ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -752,7 +757,7 @@ private fun SuccessState(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    result.outputDir.replace("/storage/emulated/0/", ""),
+                    stringResource(R.string.tools_output_location, result.locationLabel),
                     style = MaterialTheme.typography.bodySmall,
                     color = AccentPurple,
                     maxLines = 2,

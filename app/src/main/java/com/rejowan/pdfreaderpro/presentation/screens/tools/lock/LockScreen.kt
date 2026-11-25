@@ -89,6 +89,10 @@ import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -120,11 +124,9 @@ fun LockScreen(
         }
     }
 
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.lockToUri(it) }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFileDestination = { viewModel.lockToUri(it) }
+    )
 
     Scaffold(
         topBar = {
@@ -216,30 +218,35 @@ fun LockScreen(
                     )
                 }
                 else -> {
-                    LockContent(
-                        state = state,
-                        onUserPasswordChange = { viewModel.setUserPassword(it) },
-                        onOwnerPasswordChange = { viewModel.setOwnerPassword(it) },
-                        onAllowPrintingChange = { viewModel.setAllowPrinting(it) },
-                        onAllowCopyingChange = { viewModel.setAllowCopying(it) },
-                        onAllowModifyingChange = { viewModel.setAllowModifying(it) },
-                        onAllowAnnotationsChange = { viewModel.setAllowAnnotations(it) },
-                        onOutputFileNameChange = { viewModel.setOutputFileName(it) },
-                        onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
-                        onLock = {
-                            if (state.overwriteOriginal) {
-                                viewModel.lock()
-                            } else {
-                                val suggested = state.outputFileName.ifBlank {
-                                    state.sourceFile?.name?.substringBeforeLast('.') ?: "locked"
+                    ToolContentWithLocation(
+                        saver = outputSaver,
+                        showLocation = !state.overwriteOriginal
+                    ) {
+                        LockContent(
+                            state = state,
+                            onUserPasswordChange = { viewModel.setUserPassword(it) },
+                            onOwnerPasswordChange = { viewModel.setOwnerPassword(it) },
+                            onAllowPrintingChange = { viewModel.setAllowPrinting(it) },
+                            onAllowCopyingChange = { viewModel.setAllowCopying(it) },
+                            onAllowModifyingChange = { viewModel.setAllowModifying(it) },
+                            onAllowAnnotationsChange = { viewModel.setAllowAnnotations(it) },
+                            onOutputFileNameChange = { viewModel.setOutputFileName(it) },
+                            onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
+                            onLock = {
+                                if (state.overwriteOriginal) {
+                                    viewModel.lock()
+                                } else {
+                                    val suggested = state.outputFileName.ifBlank {
+                                        state.sourceFile?.name?.substringBeforeLast('.') ?: "locked"
+                                    }
+                                    if (viewModel.validateForSave()) outputSaver.saveFile(suggested)
                                 }
-                                createDocumentLauncher.launch(FileOperations.ensurePdfExtension(suggested))
-                            }
-                        },
-                        onClearError = { viewModel.clearError() },
-                        onChangeFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) },
-                        onPreview = { state.sourceFile?.path?.let { navController.navigateToReader(it) } }
-                    )
+                            },
+                            onClearError = { viewModel.clearError() },
+                            onChangeFile = { pdfPickerLauncher.launch(arrayOf("application/pdf")) },
+                            onPreview = { state.sourceFile?.path?.let { navController.navigateToReader(it) } }
+                        )
+                    }
                 }
             }
 
@@ -813,10 +820,16 @@ private fun SuccessState(
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
-                        stringResource(R.string.pages_size_format, result.pageCount, formatFileSize(result.fileSize)),
+                        // An encrypted PDF may not expose its page count; show "Encrypted" instead of "0 pages".
+                        if (result.pageCount > 0) {
+                            stringResource(R.string.pages_size_format, result.pageCount, formatFileSize(result.fileSize))
+                        } else {
+                            stringResource(R.string.tools_result_encrypted_size, formatFileSize(result.fileSize))
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    ResultLocationText(result.locationLabel)
                 }
                 Icon(
                     Icons.Default.Lock,

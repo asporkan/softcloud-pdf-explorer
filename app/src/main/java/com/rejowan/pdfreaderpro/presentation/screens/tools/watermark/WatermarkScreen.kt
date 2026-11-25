@@ -21,6 +21,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -103,6 +104,10 @@ import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -144,11 +149,9 @@ fun WatermarkScreen(
         }
     }
 
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.applyWatermarkToUri(it) }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFileDestination = { viewModel.applyWatermarkToUri(it) }
+    )
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -248,35 +251,40 @@ fun WatermarkScreen(
                     )
                 }
                 else -> {
-                    WatermarkContent(
-                        state = state,
-                        onWatermarkTypeChange = { viewModel.setWatermarkType(it) },
-                        onTextChange = { viewModel.setWatermarkText(it) },
-                        onFontSizeChange = { viewModel.setFontSize(it) },
-                        onTextColorChange = { viewModel.setTextColor(it) },
-                        onTextOpacityChange = { viewModel.setTextOpacity(it) },
-                        onTextRotationChange = { viewModel.setTextRotation(it) },
-                        onSelectImage = { imagePickerLauncher.launch(arrayOf("image/*")) },
-                        onImageScaleChange = { viewModel.setImageScale(it) },
-                        onImageOpacityChange = { viewModel.setImageOpacity(it) },
-                        onPositionChange = { viewModel.setPosition(it) },
-                        onPageSelectionChange = { viewModel.setPageSelection(it) },
-                        onCustomPagesChange = { viewModel.setCustomPages(it) },
-                        onOutputFileNameChange = { viewModel.setOutputFileName(it) },
-                        onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
-                        onApply = {
-                            if (state.overwriteOriginal) {
-                                viewModel.applyWatermark()
-                            } else {
-                                val suggested = state.outputFileName.ifBlank {
-                                    state.sourceFile?.name?.substringBeforeLast('.') ?: "watermarked"
+                    ToolContentWithLocation(
+                        saver = outputSaver,
+                        showLocation = !state.overwriteOriginal
+                    ) {
+                        WatermarkContent(
+                            state = state,
+                            onWatermarkTypeChange = { viewModel.setWatermarkType(it) },
+                            onTextChange = { viewModel.setWatermarkText(it) },
+                            onFontSizeChange = { viewModel.setFontSize(it) },
+                            onTextColorChange = { viewModel.setTextColor(it) },
+                            onTextOpacityChange = { viewModel.setTextOpacity(it) },
+                            onTextRotationChange = { viewModel.setTextRotation(it) },
+                            onSelectImage = { imagePickerLauncher.launch(arrayOf("image/*")) },
+                            onImageScaleChange = { viewModel.setImageScale(it) },
+                            onImageOpacityChange = { viewModel.setImageOpacity(it) },
+                            onPositionChange = { viewModel.setPosition(it) },
+                            onPageSelectionChange = { viewModel.setPageSelection(it) },
+                            onCustomPagesChange = { viewModel.setCustomPages(it) },
+                            onOutputFileNameChange = { viewModel.setOutputFileName(it) },
+                            onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
+                            onApply = {
+                                if (state.overwriteOriginal) {
+                                    viewModel.applyWatermark()
+                                } else {
+                                    val suggested = state.outputFileName.ifBlank {
+                                        state.sourceFile?.name?.substringBeforeLast('.') ?: "watermarked"
+                                    }
+                                    if (viewModel.validateForSave()) outputSaver.saveFile(suggested)
                                 }
-                                createDocumentLauncher.launch(FileOperations.ensurePdfExtension(suggested))
-                            }
-                        },
-                        onReset = { viewModel.reset() },
-                        onClearError = { viewModel.clearError() }
-                    )
+                            },
+                            onReset = { viewModel.reset() },
+                            onClearError = { viewModel.clearError() }
+                        )
+                    }
                 }
             }
 
@@ -406,18 +414,19 @@ private fun WatermarkContent(
                 imageScale = state.imageScale,
                 imageOpacity = state.imageOpacity,
                 position = state.position,
-                modifier = Modifier.weight(2f)
+                modifier = Modifier.weight(3f)
             )
 
             // Action buttons
             Column(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(2f),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
                     onClick = onApply,
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !state.isProcessing
+                    enabled = !state.isProcessing,
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                 ) {
                     Icon(
                         Icons.Default.WaterDrop,
@@ -425,13 +434,24 @@ private fun WatermarkContent(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(stringResource(R.string.apply))
+                    Text(
+                        stringResource(R.string.apply),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
                 OutlinedButton(
                     onClick = onReset,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp)
                 ) {
-                    Text(stringResource(R.string.reset))
+                    Text(
+                        stringResource(R.string.reset),
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }
@@ -1681,6 +1701,7 @@ private fun SuccessState(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    ResultLocationText(result.locationLabel)
                 }
             }
         }

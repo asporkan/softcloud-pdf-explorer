@@ -2,10 +2,12 @@ package com.rejowan.pdfreaderpro.presentation.viewmodel.tools
 
 import android.content.Context
 import app.cash.turbine.test
+import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.presentation.screens.tools.reorder.PageItem
 import com.rejowan.pdfreaderpro.presentation.screens.tools.reorder.ReorderViewModel
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,6 +36,7 @@ class ReorderViewModelTest {
 
         pdfToolsRepository = mockk(relaxed = true)
         context = mockk(relaxed = true)
+        every { context.getString(R.string.tool_error_select_pdf_first) } returns "Please select a PDF file first"
 
         coEvery { pdfToolsRepository.getPageCount(any()) } returns Result.success(10)
     }

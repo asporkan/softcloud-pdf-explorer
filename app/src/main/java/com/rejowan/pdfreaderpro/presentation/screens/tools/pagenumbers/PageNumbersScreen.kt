@@ -100,6 +100,10 @@ import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
 import com.rejowan.pdfreaderpro.presentation.navigation.rememberToolExitHandler
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocationRow
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
+import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
@@ -141,11 +145,9 @@ fun PageNumbersScreen(
         }
     }
 
-    val createDocumentLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.CreateDocument("application/pdf")
-    ) { uri ->
-        uri?.let { viewModel.applyPageNumbersToUri(it) }
-    }
+    val outputSaver = rememberOutputSaver(
+        onFileDestination = { viewModel.applyPageNumbersToUri(it) }
+    )
 
     Scaffold(
         topBar = {
@@ -239,34 +241,39 @@ fun PageNumbersScreen(
                     )
                 }
                 else -> {
-                    PageNumbersContent(
-                        state = state,
-                        onPositionChange = { viewModel.setPosition(it) },
-                        onFormatChange = { viewModel.setFormat(it) },
-                        onFontSizeChange = { viewModel.setFontSize(it) },
-                        onColorChange = { viewModel.setTextColor(it) },
-                        onStartNumberChange = { viewModel.setStartNumber(it) },
-                        onPrefixChange = { viewModel.setCustomPrefix(it) },
-                        onSuffixChange = { viewModel.setCustomSuffix(it) },
-                        onMarginXChange = { viewModel.setMarginX(it) },
-                        onMarginYChange = { viewModel.setMarginY(it) },
-                        onPageSelectionChange = { viewModel.setPageSelection(it) },
-                        onCustomPagesChange = { viewModel.setCustomPages(it) },
-                        onSkipFirstNChange = { viewModel.setSkipFirstN(it) },
-                        onOutputFileNameChange = { viewModel.setOutputFileName(it) },
-                        onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
-                        onApply = {
-                            if (state.overwriteOriginal) {
-                                viewModel.applyPageNumbers()
-                            } else {
-                                val suggested = state.outputFileName.ifBlank {
-                                    state.sourceFile?.name?.substringBeforeLast('.') ?: "numbered"
+                    ToolContentWithLocation(
+                        saver = outputSaver,
+                        showLocation = !state.overwriteOriginal
+                    ) {
+                        PageNumbersContent(
+                            state = state,
+                            onPositionChange = { viewModel.setPosition(it) },
+                            onFormatChange = { viewModel.setFormat(it) },
+                            onFontSizeChange = { viewModel.setFontSize(it) },
+                            onColorChange = { viewModel.setTextColor(it) },
+                            onStartNumberChange = { viewModel.setStartNumber(it) },
+                            onPrefixChange = { viewModel.setCustomPrefix(it) },
+                            onSuffixChange = { viewModel.setCustomSuffix(it) },
+                            onMarginXChange = { viewModel.setMarginX(it) },
+                            onMarginYChange = { viewModel.setMarginY(it) },
+                            onPageSelectionChange = { viewModel.setPageSelection(it) },
+                            onCustomPagesChange = { viewModel.setCustomPages(it) },
+                            onSkipFirstNChange = { viewModel.setSkipFirstN(it) },
+                            onOutputFileNameChange = { viewModel.setOutputFileName(it) },
+                            onOverwriteChange = { viewModel.setOverwriteOriginal(it) },
+                            onApply = {
+                                if (state.overwriteOriginal) {
+                                    viewModel.applyPageNumbers()
+                                } else {
+                                    val suggested = state.outputFileName.ifBlank {
+                                        state.sourceFile?.name?.substringBeforeLast('.') ?: "numbered"
+                                    }
+                                    if (viewModel.validateForSave()) outputSaver.saveFile(suggested)
                                 }
-                                createDocumentLauncher.launch(FileOperations.ensurePdfExtension(suggested))
-                            }
-                        },
-                        onClearError = { viewModel.clearError() }
-                    )
+                            },
+                            onClearError = { viewModel.clearError() }
+                        )
+                    }
                 }
             }
 
@@ -1435,6 +1442,7 @@ private fun SuccessState(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    ResultLocationText(result.locationLabel)
                 }
             }
         }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Output location (PDF tools) -->
+    <string name="tools_output_root">Internal storage</string>
+    <string name="tools_output_location">Save location: %1$s</string>
+    <string name="tools_output_ask_every_time">Ask every time</string>
+    <string name="tools_output_not_chosen">Not chosen yet</string>
+    <string name="tools_output_change">Change</string>
+    <string name="tools_output_dialog_title">Choose an output folder</string>
+    <string name="tools_output_dialog_message">Choose or create a subfolder inside Download. The Download folder itself cannot be selected. Your files will be saved there, and you can change it at any time.</string>
+    <string name="tools_output_dialog_confirm">Choose folder</string>
+
+    <!-- Results -->
+    <string name="tools_result_encrypted_size">Encrypted • %1$s</string>
+
+    <!-- Tools hub categories -->
+    <string name="tools_category_organize">Files &amp; pages</string>
+    <string name="tools_category_edit">Add &amp; remove</string>
+    <string name="tools_category_security">Security</string>
+    <string name="tools_category_convert">Convert</string>
+</resources>
