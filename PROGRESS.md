@@ -6,5 +6,5 @@
 - Kullanıcı kararı (2026-11-26): silme düzeltmesinden sonra tüm özellikler test edilir, bulgular listelenir, **onay gelmeden yeni düzenleme yapılmaz**.
 
 ## Faz 1 — Müşteri hatası: PDF silinmiyor + stabilizasyon (v0.6.1)
-- [ ] @qa-tester · F1-5. Tüm özelliklerin cihazda testi (okuyucu, 12 araç, klasör, arama, favori/son, ayarlar, toplu silme, yeniden adlandırma) → bulgu listesi kullanıcıya sunulur
-- [ ] @devops · F1-6. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F1-5 ve onaylanan düzeltmeler)
+- [ ] @kullanıcı · F1-5. Bulgu listesi (B1–B27) onayı bekleniyor → onaylanan paketler F2 olarak buraya yazılır
+- [ ] @devops · F1-6. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F1-5 onayı ve F2)
