@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "skills": {
+    "android-permissions-security": {
+      "source": "android/skills",
+      "commit": "7f7b21730a605d112ca9f79b6e40105ce7b670ee",
+      "sourceType": "github",
+      "skillPath": "security/android-permissions-security/SKILL.md",
+      "computedHash": "eb407bbe35d8afe518f7d20d396f097f483657be22f836618169e24edd0712ed"
+    },
+    "play-policy-insights": {
+      "source": "android/skills",
+      "commit": "7f7b21730a605d112ca9f79b6e40105ce7b670ee",
+      "sourceType": "github",
+      "skillPath": "play/play-policy-insights/SKILL.md",
+      "computedHash": "4c86f15e9147f2227073d0bea8098432a7c0973f3428675d43bfc8c321f44e3e"
+    },
+    "r8-analyzer": {
+      "source": "android/skills",
+      "commit": "7f7b21730a605d112ca9f79b6e40105ce7b670ee",
+      "sourceType": "github",
+      "skillPath": "performance/r8-analyzer/SKILL.md",
+      "computedHash": "fbd0f9f9e434b0732302d0de0ba69606ef3a5806478d35aa128e09fe4828f276"
+    }
+  }
+}

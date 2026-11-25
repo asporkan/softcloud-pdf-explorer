@@ -25,7 +25,8 @@ keystore.properties
 signing/
 
 # Claude
-.claude/
+.claude/settings.local.json
+.claude/**/tmp/
 
 # Documentation (local only)
 /doc/
