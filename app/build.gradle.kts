@@ -27,6 +27,17 @@ android {
         versionName = "0.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Play Console "native debug symbols" uyarısı için sembol tablosu AAB'ye girer
+        ndk {
+            debugSymbolLevel = "SYMBOL_TABLE"
+        }
+    }
+
+    // Yalnızca desteklenen diller (res/xml/locales_config.xml ile aynı olmalı);
+    // kütüphanelerden gelen diğer dil kaynakları paketten çıkarılır
+    androidResources {
+        localeFilters += listOf("en", "tr")
     }
 
     signingConfigs {
@@ -86,6 +97,14 @@ android {
             excludes += "/META-INF/DEPENDENCIES"
             excludes += "/META-INF/LICENSE.md"
             excludes += "/META-INF/LICENSE-notice.md"
+            // Yalnızca GraalVM/JAXB araç meta verisi; çalışma zamanında okunmaz
+            excludes += "/META-INF/native-image/**"
+            excludes += "/META-INF/sun-jaxb.episode"
+            excludes += "/DebugProbesKt.bin"
+            // Kullanılmayan BouncyCastle PQC (Picnic) tabloları ve yabancı dil mesajları
+            excludes += "/org/bouncycastle/pqc/crypto/picnic/**"
+            excludes += "/org/bouncycastle/*/CertPathReviewerMessages_*.properties"
+            excludes += "/com/ctc/wstx/shaded/msv_core/**/*_ja.properties"
         }
     }
 }

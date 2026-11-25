@@ -1,5 +1,6 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · F2-15 release küçültme: iText/BC/Room/serialization keep kuralları daraltıldı, localeFilters en+tr, packaging excludes, ndk SYMBOL_TABLE, anim_next.json silindi · AAB 23,08→17,80 MB, APK 16,31→11,46 MB, tek dex 8,28 MB; 925/925 test, bundle+assembleRelease başarılı, lintRelease 0 Error; cihaz duman testi F2-7'de
 - 2026-11-26 · F2-14 kullanılmayan 365 string anahtarı EN+TR'den kontrollü silindi (1337→972) · 5 partide mergeDebugResources + compileDebugKotlin hatasız, TR doğrulama PASS, 925/925 test, lint MissingTranslation/ExtraTranslation 0
 - 2026-11-26 · F2-16 Play Console: veri güvenliği formu "veri toplanmıyor/paylaşılmıyor" olarak kaydedildi (incelemeye gönderim 0.6.1 ile); vitals son 28 gün 0 çökme/ANR; lansman öncesi rapor 0 kararlılık/performans, 26 erişilebilirlik; paket R8 optimizasyonu %38, 86 yerelleştirme · Console sayfaları okundu, önizleme doğrulandı
 - 2026-11-26 · F2-6b okuyucu kontrastı + alt menüler: 19 okuyucu dosyası token'lara geçti, sayfa sayacı/kaydırma çubuğu inverseSurface çipinde, 8 alt menü tam açılış + kaydırma · testDebugUnitTest 925/925 (ReaderChromeContrastTest: sayaç ≥8,52:1), sabit Color(0xFF 59→5 (yalnız belge vurgu renkleri); cihaz doğrulaması F2-7'de

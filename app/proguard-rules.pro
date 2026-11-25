@@ -20,14 +20,10 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# PDF Viewer - WebView JavaScript interface
+# PDF Viewer - WebView JavaScript interface (JWI): yalnızca @JavascriptInterface yöntemleri adıyla kalmalı
 -keepclassmembers class com.rejowan.pdfreaderpro.presentation.components.pdf.WebInterface {
-   public *;
+    @android.webkit.JavascriptInterface <methods>;
 }
-
-# PDF Viewer - Exception classes
--keep class com.rejowan.pdfreaderpro.presentation.components.pdf.PdfException
--keep class * extends com.rejowan.pdfreaderpro.presentation.components.pdf.PdfException
 
 # ==========================================
 # Logging - Strip in release builds
@@ -54,19 +50,26 @@
 }
 
 # ==========================================
-# Room Database
+# Room / Kotlin Serialization / Koin
 # ==========================================
--keep class * extends androidx.room.RoomDatabase
--keep @androidx.room.Entity class *
--keepclassmembers class * {
-    @androidx.room.* <methods>;
-}
+# Room (room-runtime), kotlinx.serialization (core) ve Koin kendi consumer kurallarını AAR/JAR içinde
+# getirir; uygulama paketi çapında ek -keep kuralı gerekmez.
+-keepattributes *Annotation*, InnerClasses
+-dontnote kotlinx.serialization.AnnotationsKt
 
 # ==========================================
-# iText PDF
+# iText PDF (yalnızca yansımayla yüklenen sınıflar)
 # ==========================================
--keep class com.itextpdf.** { *; }
--keep class org.bouncycastle.** { *; }
+# BouncyCastleFactoryCreator fabrikayı Class.forName ile ada göre yükler
+-keep class com.itextpdf.bouncycastle.** { *; }
+-keep class com.itextpdf.bouncycastleconnector.** { *; }
+
+# ==========================================
+# BouncyCastle (JCA sağlayıcısı algoritmaları sınıf adıyla yükler)
+# ==========================================
+-keep class org.bouncycastle.jce.provider.BouncyCastleProvider { *; }
+-keep class org.bouncycastle.jcajce.provider.** { *; }
+-keep class org.bouncycastle.jce.provider.** { *; }
 
 # iText - Ignore missing Java SE classes (not available on Android)
 -dontwarn java.awt.**
@@ -78,25 +81,3 @@
 -dontwarn aQute.bnd.annotation.**
 -dontwarn org.codehaus.stax2.**
 -dontwarn com.ctc.wstx.**
-
-# ==========================================
-# Kotlin Serialization
-# ==========================================
--keepattributes *Annotation*, InnerClasses
--dontnote kotlinx.serialization.AnnotationsKt
-
--keepclassmembers class kotlinx.serialization.json.** {
-    *** Companion;
-}
--keepclasseswithmembers class kotlinx.serialization.json.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
-
-# Keep serializable classes
--keep,includedescriptorclasses class com.rejowan.pdfreaderpro.**$$serializer { *; }
--keepclassmembers class com.rejowan.pdfreaderpro.** {
-    *** Companion;
-}
--keepclasseswithmembers class com.rejowan.pdfreaderpro.** {
-    kotlinx.serialization.KSerializer serializer(...);
-}
