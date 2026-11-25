@@ -1,10 +1,15 @@
 package com.rejowan.pdfreaderpro.util
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
 import timber.log.Timber
@@ -355,17 +360,19 @@ object FileOperations {
         }
     }
 
-    fun deleteFile(filePath: String): Boolean {
-        return try {
-            val file = File(filePath)
-            if (!file.exists()) {
-                Timber.e("File not found: $filePath")
-                return false
-            }
-            file.delete()
-        } catch (e: Exception) {
-            Timber.e(e, "Error deleting file")
-            false
+    /**
+     * True when the app can see other apps' files by path (All files access on Android 11+,
+     * READ_EXTERNAL_STORAGE before). Without it `File.exists()` is false for files that do exist,
+     * so absence must not be treated as "file was deleted".
+     */
+    fun hasStorageAccess(context: Context): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            Environment.isExternalStorageManager()
+        } else {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
         }
     }
 

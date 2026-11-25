@@ -1,5 +1,6 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · F2-1 veri/dosya: arama silme/rename listeyi yeniliyor (B1), MediaStore observer ile liste yenileme (B5), Son Açılanlar/Favori temizliği erişim yokken silmiyor (B15), silme/rename IO thread'inde (B23), silme tek yerde PdfFileRepository.deletePdf(path) + MediaStore yedeği (B24) · compileDebugKotlin temiz, 285 birim testi geçti (tools testleri hariç kopyada); cihaz doğrulaması F2-7'de
 - 2026-11-26 · F2-5 Play politika taraması (play-policy-insights + elle inceleme): 7 bulgu; analytics/reklam SDK yok, release log kapalı; MANAGE_EXTERNAL_STORAGE beyanı ve INTERNET/"offline" tutarlılığı doğrulama gerektirir · orchestrator + 7 worker + critic çalıştı, proje dosyası değişmedi
 - 2026-11-26 · F2-4 metinler: klasör kartı plurals (TR "5 PDF"), B19 yıldız metni, parola→şifre birliği, Sürüm Notları ve varsayılan metinler kaynağa (+20 anahtar/dil) · _validate_tr_strings.py PASS (1348/1348), compileDebugKotlin + mergeDebugResources temiz
 - 2026-11-26 · Tam cihaz QA turu (ana ekran, okuyucu, 12 araç, klasör, arama, ayarlar, koyu tema kontrastı) + statik kod taraması · Redmi K20 Pro/Android 16'da adb ile manuel; çökme/ANR yok, 27 bulgu kullanıcıya listelendi, düzeltme yapılmadı

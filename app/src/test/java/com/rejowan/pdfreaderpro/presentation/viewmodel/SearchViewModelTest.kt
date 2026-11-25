@@ -412,4 +412,47 @@ class SearchViewModelTest {
         assertEquals(longQuery, viewModel.searchQuery.value)
     }
     // endregion
+
+    // region Delete / Rename Tests
+    @Test
+    fun `deleteFile uses the repository which refreshes the shared list`() = runTest {
+        coEvery { pdfFileRepository.deletePdf("/storage/a.pdf") } returns Result.success(Unit)
+        viewModel = createViewModel()
+
+        var completed: Boolean? = null
+        viewModel.deleteFile("/storage/a.pdf") { completed = it }
+        advanceUntilIdle()
+
+        assertEquals(true, completed)
+        coVerify { pdfFileRepository.deletePdf("/storage/a.pdf") }
+        coVerify { favoriteRepository.removeFavorite("/storage/a.pdf") }
+        coVerify { recentRepository.removeRecent("/storage/a.pdf") }
+    }
+
+    @Test
+    fun `deleteFile reports failure and leaves favorite and recent alone`() = runTest {
+        coEvery { pdfFileRepository.deletePdf(any()) } returns Result.failure(SecurityException("denied"))
+        viewModel = createViewModel()
+
+        var completed: Boolean? = null
+        viewModel.deleteFile("/storage/a.pdf") { completed = it }
+        advanceUntilIdle()
+
+        assertEquals(false, completed)
+        coVerify(exactly = 0) { recentRepository.removeRecent(any()) }
+    }
+
+    @Test
+    fun `renameFile uses the repository and updates stored paths`() = runTest {
+        coEvery { pdfFileRepository.renamePdf("/storage/old.pdf", "new") } returns Result.success("/storage/new.pdf")
+        viewModel = createViewModel()
+
+        var completed: Boolean? = null
+        viewModel.renameFile("/storage/old.pdf", "new") { completed = it }
+        advanceUntilIdle()
+
+        assertEquals(true, completed)
+        coVerify { recentRepository.updatePath("/storage/old.pdf", "/storage/new.pdf", "new.pdf") }
+    }
+    // endregion
 }

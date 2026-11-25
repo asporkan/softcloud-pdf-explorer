@@ -10,7 +10,17 @@ interface PdfFileRepository {
     fun searchPdfs(query: String): Flow<List<PdfFile>>
     fun getPdfFolders(): Flow<List<PdfFolder>>
     suspend fun getPdfFile(path: String): PdfFile?
-    suspend fun renamePdf(pdfFile: PdfFile, newName: String): Result<PdfFile>
-    suspend fun deletePdf(pdfFile: PdfFile): Result<Unit>
+
+    /** Renames the file at [path] (".pdf" is appended if missing). Success carries the new absolute path. */
+    suspend fun renamePdf(path: String, newName: String): Result<String>
+
+    /**
+     * Deletes the PDF at [path] on the IO dispatcher: File API first, MediaStore as backup. A file that is already
+     * gone counts as success (its stale MediaStore row is cleaned). Refreshes the shared list before returning.
+     */
+    suspend fun deletePdf(path: String): Result<Unit>
+
+    /** Batch variant of [deletePdf]: one result per path (same order), a single list refresh at the end. */
+    suspend fun deletePdfs(paths: List<String>): List<Result<Unit>>
     suspend fun refreshPdfs()
 }

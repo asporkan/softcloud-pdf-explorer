@@ -6,7 +6,6 @@ import com.rejowan.pdfreaderpro.domain.model.PdfFile
 import com.rejowan.pdfreaderpro.domain.repository.FavoriteRepository
 import com.rejowan.pdfreaderpro.domain.repository.PdfFileRepository
 import com.rejowan.pdfreaderpro.domain.repository.RecentRepository
-import com.rejowan.pdfreaderpro.util.FileOperations
 import java.io.File
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -76,17 +75,14 @@ class SearchViewModel(
      */
     fun renameFile(oldPath: String, newName: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val newPath = FileOperations.renameFile(oldPath, newName)
+            // The repository refreshes the shared list, so the search results update on their own.
+            val newPath = pdfFileRepository.renamePdf(oldPath, newName).getOrNull()
             if (newPath != null) {
                 val newFileName = File(newPath).name
                 // Update path in favorites if present
                 favoriteRepository.updatePath(oldPath, newPath, newFileName)
                 // Update path in recent if present
                 recentRepository.updatePath(oldPath, newPath, newFileName)
-                // Re-trigger search to refresh results
-                val currentQuery = _searchQuery.value
-                _searchQuery.value = ""
-                _searchQuery.value = currentQuery
                 onComplete(true)
             } else {
                 onComplete(false)
@@ -99,16 +95,12 @@ class SearchViewModel(
      */
     fun deleteFile(path: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val success = FileOperations.deleteFile(path)
-            if (success) {
+            // The repository refreshes the shared list, so the search results update on their own.
+            if (pdfFileRepository.deletePdf(path).isSuccess) {
                 // Remove from favorites if present
                 favoriteRepository.removeFavorite(path)
                 // Remove from recent if present
                 recentRepository.removeRecent(path)
-                // Re-trigger search to refresh results
-                val currentQuery = _searchQuery.value
-                _searchQuery.value = ""
-                _searchQuery.value = currentQuery
                 onComplete(true)
             } else {
                 onComplete(false)

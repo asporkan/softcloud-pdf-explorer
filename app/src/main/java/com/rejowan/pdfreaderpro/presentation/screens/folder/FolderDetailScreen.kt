@@ -123,6 +123,7 @@ fun FolderDetailScreen(
     }
 
     DisposableEffect(lifecycleOwner) {
+        var isFirstResume = true
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 val newPermissionState = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -131,7 +132,11 @@ fun FolderDetailScreen(
 
                 if (newPermissionState && !hasPermission) {
                     viewModel.loadFilesForFolder(folderPath)
+                } else if (newPermissionState && !isFirstResume) {
+                    // Back from the reader or another app: pick up files added meanwhile.
+                    viewModel.silentRefresh()
                 }
+                isFirstResume = false
                 hasPermission = newPermissionState
             }
         }

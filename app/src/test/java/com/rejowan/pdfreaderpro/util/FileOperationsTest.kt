@@ -247,35 +247,6 @@ class FileOperationsTest {
     }
     // endregion
 
-    // region deleteFile Tests
-    @Test
-    fun `deleteFile returns true and deletes existing file`() {
-        val testFile = File(tempDir, "to_delete.pdf")
-        testFile.createNewFile()
-
-        assertTrue(testFile.exists())
-
-        val result = FileOperations.deleteFile(testFile.absolutePath)
-
-        assertTrue(result)
-        assertFalse(testFile.exists())
-    }
-
-    @Test
-    fun `deleteFile returns false for non-existing file`() {
-        val result = FileOperations.deleteFile("/nonexistent/file.pdf")
-
-        assertFalse(result)
-    }
-
-    @Test
-    fun `deleteFile returns false for empty path`() {
-        val result = FileOperations.deleteFile("")
-
-        assertFalse(result)
-    }
-    // endregion
-
     // region renameFile Tests
     @Test
     fun `renameFile renames file successfully`() {
@@ -361,17 +332,6 @@ class FileOperationsTest {
     // endregion
 
     // region Edge Cases
-    @Test
-    fun `deleteFile handles file with special characters in name`() {
-        val testFile = File(tempDir, "file with spaces.pdf")
-        testFile.createNewFile()
-
-        val result = FileOperations.deleteFile(testFile.absolutePath)
-
-        assertTrue(result)
-        assertFalse(testFile.exists())
-    }
-
     @Test
     fun `renameFile handles names with special characters`() {
         val testFile = File(tempDir, "original.pdf")

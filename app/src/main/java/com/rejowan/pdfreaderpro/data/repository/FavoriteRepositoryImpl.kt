@@ -5,13 +5,17 @@ import com.rejowan.pdfreaderpro.data.local.database.dao.FavoriteDao
 import com.rejowan.pdfreaderpro.data.local.database.entity.FavoriteEntity
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
 import com.rejowan.pdfreaderpro.domain.repository.FavoriteRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.File
 
 class FavoriteRepositoryImpl(
-    private val favoriteDao: FavoriteDao
+    private val favoriteDao: FavoriteDao,
+    /** False while the app cannot see other apps' files; then absence proves nothing. */
+    private val canVerifyFiles: () -> Boolean = { true }
 ) : FavoriteRepository {
 
     override fun getFavorites(): Flow<List<PdfFile>> {
@@ -64,13 +68,20 @@ class FavoriteRepositoryImpl(
     }
 
     override suspend fun cleanupMissingFiles() {
-        val favorites = favoriteDao.getAllFavoritesSync()
-        Timber.d("Checking ${favorites.size} favorites for missing files")
-        favorites.forEach { entity ->
-            val file = File(entity.path)
-            if (!file.exists()) {
-                Timber.d("Removing missing favorite: ${entity.path}")
-                favoriteDao.deleteByPath(entity.path)
+        // Without storage access File.exists() is false for files that exist; never wipe favorites on that basis.
+        if (!canVerifyFiles()) {
+            Timber.d("Skipping favorites cleanup: storage access unavailable")
+            return
+        }
+        withContext(Dispatchers.IO) {
+            val favorites = favoriteDao.getAllFavoritesSync()
+            Timber.d("Checking ${favorites.size} favorites for missing files")
+            favorites.forEach { entity ->
+                val file = File(entity.path)
+                if (!file.exists()) {
+                    Timber.d("Removing missing favorite: ${entity.path}")
+                    favoriteDao.deleteByPath(entity.path)
+                }
             }
         }
     }

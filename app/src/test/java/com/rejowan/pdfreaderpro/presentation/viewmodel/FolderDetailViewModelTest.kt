@@ -420,4 +420,53 @@ class FolderDetailViewModelTest {
         }
     }
     // endregion
+
+    // region Delete / Rename Tests
+    @Test
+    fun `deleteFile delegates to repository and cleans favorite and recent`() = runTest {
+        coEvery { pdfFileRepository.deletePdf("/storage/docs/Alpha.pdf") } returns Result.success(Unit)
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        var completed: Boolean? = null
+        viewModel.deleteFile("/storage/docs/Alpha.pdf") { completed = it }
+        advanceUntilIdle()
+
+        assertEquals(true, completed)
+        coVerify { favoriteRepository.removeFavorite("/storage/docs/Alpha.pdf") }
+        coVerify { recentRepository.removeRecent("/storage/docs/Alpha.pdf") }
+    }
+
+    @Test
+    fun `deleteFile reports failure when repository fails`() = runTest {
+        coEvery { pdfFileRepository.deletePdf(any()) } returns Result.failure(SecurityException("denied"))
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        var completed: Boolean? = null
+        viewModel.deleteFile("/storage/docs/Alpha.pdf") { completed = it }
+        advanceUntilIdle()
+
+        assertEquals(false, completed)
+        coVerify(exactly = 0) { recentRepository.removeRecent(any()) }
+    }
+
+    @Test
+    fun `deleteSelectedFiles uses one batch call and counts results`() = runTest {
+        val paths = listOf("/storage/docs/Alpha.pdf", "/storage/docs/Beta.pdf")
+        coEvery { pdfFileRepository.deletePdfs(paths) } returns
+            listOf(Result.success(Unit), Result.failure(java.io.IOException("busy")))
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.enterSelectionMode(paths[0])
+        viewModel.toggleSelection(paths[1])
+
+        var counts: Pair<Int, Int>? = null
+        viewModel.deleteSelectedFiles { ok, failed -> counts = ok to failed }
+        advanceUntilIdle()
+
+        assertEquals(1 to 1, counts)
+        coVerify(exactly = 1) { pdfFileRepository.deletePdfs(paths) }
+    }
+    // endregion
 }

@@ -584,4 +584,68 @@ class HomeViewModelTest {
         assertFalse(viewModel.isLoading.value)
     }
     // endregion
+
+    // region Delete / Rename Tests
+    @Test
+    fun `deleteFile delegates to repository and clears favorite and recent on success`() = runTest {
+        coEvery { pdfFileRepository.deletePdf("/storage/a.pdf") } returns Result.success(Unit)
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        var completed: Boolean? = null
+        viewModel.deleteFile("/storage/a.pdf") { completed = it }
+        advanceUntilIdle()
+
+        assertEquals(true, completed)
+        coVerify { favoriteRepository.removeFavorite("/storage/a.pdf") }
+        coVerify { recentRepository.removeRecent("/storage/a.pdf") }
+    }
+
+    @Test
+    fun `deleteFile keeps favorite and recent when repository fails`() = runTest {
+        coEvery { pdfFileRepository.deletePdf(any()) } returns Result.failure(SecurityException("denied"))
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        var completed: Boolean? = null
+        viewModel.deleteFile("/storage/a.pdf") { completed = it }
+        advanceUntilIdle()
+
+        assertEquals(false, completed)
+        coVerify(exactly = 0) { favoriteRepository.removeFavorite(any()) }
+        coVerify(exactly = 0) { recentRepository.removeRecent(any()) }
+    }
+
+    @Test
+    fun `deleteSelectedFiles counts successes and failures from the repository`() = runTest {
+        coEvery { pdfFileRepository.deletePdfs(listOf("/storage/a.pdf", "/storage/b.pdf")) } returns
+            listOf(Result.success(Unit), Result.failure(java.io.IOException("busy")))
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.selectAll(listOf("/storage/a.pdf", "/storage/b.pdf"))
+
+        var counts: Pair<Int, Int>? = null
+        viewModel.deleteSelectedFiles { ok, failed -> counts = ok to failed }
+        advanceUntilIdle()
+
+        assertEquals(1 to 1, counts)
+        coVerify { recentRepository.removeRecent("/storage/a.pdf") }
+        coVerify(exactly = 0) { recentRepository.removeRecent("/storage/b.pdf") }
+    }
+
+    @Test
+    fun `renameFile updates favorite and recent paths on success`() = runTest {
+        coEvery { pdfFileRepository.renamePdf("/storage/old.pdf", "new") } returns Result.success("/storage/new.pdf")
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        var completed: Boolean? = null
+        viewModel.renameFile("/storage/old.pdf", "new") { completed = it }
+        advanceUntilIdle()
+
+        assertEquals(true, completed)
+        coVerify { favoriteRepository.updatePath("/storage/old.pdf", "/storage/new.pdf", "new.pdf") }
+        coVerify { recentRepository.updatePath("/storage/old.pdf", "/storage/new.pdf", "new.pdf") }
+    }
+    // endregion
 }

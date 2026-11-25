@@ -309,4 +309,15 @@ class FavoriteRepositoryTest {
         assertEquals("", entitySlot.captured.parentFolder)
     }
     // endregion
+
+    // region cleanupMissingFiles Tests
+    @Test
+    fun `cleanupMissingFiles keeps favorites when storage access is unavailable`() = runTest {
+        val noAccessRepository = FavoriteRepositoryImpl(favoriteDao, canVerifyFiles = { false })
+
+        noAccessRepository.cleanupMissingFiles()
+
+        coVerify(exactly = 0) { favoriteDao.deleteByPath(any()) }
+    }
+    // endregion
 }

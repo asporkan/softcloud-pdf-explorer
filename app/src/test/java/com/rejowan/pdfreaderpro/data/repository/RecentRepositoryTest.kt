@@ -13,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 class RecentRepositoryTest {
 
@@ -364,6 +365,38 @@ class RecentRepositoryTest {
             assertEquals(100, result.progressPercent)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+    // endregion
+
+    // region cleanupMissingFiles Tests
+    @Test
+    fun `cleanupMissingFiles removes entries whose file is gone`() = runTest {
+        val gone = createRecentEntity(id = 1L, path = "/nonexistent/gone.pdf")
+        coEvery { recentDao.getAllRecentSync() } returns listOf(gone)
+
+        repository.cleanupMissingFiles()
+
+        coVerify { recentDao.deleteByPath("/nonexistent/gone.pdf") }
+    }
+
+    @Test
+    fun `cleanupMissingFiles keeps entries whose file exists`() = runTest {
+        val file = File.createTempFile("recent_keep", ".pdf").apply { deleteOnExit() }
+        coEvery { recentDao.getAllRecentSync() } returns listOf(createRecentEntity(path = file.absolutePath))
+
+        repository.cleanupMissingFiles()
+
+        coVerify(exactly = 0) { recentDao.deleteByPath(any()) }
+    }
+
+    @Test
+    fun `cleanupMissingFiles keeps history when storage access is unavailable`() = runTest {
+        val noAccessRepository = RecentRepositoryImpl(recentDao, canVerifyFiles = { false })
+        coEvery { recentDao.getAllRecentSync() } returns listOf(createRecentEntity(path = "/nonexistent/gone.pdf"))
+
+        noAccessRepository.cleanupMissingFiles()
+
+        coVerify(exactly = 0) { recentDao.deleteByPath(any()) }
     }
     // endregion
 }

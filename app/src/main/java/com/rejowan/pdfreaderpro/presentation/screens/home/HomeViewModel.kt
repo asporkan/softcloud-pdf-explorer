@@ -12,7 +12,6 @@ import com.rejowan.pdfreaderpro.domain.repository.FavoriteRepository
 import com.rejowan.pdfreaderpro.domain.repository.PdfFileRepository
 import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
 import com.rejowan.pdfreaderpro.domain.repository.RecentRepository
-import com.rejowan.pdfreaderpro.util.FileOperations
 import java.io.File
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -257,9 +256,9 @@ class HomeViewModel(
             var successCount = 0
             var failCount = 0
 
-            paths.forEach { path ->
-                val success = FileOperations.deleteFile(path)
-                if (success) {
+            val results = pdfFileRepository.deletePdfs(paths)
+            paths.zip(results).forEach { (path, result) ->
+                if (result.isSuccess) {
                     favoriteRepository.removeFavorite(path)
                     recentRepository.removeRecent(path)
                     successCount++
@@ -268,7 +267,6 @@ class HomeViewModel(
                 }
             }
 
-            pdfFileRepository.refreshPdfs()
             exitSelectionMode()
             onComplete(successCount, failCount)
         }
@@ -280,15 +278,13 @@ class HomeViewModel(
      */
     fun renameFile(oldPath: String, newName: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val newPath = FileOperations.renameFile(oldPath, newName)
+            val newPath = pdfFileRepository.renamePdf(oldPath, newName).getOrNull()
             if (newPath != null) {
                 val newFileName = File(newPath).name
                 // Update path in favorites if present
                 favoriteRepository.updatePath(oldPath, newPath, newFileName)
                 // Update path in recent if present
                 recentRepository.updatePath(oldPath, newPath, newFileName)
-                // Refresh the file list
-                pdfFileRepository.refreshPdfs()
                 onComplete(true)
             } else {
                 onComplete(false)
@@ -311,14 +307,11 @@ class HomeViewModel(
      */
     fun deleteFile(path: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
-            val success = FileOperations.deleteFile(path)
-            if (success) {
+            if (pdfFileRepository.deletePdf(path).isSuccess) {
                 // Remove from favorites if present
                 favoriteRepository.removeFavorite(path)
                 // Remove from recent if present
                 recentRepository.removeRecent(path)
-                // Refresh the file list
-                pdfFileRepository.refreshPdfs()
                 onComplete(true)
             } else {
                 onComplete(false)
