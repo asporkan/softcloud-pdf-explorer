@@ -21,7 +21,9 @@ Kotlin · Jetpack Compose · Material 3 · Koin · Room · DataStore · PDF.js (
 - 2026-11-26: Arayüz TR+EN; tek kaynak AGENTS.md; ekip android-dev/qa-tester/devops/content, Dengeli profil, her faz sonunda durulur.
 - 2026-11-26: `.claude/` repoya dahil (yalnızca `settings.local.json` hariç).
 - 2026-11-26: Git: `origin` = GitHub (elle push, yalnızca istenince), `usb` = `D:\Git\pdf-explorer.git` (post-commit otomatik push).
-- 2026-11-26: Sıradaki sürüm 0.6.1 (versionCode 7).
+- 2026-11-26: Sıradaki sürüm 0.6.1 (versionCode 7); B1–B27 bulgularının tüm paketleri (P1–P4) bu sürüme dahil.
+- 2026-11-26: Son Açılanlar kalıcıdır (yeniden başlatmada korunur). Araç çıktıları: son seçilen klasör hatırlanır (kalıcı SAF izni), değiştirilebilir.
+- 2026-11-26: Koyu temada koyu zemin üstündeki yazı/simge açık renk olur; renkler `presentation/theme/` token'larından gelir, bileşende sabit `Color(0xFF…)` kullanılmaz.
 
 ## Yerel araçlar
 - Android SDK: `C:\Users\DEV-PC\AppData\Local\Android\Sdk` (Gradle); adb: `C:/Android/Sdk/platform-tools/adb.exe`.
