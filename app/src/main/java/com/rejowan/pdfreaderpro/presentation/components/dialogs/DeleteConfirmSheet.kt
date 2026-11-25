@@ -93,7 +93,7 @@ private fun DeleteConfirmBottomSheet(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
@@ -112,9 +112,12 @@ private fun DeleteConfirmBottomSheet(
                 }
             },
             onConfirm = {
+                // Run the action before animating: a concurrent hide() (or the sheet
+                // leaving composition) would otherwise cancel it and nothing gets deleted.
+                onConfirm()
                 scope.launch {
                     sheetState.hide()
-                    onConfirm()
+                    onDismiss()
                 }
             },
             modifier = Modifier.padding(bottom = 24.dp)
@@ -178,7 +181,10 @@ private fun DeleteConfirmSideSheet(
                 DeleteConfirmContent(
                     pdfFile = pdfFile,
                     onDismiss = onDismiss,
-                    onConfirm = onConfirm,
+                    onConfirm = {
+                        onConfirm()
+                        onDismiss()
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(
@@ -285,10 +291,7 @@ private fun DeleteConfirmContent(
             Spacer(modifier = Modifier.width(10.dp))
 
             Button(
-                onClick = {
-                    onConfirm()
-                    onDismiss()
-                },
+                onClick = onConfirm,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(

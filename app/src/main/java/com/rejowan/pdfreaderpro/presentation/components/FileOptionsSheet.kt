@@ -137,7 +137,8 @@ private fun FileOptionsBottomSheet(
     onDeleteClick: () -> Unit,
     onRemoveFromRecentsClick: (() -> Unit)?
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last action ("Delete") sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -156,7 +157,9 @@ private fun FileOptionsBottomSheet(
             onInfoClick = onInfoClick,
             onDeleteClick = onDeleteClick,
             onRemoveFromRecentsClick = onRemoveFromRecentsClick,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }

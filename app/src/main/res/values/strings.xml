@@ -1569,4 +1569,9 @@
     <string name="view_image">View Image</string>
     <string name="images_section_count">IMAGES (%d)</string>
 
+    <!-- Delete result -->
+    <string name="file_deleted">File deleted</string>
+    <string name="delete_failed">Couldn\'t delete the file. Check the storage permission in Settings.</string>
+    <string name="files_deleted_count">%d files deleted</string>
+    <string name="files_delete_partial">%1$d deleted, %2$d couldn\'t be deleted</string>
 </resources>

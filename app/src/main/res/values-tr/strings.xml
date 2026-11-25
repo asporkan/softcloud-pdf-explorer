@@ -1570,4 +1570,9 @@
     <string name="view_image">Görseli Görüntüle</string>
     <string name="images_section_count">GÖRSELLER (%d)</string>
 
+    <!-- Delete result -->
+    <string name="file_deleted">Dosya silindi</string>
+    <string name="delete_failed">Dosya silinemedi. Ayarlar\'dan depolama iznini kontrol edin.</string>
+    <string name="files_deleted_count">%d dosya silindi</string>
+    <string name="files_delete_partial">%1$d silindi, %2$d silinemedi</string>
 </resources>

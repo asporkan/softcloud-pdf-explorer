@@ -73,6 +73,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
 import com.rejowan.pdfreaderpro.domain.model.PdfFolder
+import com.rejowan.pdfreaderpro.presentation.components.showBatchDeleteResult
+import com.rejowan.pdfreaderpro.presentation.components.showDeleteResult
 import com.rejowan.pdfreaderpro.presentation.components.AnimatedBottomNav
 import com.rejowan.pdfreaderpro.presentation.components.AnimatedSelectionActionBar
 import com.rejowan.pdfreaderpro.presentation.components.CollapsingHomeHeader
@@ -638,7 +640,7 @@ fun HomeScreen(
                     fileForDialog = null
                 },
                 onConfirm = {
-                    viewModel.deleteFile(file.path) { /* success handled internally */ }
+                    viewModel.deleteFile(file.path) { success -> context.showDeleteResult(success) }
                 }
             )
         }
@@ -676,7 +678,7 @@ fun HomeScreen(
             onDismiss = { showBatchDeleteConfirm = false },
             onConfirm = {
                 viewModel.deleteSelectedFiles { success, fail ->
-                    // Could show a snackbar here with results
+                    context.showBatchDeleteResult(success, fail)
                 }
                 showBatchDeleteConfirm = false
             }

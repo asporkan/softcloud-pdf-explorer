@@ -90,6 +90,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
+import com.rejowan.pdfreaderpro.presentation.components.showDeleteResult
 import com.rejowan.pdfreaderpro.presentation.components.EmptySearchState
 import com.rejowan.pdfreaderpro.presentation.components.FileOptionsSheet
 import com.rejowan.pdfreaderpro.presentation.components.LoadingState
@@ -281,7 +282,7 @@ fun SearchScreen(
                     fileForDialog = null
                 },
                 onConfirm = {
-                    viewModel.deleteFile(file.path) { /* success handled internally */ }
+                    viewModel.deleteFile(file.path) { success -> context.showDeleteResult(success) }
                 }
             )
         }

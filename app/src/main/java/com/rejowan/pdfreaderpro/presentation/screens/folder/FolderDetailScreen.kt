@@ -79,6 +79,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
 import com.rejowan.pdfreaderpro.domain.model.ViewMode
+import com.rejowan.pdfreaderpro.presentation.components.showBatchDeleteResult
+import com.rejowan.pdfreaderpro.presentation.components.showDeleteResult
 import com.rejowan.pdfreaderpro.presentation.components.AnimatedSelectionActionBar
 import com.rejowan.pdfreaderpro.presentation.components.EmptyState
 import com.rejowan.pdfreaderpro.presentation.components.FileOptionsSheet
@@ -404,7 +406,7 @@ fun FolderDetailScreen(
                     fileForDialog = null
                 },
                 onConfirm = {
-                    viewModel.deleteFile(file.path) { /* success handled internally */ }
+                    viewModel.deleteFile(file.path) { success -> context.showDeleteResult(success) }
                 }
             )
         }
@@ -429,7 +431,7 @@ fun FolderDetailScreen(
             count = selectedPaths.size,
             onDismiss = { showBatchDeleteConfirm = false },
             onConfirm = {
-                viewModel.deleteSelectedFiles { _, _ -> }
+                viewModel.deleteSelectedFiles { success, fail -> context.showBatchDeleteResult(success, fail) }
                 showBatchDeleteConfirm = false
             }
         )
