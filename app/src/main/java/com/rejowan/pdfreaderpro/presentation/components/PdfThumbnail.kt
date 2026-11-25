@@ -119,7 +119,7 @@ fun PdfThumbnail(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = (size.value * 0.16f).sp
                                 ),
-                                color = PdfRed.color.copy(alpha = 0.7f)
+                                color = PdfRed.color
                             )
                         }
                     }
@@ -208,7 +208,7 @@ fun PdfThumbnailGrid(
                                 Text(
                                     text = "$pageCount pages",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = PdfRed.color.copy(alpha = 0.8f),
+                                    color = PdfRed.color,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                 )
                             }

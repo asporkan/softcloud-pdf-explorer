@@ -822,7 +822,7 @@ internal fun SettingsOptionItem(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -906,7 +906,7 @@ private fun SettingsToggleItem(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -1137,7 +1137,7 @@ private fun PickerContent(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -1252,7 +1252,7 @@ private fun PickerOptionItem(
                 Text(
                     text = option.subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -1444,7 +1444,7 @@ private fun BrightnessContent(
                 Text(
                     text = stringResource(R.string.adjust_brightness),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -1625,7 +1625,7 @@ private fun BrightnessOptionItem(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -2437,7 +2437,7 @@ private fun DoubleTapZoomSheet(
                     Text(
                         text = stringResource(R.string.double_tap_zoom_subtitle),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }

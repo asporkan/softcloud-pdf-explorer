@@ -86,7 +86,7 @@ fun WelcomeHeader(
                 Text(
                     text = stringResource(R.string.welcome_to_library),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 

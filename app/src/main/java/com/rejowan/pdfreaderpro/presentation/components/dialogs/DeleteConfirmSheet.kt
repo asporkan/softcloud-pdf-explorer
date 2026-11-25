@@ -246,7 +246,7 @@ private fun DeleteConfirmContent(
                 Text(
                     text = stringResource(R.string.action_cannot_be_undone),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -275,7 +275,7 @@ private fun DeleteConfirmContent(
                 Text(
                     text = stringResource(R.string.confirm_delete_file),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

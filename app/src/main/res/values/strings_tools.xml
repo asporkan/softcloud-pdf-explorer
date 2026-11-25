@@ -18,4 +18,8 @@
     <string name="tools_category_edit">Add &amp; remove</string>
     <string name="tools_category_security">Security</string>
     <string name="tools_category_convert">Convert</string>
+
+    <!-- PDF to Images: file name prefix -->
+    <string name="pdf_to_image_prefix_label">File name prefix</string>
+    <string name="pdf_to_image_prefix_example">Files will be named %1$s_1.%2$s, %1$s_2.%2$s, …</string>
 </resources>

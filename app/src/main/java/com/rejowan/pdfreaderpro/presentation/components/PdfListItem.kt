@@ -177,7 +177,7 @@ fun PdfListItem(
                     Text(
                         text = FormattingUtils.formattedDate(pdfFile.dateModified),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -195,7 +195,7 @@ fun PdfListItem(
                     Text(
                         text = pdfFile.folderName,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

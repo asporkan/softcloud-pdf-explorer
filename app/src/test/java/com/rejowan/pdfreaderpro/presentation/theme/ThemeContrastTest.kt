@@ -151,6 +151,55 @@ class ThemeContrastTest {
         BlackSurfaces.onSurface, BlackSurfaces.onSurfaceVariant, BlackSurfaces.surfaceVariant
     )
 
+    /**
+     * Secondary text (dates, sizes, subtitles, descriptions) is drawn with plain
+     * onSurfaceVariant, never with a reduced alpha. It must hold 4.5:1 on every surface
+     * level a screen can sit it on, in all three themes.
+     */
+    private fun checkSecondaryText(
+        theme: String, fg: Color, vararg bgs: Pair<String, Color>
+    ) {
+        val f = mutableListOf<String>()
+        bgs.forEach { (name, bg) -> check(f, theme, "onSurfaceVariant/$name (secondary text)", fg, bg) }
+        assertTrue("$theme secondary text contrast failures: $f", f.isEmpty())
+    }
+
+    @Test
+    fun lightSecondaryTextMeetsContrast() = checkSecondaryText(
+        "Light", LightSurfaces.onSurfaceVariant,
+        "surface" to LightSurfaces.surface,
+        "surfaceContainerLowest" to LightSurfaces.surfaceContainerLowest,
+        "surfaceContainerLow" to LightSurfaces.surfaceContainerLow,
+        "surfaceContainer" to LightSurfaces.surfaceContainer,
+        "surfaceContainerHigh" to LightSurfaces.surfaceContainerHigh,
+        "surfaceContainerHighest" to LightSurfaces.surfaceContainerHighest,
+        "surfaceVariant" to LightSurfaces.surfaceVariant
+    )
+
+    @Test
+    fun darkSecondaryTextMeetsContrast() = checkSecondaryText(
+        "Dark", DarkSurfaces.onSurfaceVariant,
+        "surface" to DarkSurfaces.surface,
+        "surfaceContainerLowest" to DarkSurfaces.surfaceContainerLowest,
+        "surfaceContainerLow" to DarkSurfaces.surfaceContainerLow,
+        "surfaceContainer" to DarkSurfaces.surfaceContainer,
+        "surfaceContainerHigh" to DarkSurfaces.surfaceContainerHigh,
+        "surfaceContainerHighest" to DarkSurfaces.surfaceContainerHighest,
+        "surfaceVariant" to DarkSurfaces.surfaceVariant
+    )
+
+    @Test
+    fun blackSecondaryTextMeetsContrast() = checkSecondaryText(
+        "Black", BlackSurfaces.onSurfaceVariant,
+        "surface" to BlackSurfaces.surface,
+        "surfaceContainerLowest" to BlackSurfaces.surfaceContainerLowest,
+        "surfaceContainerLow" to BlackSurfaces.surfaceContainerLow,
+        "surfaceContainer" to BlackSurfaces.surfaceContainer,
+        "surfaceContainerHigh" to BlackSurfaces.surfaceContainerHigh,
+        "surfaceContainerHighest" to BlackSurfaces.surfaceContainerHighest,
+        "surfaceVariant" to BlackSurfaces.surfaceVariant
+    )
+
     @Test
     fun pdfOutputSwatchCheckMarkIsReadable() {
         val all = PdfOutputColors.PageNumberPresets + PdfOutputColors.WatermarkPresets

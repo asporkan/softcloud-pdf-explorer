@@ -285,7 +285,7 @@ private fun FolderSortSheetHeader(
             Text(
                 text = stringResource(R.string.choose_sort_folders),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -365,7 +365,7 @@ private fun FolderSortCategoryCard(
                     Text(
                         text = description,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 

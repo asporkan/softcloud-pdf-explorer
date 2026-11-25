@@ -481,7 +481,7 @@ private fun SelectionHeader(
         Text(
             stringResource(R.string.selected_pages_will_be_removed),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(12.dp))

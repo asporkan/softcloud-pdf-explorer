@@ -226,7 +226,7 @@ private fun FolderOptionsContent(
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 4.dp)
         )
 
@@ -260,7 +260,7 @@ private fun FolderOptionsContent(
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 4.dp)
         )
 
@@ -338,7 +338,7 @@ private fun FolderOptionsHeader(
             Text(
                 text = stringResource(R.string.folder_options),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -399,7 +399,7 @@ private fun InfoItem(
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = value,
@@ -485,7 +485,7 @@ private fun ActionItem(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 

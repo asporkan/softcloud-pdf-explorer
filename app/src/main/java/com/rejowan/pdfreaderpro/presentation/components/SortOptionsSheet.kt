@@ -303,7 +303,7 @@ private fun SortSheetHeader(
             Text(
                 text = stringResource(R.string.choose_sort_pdfs),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -383,7 +383,7 @@ private fun SortCategoryCard(
                     Text(
                         text = description,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 

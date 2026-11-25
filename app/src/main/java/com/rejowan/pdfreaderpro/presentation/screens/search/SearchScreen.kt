@@ -360,7 +360,7 @@ private fun SearchHeader(
                             Text(
                                 text = stringResource(R.string.search_your_pdfs_hint),
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                         BasicTextField(
@@ -701,7 +701,7 @@ private fun SearchTipCard(
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -780,7 +780,7 @@ private fun SearchResultsHeader(
             Text(
                 text = if (resultCount == 1) stringResource(R.string.file_found, resultCount) else stringResource(R.string.files_found, resultCount),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -893,7 +893,7 @@ private fun SearchResultItem(
                     Text(
                         text = com.rejowan.pdfreaderpro.util.FormattingUtils.formattedDate(pdfFile.dateModified),
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -911,7 +911,7 @@ private fun SearchResultItem(
                     Text(
                         text = pdfFile.folderName,
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )

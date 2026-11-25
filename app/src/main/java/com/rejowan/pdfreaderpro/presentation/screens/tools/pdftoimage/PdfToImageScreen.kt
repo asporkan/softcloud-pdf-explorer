@@ -262,6 +262,7 @@ fun PdfToImageScreen(
                             onFormatChange = { viewModel.setImageFormat(it) },
                             onPageSelectionChange = { viewModel.setPageSelection(it) },
                             onCustomPagesChange = { viewModel.setCustomPages(it) },
+                            onPrefixChange = { viewModel.setOutputPrefix(it) },
                             onExport = {
                                 if (viewModel.exportImages()) {
                                     outputSaver.requestFolder()
@@ -359,6 +360,7 @@ private fun ExportContent(
     onFormatChange: (ImageFormat) -> Unit,
     onPageSelectionChange: (PageSelection) -> Unit,
     onCustomPagesChange: (String) -> Unit,
+    onPrefixChange: (String) -> Unit,
     onExport: () -> Unit,
     onClearError: () -> Unit
 ) {
@@ -394,6 +396,16 @@ private fun ExportContent(
             totalPages = state.sourceFile?.pageCount ?: 0,
             onSelectionChange = onPageSelectionChange,
             onCustomPagesChange = onCustomPagesChange
+        )
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // File name prefix
+        PrefixField(
+            prefix = state.outputPrefix,
+            resolvedPrefix = ImageOutputNaming.resolvePrefix(state.outputPrefix, state.sourceFile?.name.orEmpty()),
+            extension = state.imageFormat.extension,
+            onPrefixChange = onPrefixChange
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -634,6 +646,27 @@ private fun FormatCard(
             )
         }
     }
+}
+
+@Composable
+private fun PrefixField(
+    prefix: String,
+    resolvedPrefix: String,
+    extension: String,
+    onPrefixChange: (String) -> Unit
+) {
+    val focusManager = LocalFocusManager.current
+    OutlinedTextField(
+        value = prefix,
+        onValueChange = onPrefixChange,
+        label = { Text(stringResource(R.string.pdf_to_image_prefix_label)) },
+        supportingText = { Text(stringResource(R.string.pdf_to_image_prefix_example, resolvedPrefix, extension)) },
+        singleLine = true,
+        shape = RoundedCornerShape(12.dp),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable

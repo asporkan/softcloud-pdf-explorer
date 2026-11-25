@@ -344,7 +344,7 @@ private fun ExitConfirmContent(
         Text(
             text = stringResource(R.string.exit_confirm_message),
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = titleAlpha * 0.7f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = titleAlpha),
             textAlign = TextAlign.Center
         )
 

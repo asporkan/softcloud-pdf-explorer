@@ -5,6 +5,7 @@ import app.cash.turbine.test
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.presentation.screens.tools.pdftoimage.ImageFormat
+import com.rejowan.pdfreaderpro.presentation.screens.tools.pdftoimage.ImageOutputNaming
 import com.rejowan.pdfreaderpro.presentation.screens.tools.pdftoimage.PageSelection
 import com.rejowan.pdfreaderpro.presentation.screens.tools.pdftoimage.PdfToImageViewModel
 import io.mockk.coEvery
@@ -20,7 +21,10 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TemporaryFolder
+import java.io.File
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class PdfToImageViewModelTest {
@@ -308,6 +312,128 @@ class PdfToImageViewModelTest {
             assertNull(state.result)
             cancelAndIgnoreRemainingEvents()
         }
+    }
+    // endregion
+
+    // region Output prefix Tests
+    @get:Rule
+    val tmp = TemporaryFolder()
+
+    @Test
+    fun `initial state has empty output prefix`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        assertEquals("", viewModel.state.value.outputPrefix)
+    }
+
+    @Test
+    fun `setOutputPrefix drops invalid file name characters`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.setOutputPrefix("my/doc:v2*?\"<>|")
+        advanceUntilIdle()
+
+        assertEquals("mydocv2", viewModel.state.value.outputPrefix)
+    }
+
+    @Test
+    fun `setOutputPrefix keeps spaces and unicode while typing`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.setOutputPrefix("Rapor Özet ")
+        advanceUntilIdle()
+
+        assertEquals("Rapor Özet ", viewModel.state.value.outputPrefix)
+    }
+
+    @Test
+    fun `reset clears output prefix`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.setOutputPrefix("abc")
+        viewModel.reset()
+        advanceUntilIdle()
+
+        assertEquals("", viewModel.state.value.outputPrefix)
+    }
+
+    @Test
+    fun `default prefix is source file name without extension`() {
+        assertEquals("Annual Report", ImageOutputNaming.defaultPrefix("Annual Report.pdf"))
+        assertEquals("a.b", ImageOutputNaming.defaultPrefix("a.b.PDF"))
+        assertEquals("noext", ImageOutputNaming.defaultPrefix("noext"))
+    }
+
+    @Test
+    fun `sanitize removes invalid characters and edge dots and spaces`() {
+        assertEquals("ab", ImageOutputNaming.sanitize("a/b"))
+        assertEquals("report", ImageOutputNaming.sanitize("  ..report..  "))
+        assertEquals("", ImageOutputNaming.sanitize("???"))
+        assertEquals("ab", ImageOutputNaming.sanitize("a b"))
+        assertEquals(100, ImageOutputNaming.sanitize("x".repeat(300)).length)
+    }
+
+    @Test
+    fun `resolvePrefix falls back to source name then image`() {
+        assertEquals("custom", ImageOutputNaming.resolvePrefix(" custom ", "Doc.pdf"))
+        assertEquals("Doc", ImageOutputNaming.resolvePrefix("", "Doc.pdf"))
+        assertEquals("Doc", ImageOutputNaming.resolvePrefix("***", "Doc.pdf"))
+        assertEquals("image", ImageOutputNaming.resolvePrefix("", ".pdf"))
+    }
+
+    @Test
+    fun `fileName is prefix underscore page number with extension`() {
+        assertEquals("scan_3.png", ImageOutputNaming.fileName("scan", 3, "png"))
+        assertEquals("scan_12.jpg", ImageOutputNaming.fileName("scan", 12, "jpg"))
+    }
+
+    @Test
+    fun `pageNumberOf reads the repository file name`() {
+        assertEquals(7, ImageOutputNaming.pageNumberOf("Doc_page7.png"))
+        assertEquals(10, ImageOutputNaming.pageNumberOf("My_page_notes_page10.JPG"))
+        assertNull(ImageOutputNaming.pageNumberOf("Doc.png"))
+    }
+
+    @Test
+    fun `applyPrefix renames repository output to prefix_page`() {
+        val dir = tmp.newFolder()
+        val a = File(dir, "Source_page1.png").apply { writeText("a") }
+        val b = File(dir, "Source_page12.png").apply { writeText("b") }
+
+        val result = ImageOutputNaming.applyPrefix(listOf(a.absolutePath, b.absolutePath), "holiday")
+
+        assertEquals(listOf("holiday_1.png", "holiday_12.png"), result.map { File(it).name })
+        assertTrue(result.all { File(it).exists() })
+        assertFalse(a.exists())
+        assertEquals("a", File(result[0]).readText())
+    }
+
+    @Test
+    fun `applyPrefix keeps jpg extension and skips unknown names`() {
+        val dir = tmp.newFolder()
+        val jpg = File(dir, "S_page2.jpg").apply { writeText("j") }
+        val odd = File(dir, "other.png").apply { writeText("o") }
+
+        val result = ImageOutputNaming.applyPrefix(listOf(jpg.absolutePath, odd.absolutePath), "p")
+
+        assertEquals("p_2.jpg", File(result[0]).name)
+        assertEquals(odd.absolutePath, result[1])
+        assertTrue(odd.exists())
+    }
+
+    @Test
+    fun `applyPrefix does not overwrite an existing target`() {
+        val dir = tmp.newFolder()
+        val src = File(dir, "S_page1.png").apply { writeText("new") }
+        val existing = File(dir, "p_1.png").apply { writeText("old") }
+
+        val result = ImageOutputNaming.applyPrefix(listOf(src.absolutePath), "p")
+
+        assertEquals(src.absolutePath, result[0])
+        assertEquals("old", existing.readText())
     }
     // endregion
 

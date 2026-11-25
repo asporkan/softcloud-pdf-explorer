@@ -121,7 +121,7 @@ fun CollapsingHomeHeader(
                 Text(
                     text = stringResource(R.string.welcome_to_library),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -198,7 +198,7 @@ fun CollapsingHomeHeader(
                         Text(
                             text = stringResource(R.string.search_your_pdfs_hint),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

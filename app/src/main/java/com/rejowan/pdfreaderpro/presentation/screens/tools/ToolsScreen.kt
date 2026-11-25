@@ -387,7 +387,7 @@ private fun ToolItem(
                     text = stringResource(tool.descriptionRes),
                     style = MaterialTheme.typography.bodySmall,
                     color = if (tool.isEnabled) {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        MaterialTheme.colorScheme.onSurfaceVariant
                     } else {
                         MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                     }

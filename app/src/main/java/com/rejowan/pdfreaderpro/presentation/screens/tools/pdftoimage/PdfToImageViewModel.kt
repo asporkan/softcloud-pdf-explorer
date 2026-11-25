@@ -49,6 +49,7 @@ data class PdfToImageState(
     val imageFormat: ImageFormat = ImageFormat.PNG,
     val pageSelection: PageSelection = PageSelection.ALL,
     val customPages: String = "",
+    val outputPrefix: String = "",
     val isLoading: Boolean = false,
     val isProcessing: Boolean = false,
     val progress: Float = 0f,
@@ -94,17 +95,19 @@ class PdfToImageViewModel(
                 val file = File(path)
                 val pageCount = pdfToolsRepository.getPageCount(path).getOrDefault(0)
                 val preview = generatePreview(path)
+                val displayName = getFileNameFromUri(uri) ?: file.name
 
                 _state.update {
                     it.copy(
                         sourceFile = SourceFile(
                             uri = uri,
                             path = path,
-                            name = getFileNameFromUri(uri) ?: file.name,
+                            name = displayName,
                             size = file.length(),
                             pageCount = pageCount,
                             previewBitmap = preview
                         ),
+                        outputPrefix = ImageOutputNaming.defaultPrefix(displayName),
                         isLoading = false,
                         error = null,
                         result = null
@@ -162,6 +165,11 @@ class PdfToImageViewModel(
         _state.update { it.copy(customPages = pages) }
     }
 
+    /** Characters that are not valid in file names are dropped as the user types. */
+    fun setOutputPrefix(prefix: String) {
+        _state.update { it.copy(outputPrefix = ImageOutputNaming.stripInvalid(prefix)) }
+    }
+
     /**
      * Validates export inputs. Destination folder is chosen by the screen via OpenDocumentTree
      * then [exportImagesToTree].
@@ -208,7 +216,11 @@ class PdfToImageViewModel(
             )
 
             result.fold(
-                onSuccess = { tempFiles ->
+                onSuccess = { repoFiles ->
+                    val prefix = ImageOutputNaming.resolvePrefix(currentState.outputPrefix, sourceFile.name)
+                    val tempFiles = withContext(Dispatchers.IO) {
+                        ImageOutputNaming.applyPrefix(repoFiles, prefix)
+                    }
                     val files = tempFiles.map { File(it) }
                     val created = withContext(Dispatchers.IO) {
                         SafOutputHelper.writeFilesToFolder(context, treeUri, files, mimeType)

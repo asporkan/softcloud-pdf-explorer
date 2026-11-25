@@ -243,7 +243,7 @@ private fun FoldersHeader(
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 4.dp)
                 )
 
@@ -325,7 +325,7 @@ private fun SearchBar(
                         Text(
                             text = stringResource(R.string.search_folders_hint),
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     innerTextField()
@@ -433,7 +433,7 @@ private fun EmptySearchState() {
         Text(
             text = stringResource(R.string.try_different_search),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -480,7 +480,7 @@ private fun StatChip(
                 Text(
                     text = label,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

@@ -98,7 +98,7 @@ fun PermissionBottomSheet(
                 style = MaterialTheme.typography.bodyMedium.copy(
                     lineHeight = 22.sp
                 ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
 
@@ -137,7 +137,7 @@ fun PermissionBottomSheet(
             ) {
                 Text(
                     text = stringResource(R.string.not_now),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Normal
                 )
             }

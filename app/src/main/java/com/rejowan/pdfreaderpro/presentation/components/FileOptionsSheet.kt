@@ -412,17 +412,17 @@ private fun FileOptionsHeader(
                 Text(
                     text = FormattingUtils.formattedFileSize(pdfFile.size),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "•",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = stringResource(R.string.pages_count, pdfFile.pageCount),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -439,7 +439,7 @@ private fun SectionLabel(
         style = MaterialTheme.typography.labelSmall.copy(
             fontWeight = FontWeight.Medium
         ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier.padding(start = 4.dp)
     )
 }
@@ -519,9 +519,9 @@ private fun FileActionCard(
                     text = description,
                     style = MaterialTheme.typography.labelSmall,
                     color = if (isDestructive) {
-                        tone.onContainer.copy(alpha = 0.8f)
+                        tone.onContainer
                     } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        MaterialTheme.colorScheme.onSurfaceVariant
                     }
                 )
             }

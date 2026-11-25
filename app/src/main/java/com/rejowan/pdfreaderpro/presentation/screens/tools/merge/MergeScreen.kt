@@ -1273,7 +1273,7 @@ private fun PageSelectionContent(
                 Text(
                     file.name,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -1319,7 +1319,7 @@ private fun PageSelectionContent(
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 4.dp)
         )
 
@@ -1425,7 +1425,7 @@ private fun PageSelectionContent(
                 Text(
                     stringResource(R.string.pages_range_will_be_included, rangeStart, rangeEnd),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }

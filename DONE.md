@@ -1,5 +1,6 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · F2-12: okuyucu dışında 64 metin alpha'sı kaldırıldı (onSurfaceVariant üç temada ≥6,97:1), PDF'den Görseller'e dosya adı öneki (<önek>_<sayfa>.<ext>) · testDebugUnitTest 920/920, TR doğrulama PASS; cihaz doğrulaması F2-7'de
 - 2026-11-26 · Play Console: "Tüm dosyalara erişim" beyanının gerekçe ve teknik neden metinleri güncellendi (belge yönetimi, Android 11+ MediaStore/SAF sınırı) · Kaydet sonrası sayfa yeniden yüklendi, yeni metinler kalıcı görüldü
 - 2026-11-26 · F2-11 metin temizliği: 8 kullanılmayan anahtar EN/TR'den silindi, 7 anahtar konumlu biçime (%1$d %2$s) çevrildi · _validate_tr_strings.py PASS, mergeDebugResources temiz
 - 2026-11-26 · Play Console kontrolü (Edge, salt okuma): All files access beyanı var ama gerekçe metni zayıf; reklam beyanı "reklam içerir" (uygulamada reklam yok); veri güvenliği herkese açık sayfada "veri toplanmıyor/paylaşılmıyor"; gizlilik URL'si softcloud.com.tr/en/apps/pdf-explorer/privacy/ · Console sayfaları ve herkese açık Play sayfası okundu, hiçbir şey değiştirilmedi

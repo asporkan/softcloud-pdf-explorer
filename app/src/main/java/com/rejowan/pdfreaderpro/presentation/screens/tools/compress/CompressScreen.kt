@@ -647,7 +647,7 @@ private fun CompressionLevelItem(
                 Text(
                     stringResource(level.descriptionRes),
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
