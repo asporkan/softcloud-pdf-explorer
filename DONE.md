@@ -1,5 +1,7 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · F2-14 kullanılmayan 365 string anahtarı EN+TR'den kontrollü silindi (1337→972) · 5 partide mergeDebugResources + compileDebugKotlin hatasız, TR doğrulama PASS, 925/925 test, lint MissingTranslation/ExtraTranslation 0
+- 2026-11-26 · F2-16 Play Console: veri güvenliği formu "veri toplanmıyor/paylaşılmıyor" olarak kaydedildi (incelemeye gönderim 0.6.1 ile); vitals son 28 gün 0 çökme/ANR; lansman öncesi rapor 0 kararlılık/performans, 26 erişilebilirlik; paket R8 optimizasyonu %38, 86 yerelleştirme · Console sayfaları okundu, önizleme doğrulandı
 - 2026-11-26 · F2-6b okuyucu kontrastı + alt menüler: 19 okuyucu dosyası token'lara geçti, sayfa sayacı/kaydırma çubuğu inverseSurface çipinde, 8 alt menü tam açılış + kaydırma · testDebugUnitTest 925/925 (ReaderChromeContrastTest: sayaç ≥8,52:1), sabit Color(0xFF 59→5 (yalnız belge vurgu renkleri); cihaz doğrulaması F2-7'de
 - 2026-11-26 · F2-12: okuyucu dışında 64 metin alpha'sı kaldırıldı (onSurfaceVariant üç temada ≥6,97:1), PDF'den Görseller'e dosya adı öneki (<önek>_<sayfa>.<ext>) · testDebugUnitTest 920/920, TR doğrulama PASS; cihaz doğrulaması F2-7'de
 - 2026-11-26 · Play Console: "Tüm dosyalara erişim" beyanının gerekçe ve teknik neden metinleri güncellendi (belge yönetimi, Android 11+ MediaStore/SAF sınırı) · Kaydet sonrası sayfa yeniden yüklendi, yeni metinler kalıcı görüldü

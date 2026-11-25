@@ -8,9 +8,8 @@
 
 ## Faz 2 — Onaylanan düzeltmeler (v0.6.1)
 ### Dalga 2
-- [ ] @content · F2-14. strings.xml'deki ~390 referanssız anahtarın kontrollü silinmesi (her anahtar grep + derleme + test ile doğrulanır)
 - [ ] @devops · F2-15. Optimizasyon/Google uyumluluğu: R8 kural analizi (r8-analyzer), lint, kaynak küçültme, boyut, eşleme dosyası + native debug sembolleri, release yapılandırması
-- [ ] @ana-denetleyici · F2-16. Play Console: veri güvenliği formu koda göre düzenlenir; yükleme uyarıları, lansman öncesi rapor ve Android vitals okunup F2-15'e girdi verilir
+- [ ] @android-dev · F2-17. Lint hataları (LocalContextGetResourceValueCall 37, NewApi MediaStore.Downloads, PropertyEscape, SuspiciousIndentation) + lansman öncesi erişilebilirlik (dokunma hedefi ≥48dp, içerik etiketleri, "Selected/Not selected" TR) + lint onaylı 60 kullanılmayan string
 ### Kapanış
-- [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon (bekler: F2-14, F2-15)
+- [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon (bekler: F2-15, F2-17)
 - [ ] @devops · F2-8. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F2-7, TODO-Faruk #1 keystore)
