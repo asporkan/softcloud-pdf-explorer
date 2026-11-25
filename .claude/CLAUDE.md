@@ -26,6 +26,8 @@ Kotlin · Jetpack Compose · Material 3 · Koin · Room · DataStore · PDF.js (
 - 2026-11-26: INTERNET izni şimdilik kaldırılır (uygulama tamamen çevrimdışı). İleride reklam ve ücretli özellik gelecek; o zaman yeniden eklenir, gizlilik metni ve Play veri güvenliği formu güncellenir.
 - 2026-11-26: İmzalama: kökteki git dışı `keystore.properties` → `C:/Workspace/Android/pdf/keystore/pdf_explorer.jks`, alias `key0` (şifreler yalnızca o dosyada).
 - 2026-11-26: Play "Reklam içerir" beyanı reklam gelecek olduğu için olduğu gibi kalır.
+- 2026-11-26: Çökmeler yutulmaz; sisteme iletilir (Play vitals), sonraki açılışta kullanıcıya kısa bilgi verilir.
+- 2026-11-26: R8 daraltması bir şeyi bozarsa geniş kurala dönülmez; eksik sınıf için dar keep kuralı eklenir.
 - 2026-11-26: Koyu temada koyu zemin üstündeki yazı/simge açık renk olur; renkler `presentation/theme/` token'larından gelir, bileşende sabit `Color(0xFF…)` kullanılmaz.
 
 ## Yerel araçlar
