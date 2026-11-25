@@ -23,6 +23,8 @@ Kotlin · Jetpack Compose · Material 3 · Koin · Room · DataStore · PDF.js (
 - 2026-11-26: Git: `origin` = GitHub (elle push, yalnızca istenince), `usb` = `D:\Git\pdf-explorer.git` (post-commit otomatik push).
 - 2026-11-26: Sıradaki sürüm 0.6.1 (versionCode 7); B1–B27 bulgularının tüm paketleri (P1–P4) bu sürüme dahil.
 - 2026-11-26: Son Açılanlar kalıcıdır (yeniden başlatmada korunur). Araç çıktıları: ilk kayıtta klasör sorulur, sonra sormadan oraya kaydedilir; araç ekranında "Kayıt yeri · Değiştir" her zaman görünür, Ayarlar'da değiştirme ve "her seferinde sor" seçeneği vardır; geçersiz klasörde yeniden sorulur.
+- 2026-11-26: INTERNET izni şimdilik kaldırılır (uygulama tamamen çevrimdışı). İleride reklam ve ücretli özellik gelecek; o zaman yeniden eklenir, gizlilik metni ve Play veri güvenliği formu güncellenir.
+- 2026-11-26: İmzalama: kökteki git dışı `keystore.properties` → `C:/Workspace/Android/pdf/keystore/pdf_explorer.jks`, alias `key0` (şifreler yalnızca o dosyada).
 - 2026-11-26: Koyu temada koyu zemin üstündeki yazı/simge açık renk olur; renkler `presentation/theme/` token'larından gelir, bileşende sabit `Color(0xFF…)` kullanılmaz.
 
 ## Yerel araçlar
