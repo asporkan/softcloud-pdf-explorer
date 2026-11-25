@@ -30,3 +30,6 @@ signing/
 
 # Documentation (local only)
 /doc/
+
+# Python
+__pycache__/

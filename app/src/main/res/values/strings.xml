@@ -613,7 +613,7 @@
     <string name="recent_journey_message">PDFs you open will show up here for quick access. Start exploring your files!</string>
     <string name="browse_files">Browse Files</string>
     <string name="no_favorites_title">No favorites yet</string>
-    <string name="no_favorites_message">Tap the heart icon on any PDF to save it here for easy access later.</string>
+    <string name="no_favorites_message">Tap the star icon on any PDF to save it here for easy access later.</string>
     <string name="no_matches_title">No matches found</string>
     <string name="no_matches_message">We couldn\'t find anything for \"%s\". Try a different search term.</string>
     <string name="no_folders_title">No folders yet</string>
@@ -1574,4 +1574,27 @@
     <string name="delete_failed">Couldn\'t delete the file. Check the storage permission in Settings.</string>
     <string name="files_deleted_count">%d files deleted</string>
     <string name="files_delete_partial">%1$d deleted, %2$d couldn\'t be deleted</string>
+    <plurals name="folder_pdf_count">
+        <item quantity="one">%d PDF</item>
+        <item quantity="other">%d PDFs</item>
+    </plurals>
+    <string name="search_pdfs_hint">Search PDFs…</string>
+    <string name="changelog_date_july_2026">July 2026</string>
+    <string name="changelog_v06_1">In-app language selector (System, English, Turkish)</string>
+    <string name="changelog_v06_2">Fixed Reorder / Remove Pages on large PDFs (page count and thumbnails)</string>
+    <string name="changelog_v06_3">Overwrite edits write back to the original document</string>
+    <string name="changelog_v06_4">Save As uses the system document picker</string>
+    <string name="changelog_v06_5">Fixed white screen after quick Done / Continue on tool success</string>
+    <string name="changelog_v06_6">Lighter UI animations for smoother performance</string>
+    <string name="changelog_v05_1">New PDF Explorer app icon and adaptive launcher assets</string>
+    <string name="changelog_v05_2">Themed icon support on Android 13+</string>
+    <string name="changelog_v05_3">Updated icon background for SoftCloud branding</string>
+    <string name="changelog_v04_1">First public release of PDF Explorer</string>
+    <string name="changelog_v04_2">Complete SoftCloud rebranding</string>
+    <string name="changelog_v04_3">Modern PDF reader</string>
+    <string name="changelog_v04_4">Merge, Split, Compress, Rotate PDFs</string>
+    <string name="changelog_v04_5">Add Watermark and Page Numbers</string>
+    <string name="changelog_v04_6">Folder browser and file management</string>
+    <string name="changelog_v04_7">Favorites and Recent Files</string>
+    <string name="changelog_v04_8">Performance and stability improvements</string>
 </resources>

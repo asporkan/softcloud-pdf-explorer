@@ -376,7 +376,7 @@
     <string name="unlock_more">Daha Fazla Kilit Aç</string>
     <string name="locked_successfully">PDF başarıyla kilitlendi</string>
     <string name="unlocked_successfully">PDF kilidi başarıyla açıldı</string>
-    <string name="incorrect_password">Yanlış parola.</string>
+    <string name="incorrect_password">Yanlış şifre.</string>
     <string name="pdf_not_protected">Bu PDF şifre korumalı değil</string>
     <string name="pdf_protected">Bu PDF şifre korumalı</string>
 
@@ -444,7 +444,7 @@
     <string name="error_with_message">Hata: %1$s</string>
     <string name="toc_contents_tab">İçindekiler</string>
     <string name="error_generic">Bir şeyler ters gitti</string>
-    <string name="error_wrong_password">Yanlış parola.</string>
+    <string name="error_wrong_password">Yanlış şifre.</string>
     <string name="error_storage_full">Depolama dolu</string>
     <string name="error_network">Ağ hatası</string>
     <string name="error_timeout">İşlem zaman aşımına uğradı</string>
@@ -614,7 +614,7 @@
     <string name="recent_journey_message">Açtığınız PDF\'ler hızlı erişim için burada görünür. Dosyalarınızı keşfetmeye başlayın!</string>
     <string name="browse_files">Dosyalara Göz At</string>
     <string name="no_favorites_title">Henüz favori yok</string>
-    <string name="no_favorites_message">Kolay erişim için herhangi bir PDF\'deki kalp simgesine dokunun.</string>
+    <string name="no_favorites_message">Kolay erişim için herhangi bir PDF\'deki yıldız simgesine dokunun.</string>
     <string name="no_matches_title">Eşleşme bulunamadı</string>
     <string name="no_matches_message">\"%s\" için bir şey bulunamadı. Farklı bir arama terimi deneyin.</string>
     <string name="no_folders_title">Henüz klasör yok</string>
@@ -718,7 +718,7 @@
     <!-- Password Dialog -->
     <string name="password_required">Şifre Gerekli</string>
     <string name="password_protected_message">Bu PDF şifre korumalı. Açmak için şifreyi girin.</string>
-    <string name="incorrect_password_error">Yanlış parola.</string>
+    <string name="incorrect_password_error">Yanlış şifre.</string>
     <string name="hide_password">Şifreyi gizle</string>
     <string name="show_password">Şifreyi göster</string>
     <string name="remember_password">Bu dosya için şifreyi hatırla</string>
@@ -899,7 +899,7 @@
     <string name="unknown">Bilinmiyor</string>
     <string name="enter_password_to_open">Bu PDF\'yi açmak için şifre girin</string>
     <string name="password_hint">Şifre</string>
-    <string name="wrong_password">Yanlış parola. Lütfen tekrar deneyin.</string>
+    <string name="wrong_password">Yanlış şifre. Lütfen tekrar deneyin.</string>
     <string name="open_pdf">Aç</string>
     <string name="error_loading">PDF yüklenirken hata</string>
     <string name="try_again_message">Bu PDF yüklenirken bir şeyler ters gitti. Lütfen tekrar deneyin.</string>
@@ -1575,4 +1575,27 @@
     <string name="delete_failed">Dosya silinemedi. Ayarlar\'dan depolama iznini kontrol edin.</string>
     <string name="files_deleted_count">%d dosya silindi</string>
     <string name="files_delete_partial">%1$d silindi, %2$d silinemedi</string>
+    <plurals name="folder_pdf_count">
+        <item quantity="one">%d PDF</item>
+        <item quantity="other">%d PDF</item>
+    </plurals>
+    <string name="search_pdfs_hint">PDF ara…</string>
+    <string name="changelog_date_july_2026">Temmuz 2026</string>
+    <string name="changelog_v06_1">Uygulama içi dil seçici (Sistem, İngilizce, Türkçe)</string>
+    <string name="changelog_v06_2">Büyük PDF\'lerde Sayfaları Yeniden Sırala / Sayfaları Sil düzeltildi (sayfa sayısı ve küçük resimler)</string>
+    <string name="changelog_v06_3">Üzerine yazma düzenlemeleri özgün belgeye kaydedilir</string>
+    <string name="changelog_v06_4">Farklı Kaydet, sistemin belge seçicisini kullanır</string>
+    <string name="changelog_v06_5">Araç başarı ekranında hızlı Bitti / Devam sonrası oluşan beyaz ekran düzeltildi</string>
+    <string name="changelog_v06_6">Daha akıcı performans için hafifletilmiş arayüz animasyonları</string>
+    <string name="changelog_v05_1">Yeni PDF Explorer uygulama simgesi ve uyarlanabilir başlatıcı varlıkları</string>
+    <string name="changelog_v05_2">Android 13+ üzerinde temalı simge desteği</string>
+    <string name="changelog_v05_3">SoftCloud markası için güncellenen simge arka planı</string>
+    <string name="changelog_v04_1">PDF Explorer\'ın ilk herkese açık sürümü</string>
+    <string name="changelog_v04_2">SoftCloud markasına tam geçiş</string>
+    <string name="changelog_v04_3">Modern PDF okuyucu</string>
+    <string name="changelog_v04_4">PDF\'leri birleştirme, bölme, sıkıştırma, döndürme</string>
+    <string name="changelog_v04_5">Filigran ve sayfa numarası ekleme</string>
+    <string name="changelog_v04_6">Klasör tarayıcı ve dosya yönetimi</string>
+    <string name="changelog_v04_7">Favoriler ve Son Dosyalar</string>
+    <string name="changelog_v04_8">Performans ve kararlılık iyileştirmeleri</string>
 </resources>

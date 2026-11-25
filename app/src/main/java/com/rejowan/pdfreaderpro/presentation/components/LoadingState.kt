@@ -30,11 +30,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.rejowan.pdfreaderpro.R
 
 @Composable
 fun LoadingIndicator(
-    message: String = "Loading...",
+    message: String = stringResource(R.string.loading),
     modifier: Modifier = Modifier
 ) {
     // Use top bias to account for header above - content appears in upper-center

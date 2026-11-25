@@ -1753,15 +1753,15 @@ private fun ChangelogContent() {
         ) {
             ChangelogVersionItem(
                 version = "0.6",
-                date = "July 2026",
+                date = stringResource(R.string.changelog_date_july_2026),
                 isLatest = true,
                 changes = listOf(
-                    "In-app language selector (System, English, Turkish)",
-                    "Fixed Reorder / Remove Pages on large PDFs (page count and thumbnails)",
-                    "Overwrite edits write back to the original document",
-                    "Save As uses the system document picker",
-                    "Fixed white screen after quick Done / Continue on tool success",
-                    "Lighter UI animations for smoother performance"
+                    stringResource(R.string.changelog_v06_1),
+                    stringResource(R.string.changelog_v06_2),
+                    stringResource(R.string.changelog_v06_3),
+                    stringResource(R.string.changelog_v06_4),
+                    stringResource(R.string.changelog_v06_5),
+                    stringResource(R.string.changelog_v06_6)
                 )
             )
 
@@ -1769,12 +1769,12 @@ private fun ChangelogContent() {
 
             ChangelogVersionItem(
                 version = "0.5",
-                date = "July 2026",
+                date = stringResource(R.string.changelog_date_july_2026),
                 isLatest = false,
                 changes = listOf(
-                    "New PDF Explorer app icon and adaptive launcher assets",
-                    "Themed icon support on Android 13+",
-                    "Updated icon background for SoftCloud branding"
+                    stringResource(R.string.changelog_v05_1),
+                    stringResource(R.string.changelog_v05_2),
+                    stringResource(R.string.changelog_v05_3)
                 )
             )
 
@@ -1782,17 +1782,17 @@ private fun ChangelogContent() {
 
             ChangelogVersionItem(
                 version = "0.4",
-                date = "July 2026",
+                date = stringResource(R.string.changelog_date_july_2026),
                 isLatest = false,
                 changes = listOf(
-                    "First public release of PDF Explorer",
-                    "Complete SoftCloud rebranding",
-                    "Modern PDF reader",
-                    "Merge, Split, Compress, Rotate PDFs",
-                    "Add Watermark and Page Numbers",
-                    "Folder browser and file management",
-                    "Favorites and Recent Files",
-                    "Performance and stability improvements"
+                    stringResource(R.string.changelog_v04_1),
+                    stringResource(R.string.changelog_v04_2),
+                    stringResource(R.string.changelog_v04_3),
+                    stringResource(R.string.changelog_v04_4),
+                    stringResource(R.string.changelog_v04_5),
+                    stringResource(R.string.changelog_v04_6),
+                    stringResource(R.string.changelog_v04_7),
+                    stringResource(R.string.changelog_v04_8)
                 )
             )
 

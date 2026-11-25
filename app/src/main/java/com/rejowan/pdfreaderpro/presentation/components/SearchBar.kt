@@ -34,7 +34,7 @@ fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
-    placeholder: String = "Search PDFs...",
+    placeholder: String = stringResource(R.string.search_pdfs_hint),
     modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
@@ -84,7 +84,7 @@ fun SearchBar(
 @Composable
 fun ClickableSearchBar(
     onClick: () -> Unit,
-    placeholder: String = "Search PDFs...",
+    placeholder: String = stringResource(R.string.search_pdfs_hint),
     modifier: Modifier = Modifier
 ) {
     Surface(
