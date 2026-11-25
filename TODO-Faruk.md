@@ -6,4 +6,5 @@
 
 ## Sonra netleşecekler
 1. Müşterinin Android sürümü ve telefon modeli (silme düzeltmesinin onun cihazında da doğrulanması için).
-2. Play Console'da MANAGE_EXTERNAL_STORAGE beyanı onaylı mı? (Değilse izin akışı Play incelemesinde sorun çıkarabilir.)
+2. INTERNET izni: uygulamada URL'den PDF açma yok (yalnızca PDF.js kütüphanesinde kullanılmayan bir yol var). İzin kaldırılsın mı? Kalırsa "100% offline" metni düzeltilmeli.
+3. Play Console kontrolü (benim erişimim yok): "All files access" beyanındaki gerekçe; Veri güvenliği formunda "veri toplanmıyor/paylaşılmıyor" işaretli mi; yayınlanmış gizlilik politikası URL'si var mı?
