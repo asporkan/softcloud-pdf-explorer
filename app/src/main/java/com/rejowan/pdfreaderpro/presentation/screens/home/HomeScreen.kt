@@ -109,6 +109,7 @@ import android.os.Environment
 import android.provider.Settings
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 
 // Bottom Navigation Items
 enum class BottomNavItem(
@@ -698,6 +699,7 @@ private fun BatchDeleteConfirmSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {

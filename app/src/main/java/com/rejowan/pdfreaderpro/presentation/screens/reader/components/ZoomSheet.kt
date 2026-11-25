@@ -78,6 +78,8 @@ import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ScreenOrientation
 import kotlinx.coroutines.delay
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Design colors
 private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
@@ -152,6 +154,7 @@ private fun ZoomBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -530,6 +533,7 @@ private fun ZoomButton(
 ) {
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .size(40.dp)
             .clip(CircleShape)
             .clickable(
@@ -602,6 +606,7 @@ private fun ZoomPresetChip(
 
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .scale(scale)
             .clip(RoundedCornerShape(8.dp))
             .clickable(
@@ -699,6 +704,7 @@ private fun OrientationChip(
 
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .scale(scale)
             .clip(RoundedCornerShape(8.dp))
             .clickable(

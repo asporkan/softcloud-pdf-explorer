@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 private val SelectionBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
@@ -110,6 +111,7 @@ fun SelectionActionBar(
                 // Select All button
                 Surface(
                     modifier = Modifier
+                        .minimumInteractiveComponentSize()
                         .padding(end = 4.dp)
                         .widthIn(max = 160.dp)
                         .clip(RoundedCornerShape(8.dp))

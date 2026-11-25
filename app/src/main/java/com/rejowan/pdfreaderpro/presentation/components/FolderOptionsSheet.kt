@@ -115,6 +115,7 @@ private fun FolderOptionsBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,

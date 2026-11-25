@@ -8,7 +8,6 @@
 
 ## Faz 2 — Onaylanan düzeltmeler (v0.6.1)
 ### Dalga 2
-- [ ] @android-dev · F2-17. Lint hataları (LocalContextGetResourceValueCall 37, NewApi MediaStore.Downloads, PropertyEscape, SuspiciousIndentation) + lansman öncesi erişilebilirlik (dokunma hedefi ≥48dp, içerik etiketleri, "Selected/Not selected" TR) + lint onaylı 60 kullanılmayan string
 - [ ] @ana-denetleyici · F2-19. F2-17 sonrası: Lottie lisans bloğu (SettingsScreenContent, title="Lottie"), AGENTS.md lottie satırı, kullanılmaz kalan unexpected_error/restart_app/close_app anahtarları, kullanılmayan coroutineExceptionHandler
 ### Kapanış
 - [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon (bekler: F2-17, F2-19) — release APK ile; iText/BC daraltması için şifreli PDF, kilitle/kilit aç, birleştir, görsel→PDF, sayfa no/filigran, okuyucu JS köprüsü mutlaka denenir

@@ -76,6 +76,9 @@ import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ReadingTheme
 import com.rejowan.pdfreaderpro.presentation.theme.ReaderSwatches
 import kotlinx.coroutines.delay
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 
 // Design colors
 private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
@@ -135,6 +138,7 @@ private fun DisplayBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -814,7 +818,13 @@ private fun KeepScreenOnRow(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .scale(scale),
+            .scale(scale)
+            .clip(RoundedCornerShape(8.dp))
+            .toggleable(
+                value = keepScreenOn,
+                role = Role.Switch,
+                onValueChange = onKeepScreenOnChange
+            ),
         shape = RoundedCornerShape(8.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
@@ -835,7 +845,7 @@ private fun KeepScreenOnRow(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.BrightnessMedium,
-                        contentDescription = stringResource(R.string.cd_decorative),
+                        contentDescription = null,
                         tint = AccentAmber.color,
                         modifier = Modifier.size(16.dp)
                     )
@@ -861,7 +871,7 @@ private fun KeepScreenOnRow(
 
             Switch(
                 checked = keepScreenOn,
-                onCheckedChange = onKeepScreenOnChange,
+                onCheckedChange = null,
                 colors = accentSwitchColors(AccentAmber)
             )
         }

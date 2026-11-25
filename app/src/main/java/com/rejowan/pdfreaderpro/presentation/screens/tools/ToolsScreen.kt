@@ -74,6 +74,7 @@ import com.rejowan.pdfreaderpro.presentation.theme.AccentColors
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
+import com.rejowan.pdfreaderpro.presentation.components.bottomNavContentPadding
 
 // Accent colors (consistent with app design system)
 private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
@@ -206,7 +207,7 @@ fun ToolsScreen(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
-            .padding(top = 8.dp, bottom = 80.dp)
+            .padding(top = 8.dp, bottom = bottomNavContentPadding())
     ) {
         var animationIndex = 0
 

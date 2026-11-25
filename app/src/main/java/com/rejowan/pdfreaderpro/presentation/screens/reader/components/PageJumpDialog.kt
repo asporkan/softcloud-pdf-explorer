@@ -65,6 +65,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -107,6 +108,7 @@ private fun PageJumpBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,

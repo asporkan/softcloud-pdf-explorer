@@ -114,6 +114,8 @@ import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Accent colors
 private val AccentCyan: AccentTone @Composable get() = MaterialTheme.accents.cyan // Watermark theme color
@@ -130,6 +132,7 @@ fun WatermarkScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val sharePdfChooserTitle = stringResource(R.string.share_pdf_chooser)
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
@@ -229,7 +232,7 @@ fun WatermarkScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_pdf_chooser)
+                                    sharePdfChooserTitle
                                 )
                             )
                         },
@@ -538,8 +541,7 @@ private fun WatermarkContent(
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(
-                            onClick = onClearError,
-                            modifier = Modifier.size(24.dp)
+                            onClick = onClearError
                         ) {
                             Icon(
                                 Icons.Default.Close,
@@ -721,7 +723,7 @@ private fun TextWatermarkSettings(
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             PdfOutputColors.WatermarkPresets.forEach { color ->
                 ColorCircle(
@@ -733,6 +735,7 @@ private fun TextWatermarkSettings(
             // Custom color picker button
             Box(
                 modifier = Modifier
+                    .minimumInteractiveComponentSize()
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(
@@ -916,6 +919,7 @@ private fun ColorCircle(
 ) {
     Box(
         modifier = Modifier
+            .minimumInteractiveComponentSize()
             .size(36.dp)
             .clip(CircleShape)
             .background(color)
@@ -994,6 +998,7 @@ private fun ColorPickerSheet(
     fun ColorPickerContent(modifier: Modifier = Modifier) {
         Box(
             modifier = modifier
+                .minimumInteractiveComponentSize()
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
@@ -1252,6 +1257,7 @@ private fun ColorPickerSheet(
         // Bottom sheet for portrait
         ModalBottomSheet(
             onDismissRequest = onDismiss,
+            dragHandle = { AppDragHandle() },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             containerColor = MaterialTheme.colorScheme.surface
@@ -1318,7 +1324,7 @@ private fun PositionSelector(
         // First row: corners and center
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             WatermarkPosition.entries.forEach { position ->
                 FilterChip(
@@ -1529,7 +1535,7 @@ private fun PageSelector(
 
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             FilterChip(
                 selected = selectedSelection == PageSelection.ALL,

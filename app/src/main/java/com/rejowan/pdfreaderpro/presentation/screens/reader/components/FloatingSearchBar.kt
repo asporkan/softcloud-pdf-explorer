@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
 private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
@@ -195,12 +196,14 @@ fun FloatingSearchBar(
                     if (resultCount > 0 && !isSearching) {
                         SearchNavButton(
                             icon = Icons.Rounded.KeyboardArrowUp,
+                            contentDescription = stringResource(R.string.cd_previous_search_result),
                             onClick = onPreviousResult,
                             enabled = currentIndex > 0,
                             contentColor = contentColor
                         )
                         SearchNavButton(
                             icon = Icons.Rounded.KeyboardArrowDown,
+                            contentDescription = stringResource(R.string.cd_next_search_result),
                             onClick = onNextResult,
                             enabled = currentIndex < resultCount - 1,
                             contentColor = contentColor
@@ -214,6 +217,7 @@ fun FloatingSearchBar(
             // Close button
             Box(
                 modifier = Modifier
+                    .minimumInteractiveComponentSize()
                     .size(40.dp)
                     .clip(CircleShape)
                     .clickable(onClick = onClose),
@@ -256,6 +260,7 @@ private fun ResultCountChip(
 @Composable
 private fun SearchNavButton(
     icon: ImageVector,
+    contentDescription: String,
     onClick: () -> Unit,
     enabled: Boolean,
     contentColor: Color,
@@ -263,6 +268,7 @@ private fun SearchNavButton(
 ) {
     Box(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .size(36.dp)
             .clip(CircleShape)
             .then(
@@ -273,7 +279,7 @@ private fun SearchNavButton(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = stringResource(R.string.cd_decorative),
+            contentDescription = contentDescription,
             tint = if (enabled) contentColor else contentColor.copy(alpha = 0.38f),
             modifier = Modifier.size(22.dp)
         )

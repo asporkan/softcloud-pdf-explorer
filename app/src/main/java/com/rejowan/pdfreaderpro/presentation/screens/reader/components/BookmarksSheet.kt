@@ -73,6 +73,7 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 
 private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
@@ -121,6 +122,7 @@ private fun BookmarksBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -414,8 +416,7 @@ private fun BookmarkItem(
 
             // Delete button
             IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(32.dp)
+                onClick = onDelete
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Delete,

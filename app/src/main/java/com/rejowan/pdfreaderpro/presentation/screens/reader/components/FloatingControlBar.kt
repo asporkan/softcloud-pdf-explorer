@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Theme-aware accents: icon = tone.color on tone.container (contrast holds in Light/Dark/Black)
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
@@ -135,6 +136,7 @@ private fun ControlBarButton(
 
     Box(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .size(46.dp)
             .clip(CircleShape)
             .background(backgroundColor)
@@ -166,6 +168,7 @@ private fun BookmarkButton(
 
     Box(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .size(46.dp)
             .clip(CircleShape)
             .background(backgroundColor)

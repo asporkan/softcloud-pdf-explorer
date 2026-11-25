@@ -112,6 +112,9 @@ fun PdfToImageScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val shareImagesChooserTitle = stringResource(R.string.share_images_chooser)
+    val shareImageChooserTitle = stringResource(R.string.share_image_chooser)
+    val viewImageChooserTitle = stringResource(R.string.view_image)
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
@@ -210,7 +213,7 @@ fun PdfToImageScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_images_chooser)
+                                    shareImagesChooserTitle
                                 )
                             )
                         },
@@ -229,7 +232,7 @@ fun PdfToImageScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_image_chooser)
+                                    shareImageChooserTitle
                                 )
                             )
                         },
@@ -247,7 +250,7 @@ fun PdfToImageScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     viewIntent,
-                                    context.getString(R.string.view_image)
+                                    viewImageChooserTitle
                                 )
                             )
                         },
@@ -472,8 +475,7 @@ private fun ExportContent(
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
-                        onClick = onClearError,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onClearError
                     ) {
                         Icon(
                             Icons.Default.Close,
@@ -903,8 +905,7 @@ private fun ImageResultItem(
                 )
             }
             IconButton(
-                onClick = onView,
-                modifier = Modifier.size(36.dp)
+                onClick = onView
             ) {
                 Icon(
                     Icons.Default.Visibility,
@@ -914,8 +915,7 @@ private fun ImageResultItem(
                 )
             }
             IconButton(
-                onClick = onShare,
-                modifier = Modifier.size(36.dp)
+                onClick = onShare
             ) {
                 Icon(
                     Icons.Default.Share,

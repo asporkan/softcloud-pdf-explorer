@@ -7,6 +7,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.webkit.MimeTypeMap
+import androidx.annotation.RequiresApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -43,6 +44,7 @@ class DownloadsWriter(private val context: Context) {
             }
         }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun saveWithMediaStore(bytes: ByteArray, name: String, mimeType: String): String {
         val resolver = context.contentResolver
         val values = ContentValues().apply {

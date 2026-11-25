@@ -65,6 +65,7 @@ import androidx.compose.ui.zIndex
 import androidx.annotation.StringRes
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
+import androidx.compose.foundation.layout.asPaddingValues
 
 enum class NavItem(
     @param:StringRes val labelRes: Int,
@@ -332,3 +333,12 @@ private class BarShape(
         }
     }
 }
+
+/**
+ * Bottom padding that keeps the last list item clear of [AnimatedBottomNav]: bar height (56dp) +
+ * floating circle overshoot (20dp) + margin + the system navigation bar inset (3-button navigation
+ * makes this taller than the gesture bar, so a fixed value is not enough).
+ */
+@Composable
+fun bottomNavContentPadding(): Dp =
+    84.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()

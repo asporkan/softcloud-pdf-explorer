@@ -204,28 +204,23 @@ fun PdfListItem(
 
             // Options button or Selection checkbox
             if (isSelectionMode) {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .clickable(onClick = onSelectionToggle),
-                    contentAlignment = Alignment.Center
+                CompactTouchTarget(
+                    onClick = onSelectionToggle,
+                    visualSize = 36.dp
                 ) {
                     Icon(
                         imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-                        contentDescription = if (isSelected) "Selected" else "Not selected",
+                        contentDescription = if (isSelected) stringResource(R.string.item_selected) else stringResource(R.string.item_not_selected),
                         modifier = Modifier.size(26.dp),
                         tint = if (isSelected) SelectionBlue.color else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                     )
                 }
             } else {
-                Box(
-                    modifier = Modifier
-                        .size(36.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                        .clickable(onClick = onOptionsClick),
-                    contentAlignment = Alignment.Center
+                CompactTouchTarget(
+                    onClick = onOptionsClick,
+                    visualSize = 36.dp,
+                    shape = RoundedCornerShape(10.dp),
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.MoreVert,

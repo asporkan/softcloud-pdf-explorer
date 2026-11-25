@@ -66,6 +66,7 @@ import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 
 // Accent color for rename
 private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
@@ -98,6 +99,7 @@ private fun RenameBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,

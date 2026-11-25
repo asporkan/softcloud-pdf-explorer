@@ -109,6 +109,7 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutput
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Accent colors
 private val AccentOrange: AccentTone @Composable get() = MaterialTheme.accents.orange  // Rotate theme color
@@ -125,6 +126,8 @@ fun RotateScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val openWithChooserTitle = stringResource(R.string.open_with)
+    val sharePdfChooserTitle = stringResource(R.string.share_pdf_chooser)
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
@@ -218,7 +221,7 @@ fun RotateScreen(
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
                             context.startActivity(
-                                Intent.createChooser(intent, context.getString(R.string.open_with))
+                                Intent.createChooser(intent, openWithChooserTitle)
                             )
                         },
                         onShare = {
@@ -236,7 +239,7 @@ fun RotateScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_pdf_chooser)
+                                    sharePdfChooserTitle
                                 )
                             )
                         },
@@ -580,6 +583,7 @@ private fun QuickSelectionSection(
             if (selectedCount > 0) {
                 Surface(
                     modifier = Modifier
+                        .minimumInteractiveComponentSize()
                         .clip(RoundedCornerShape(6.dp))
                         .clickable(onClick = onClear),
                     shape = RoundedCornerShape(6.dp),
@@ -639,6 +643,7 @@ private fun QuickSelectionChip(
 ) {
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(6.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(6.dp),
@@ -789,8 +794,7 @@ private fun RotateBottomSection(
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
-                        onClick = onClearError,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onClearError
                     ) {
                         Icon(
                             Icons.Default.Close,

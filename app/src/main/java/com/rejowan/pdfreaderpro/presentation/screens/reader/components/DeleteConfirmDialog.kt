@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 
 private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
@@ -96,6 +97,7 @@ private fun DeleteConfirmBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,

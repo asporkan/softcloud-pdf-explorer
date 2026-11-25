@@ -67,6 +67,8 @@ import com.rejowan.pdfreaderpro.presentation.components.LoadingState
 import com.rejowan.pdfreaderpro.presentation.components.PermissionRequiredState
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
+import com.rejowan.pdfreaderpro.presentation.components.bottomNavContentPadding
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 private val FolderAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 private val SoftBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
@@ -119,7 +121,7 @@ fun FoldersScreen(
                         ) {
                             focusManager.clearFocus()
                         },
-                    contentPadding = PaddingValues(bottom = 80.dp)
+                    contentPadding = PaddingValues(bottom = bottomNavContentPadding())
                 ) {
                     // Header with stats
                     item {
@@ -334,8 +336,7 @@ private fun SearchBar(
 
             if (query.isNotEmpty()) {
                 IconButton(
-                    onClick = { onQueryChange("") },
-                    modifier = Modifier.size(24.dp)
+                    onClick = { onQueryChange("") }
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Close,
@@ -347,8 +348,7 @@ private fun SearchBar(
             }
 
             IconButton(
-                onClick = onClose,
-                modifier = Modifier.size(24.dp)
+                onClick = onClose
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Close,
@@ -374,6 +374,7 @@ private fun ControlButton(
 
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(6.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(6.dp),

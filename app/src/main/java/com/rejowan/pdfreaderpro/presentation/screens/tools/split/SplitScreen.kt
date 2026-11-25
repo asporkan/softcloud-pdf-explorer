@@ -121,6 +121,7 @@ fun SplitScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val sharePdfChooserTitle = stringResource(R.string.share_pdf_chooser)
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
@@ -225,7 +226,7 @@ fun SplitScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_pdf_chooser)
+                                    sharePdfChooserTitle
                                 )
                             )
                         },
@@ -502,8 +503,7 @@ private fun SourceFileCard(
 
             // Preview button
             IconButton(
-                onClick = onPreview,
-                modifier = Modifier.size(40.dp)
+                onClick = onPreview
             ) {
                 Box(
                     modifier = Modifier
@@ -876,8 +876,7 @@ private fun SplitBottomSection(
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
-                        onClick = onClearError,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onClearError
                     ) {
                         Icon(
                             Icons.Default.Close,
@@ -1136,8 +1135,7 @@ private fun SplitResultFileItem(
 
             // View button
             IconButton(
-                onClick = onView,
-                modifier = Modifier.size(36.dp)
+                onClick = onView
             ) {
                 Box(
                     modifier = Modifier
@@ -1159,8 +1157,7 @@ private fun SplitResultFileItem(
 
             // Share button
             IconButton(
-                onClick = onShare,
-                modifier = Modifier.size(36.dp)
+                onClick = onShare
             ) {
                 Box(
                     modifier = Modifier

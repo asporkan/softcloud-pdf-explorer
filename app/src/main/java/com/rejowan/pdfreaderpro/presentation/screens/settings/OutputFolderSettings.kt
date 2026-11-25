@@ -57,6 +57,9 @@ import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 
 /**
  * Settings row + options sheet for the default save folder of the PDF tools.
@@ -185,6 +188,7 @@ private fun OutputFolderSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -233,10 +237,11 @@ private fun OutputFolderSheet(
                 description = stringResource(R.string.settings_output_ask_desc),
                 accentColor = accentColor,
                 onClick = { onAskEveryTimeChange(!askEveryTime) },
+                toggleState = askEveryTime,
                 trailing = {
                     Switch(
                         checked = askEveryTime,
-                        onCheckedChange = onAskEveryTimeChange,
+                        onCheckedChange = null,
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = accentColor.onColor,
                             checkedTrackColor = accentColor.color
@@ -265,13 +270,24 @@ private fun OutputOptionRow(
     accentColor: AccentTone,
     onClick: () -> Unit,
     enabled: Boolean = true,
+    toggleState: Boolean? = null,
     trailing: (@Composable () -> Unit)? = null
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier),
+            .then(
+                when {
+                    !enabled -> Modifier
+                    toggleState != null -> Modifier.toggleable(
+                        value = toggleState,
+                        role = Role.Switch,
+                        onValueChange = { onClick() }
+                    )
+                    else -> Modifier.clickable(onClick = onClick)
+                }
+            ),
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
@@ -320,7 +336,7 @@ private fun IconBox(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = stringResource(R.string.cd_decorative),
+            contentDescription = null,
             modifier = Modifier
                 .padding(8.dp)
                 .size(20.dp),

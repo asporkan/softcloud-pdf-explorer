@@ -118,32 +118,32 @@ class ReorderViewModel(
                 val (loadedPath, file, pageData) = loaded
                 val (pageCount, pages) = pageData
 
-                    synchronized(thumbnailCache) { thumbnailCache.clear() }
-                    thumbnailRequests.clear()
-                    originalOrder = pages.map { it.originalIndex }
+                synchronized(thumbnailCache) { thumbnailCache.clear() }
+                thumbnailRequests.clear()
+                originalOrder = pages.map { it.originalIndex }
 
-                    _state.update {
-                        it.copy(
-                            sourceFile = SourceFile(
-                                uri = uri,
-                                path = loadedPath,
-                                name = getFileNameFromUri(uri) ?: file.name,
-                                size = file.length(),
-                                pageCount = pageCount
-                            ),
-                            pages = pages,
-                            isLoading = false,
-                            error = null,
-                            result = null,
-                            hasChanges = false
-                        )
-                    }
+                _state.update {
+                    it.copy(
+                        sourceFile = SourceFile(
+                            uri = uri,
+                            path = loadedPath,
+                            name = getFileNameFromUri(uri) ?: file.name,
+                            size = file.length(),
+                            pageCount = pageCount
+                        ),
+                        pages = pages,
+                        isLoading = false,
+                        error = null,
+                        result = null,
+                        hasChanges = false
+                    )
+                }
 
-                    val baseName = file.nameWithoutExtension
-                    _state.update { it.copy(outputFileName = "${baseName}_reordered") }
+                val baseName = file.nameWithoutExtension
+                _state.update { it.copy(outputFileName = "${baseName}_reordered") }
 
-                    // Prefetch first screenful so the grid is not empty
-                    pages.take(PREFETCH_THUMBNAILS).forEach { ensureThumbnail(it.originalIndex) }
+                // Prefetch first screenful so the grid is not empty
+                pages.take(PREFETCH_THUMBNAILS).forEach { ensureThumbnail(it.originalIndex) }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
                 _state.update {

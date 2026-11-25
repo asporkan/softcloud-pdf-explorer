@@ -76,6 +76,8 @@ import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
 private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
@@ -133,6 +135,7 @@ private fun TocBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -667,6 +670,7 @@ private fun AttachmentListItem(
                 shape = RoundedCornerShape(6.dp),
                 color = AccentTeal.container,
                 modifier = Modifier
+                    .minimumInteractiveComponentSize()
                     .clip(RoundedCornerShape(6.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },

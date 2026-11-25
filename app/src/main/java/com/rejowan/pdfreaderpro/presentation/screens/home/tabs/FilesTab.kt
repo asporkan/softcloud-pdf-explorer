@@ -20,6 +20,7 @@ import com.rejowan.pdfreaderpro.presentation.components.LoadingState
 import com.rejowan.pdfreaderpro.presentation.components.PdfGridItem
 import com.rejowan.pdfreaderpro.presentation.components.PdfListItem
 import com.rejowan.pdfreaderpro.presentation.components.PermissionRequiredState
+import com.rejowan.pdfreaderpro.presentation.components.bottomNavContentPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,7 +56,7 @@ fun FilesTab(
                 EmptyFilesState(onScanClick = onRefresh)
             }
             viewMode == ViewMode.LIST -> {
-                val bottomPadding = if (isSelectionMode) 160.dp else 80.dp
+                val bottomPadding = if (isSelectionMode) 160.dp else bottomNavContentPadding()
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(top = 8.dp, bottom = bottomPadding)
@@ -79,7 +80,7 @@ fun FilesTab(
                 }
             }
             else -> {
-                val bottomPadding = if (isSelectionMode) 160.dp else 80.dp
+                val bottomPadding = if (isSelectionMode) 160.dp else bottomNavContentPadding()
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     modifier = Modifier.fillMaxSize(),

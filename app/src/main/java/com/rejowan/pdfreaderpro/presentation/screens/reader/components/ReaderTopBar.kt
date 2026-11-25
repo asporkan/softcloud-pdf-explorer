@@ -38,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 @Composable
 fun ReaderTopBar(
@@ -166,6 +167,7 @@ private fun TopBarIconButton(
 ) {
     Box(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .size(44.dp)
             .clip(CircleShape)
             .clickable(onClick = onClick),

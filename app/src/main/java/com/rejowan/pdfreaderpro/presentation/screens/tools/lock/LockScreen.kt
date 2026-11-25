@@ -114,6 +114,7 @@ fun LockScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val sharePdfChooserTitle = stringResource(R.string.share_pdf_chooser)
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
@@ -205,7 +206,7 @@ fun LockScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_pdf_chooser)
+                                    sharePdfChooserTitle
                                 )
                             )
                         },
@@ -465,8 +466,7 @@ private fun LockContent(
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
-                        onClick = onClearError,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onClearError
                     ) {
                         Icon(
                             Icons.Default.Close,

@@ -104,6 +104,7 @@ import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Accent colors
 private val SoftPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
@@ -389,6 +390,7 @@ private fun SearchHeader(
                             Spacer(modifier = Modifier.width(8.dp))
                             Surface(
                                 modifier = Modifier
+                                    .minimumInteractiveComponentSize()
                                     .size(24.dp)
                                     .clip(CircleShape)
                                     .clickable(onClick = onClear),
@@ -461,6 +463,7 @@ private fun SearchIdleContent(
                         style = MaterialTheme.typography.labelMedium,
                         color = SoftPurple.color,
                         modifier = Modifier
+                            .minimumInteractiveComponentSize()
                             .clip(RoundedCornerShape(6.dp))
                             .clickable(onClick = onClearAllRecent)
                             .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -570,8 +573,7 @@ private fun RecentSearchItem(
         )
 
         IconButton(
-            onClick = onRemove,
-            modifier = Modifier.size(32.dp)
+            onClick = onRemove
         ) {
             Icon(
                 imageVector = Icons.Outlined.Close,
@@ -921,6 +923,7 @@ private fun SearchResultItem(
             // Options button
             Box(
                 modifier = Modifier
+                    .minimumInteractiveComponentSize()
                     .size(36.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(MaterialTheme.colorScheme.surfaceContainerHigh)

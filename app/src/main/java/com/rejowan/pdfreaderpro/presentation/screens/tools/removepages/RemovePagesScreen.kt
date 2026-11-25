@@ -103,6 +103,7 @@ import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Accent colors
 private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red  // Remove pages theme color
@@ -119,6 +120,8 @@ fun RemovePagesScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val openWithChooserTitle = stringResource(R.string.open_with)
+    val sharePdfChooserTitle = stringResource(R.string.share_pdf_chooser)
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
@@ -220,7 +223,7 @@ fun RemovePagesScreen(
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
                             context.startActivity(
-                                Intent.createChooser(intent, context.getString(R.string.open_with))
+                                Intent.createChooser(intent, openWithChooserTitle)
                             )
                         },
                         onShare = {
@@ -238,7 +241,7 @@ fun RemovePagesScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_pdf_chooser)
+                                    sharePdfChooserTitle
                                 )
                             )
                         },
@@ -461,6 +464,7 @@ private fun SelectionHeader(
             if (selectedCount > 0) {
                 Surface(
                     modifier = Modifier
+                        .minimumInteractiveComponentSize()
                         .clip(RoundedCornerShape(6.dp))
                         .clickable(onClick = onClear),
                     shape = RoundedCornerShape(6.dp),
@@ -613,6 +617,7 @@ private fun QuickSelectChip(
 ) {
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(8.dp),
@@ -638,7 +643,9 @@ private fun RangeInputDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int, Int) -> Unit
 ) {
-    val context = LocalContext.current
+    val startPageRangeError = stringResource(R.string.validation_start_page_range, totalPages)
+    val endPageRangeError = stringResource(R.string.validation_end_page_range, totalPages)
+    val startLessThanEndError = stringResource(R.string.validation_start_less_than_end)
     val focusManager = LocalFocusManager.current
     var startPage by remember { mutableStateOf("1") }
     var endPage by remember { mutableStateOf(totalPages.toString()) }
@@ -691,10 +698,10 @@ private fun RangeInputDialog(
                 val end = endPage.toIntOrNull() ?: 0
                 when {
                     start < 1 || start > totalPages ->
-                        error = context.getString(R.string.validation_start_page_range, totalPages)
+                        error = startPageRangeError
                     end < 1 || end > totalPages ->
-                        error = context.getString(R.string.validation_end_page_range, totalPages)
-                    start > end -> error = context.getString(R.string.validation_start_less_than_end)
+                        error = endPageRangeError
+                    start > end -> error = startLessThanEndError
                     else -> onConfirm(start, end)
                 }
             }) {
@@ -718,7 +725,7 @@ private fun PageInputDialog(
     onDismiss: () -> Unit,
     onConfirm: (Int) -> Unit
 ) {
-    val context = LocalContext.current
+    val valueRangeError = stringResource(R.string.validation_value_range, totalPages)
     val focusManager = LocalFocusManager.current
     var pageInput by remember { mutableStateOf("") }
     var error by remember { mutableStateOf<String?>(null) }
@@ -754,7 +761,7 @@ private fun PageInputDialog(
                 val page = pageInput.toIntOrNull() ?: 0
                 when {
                     page < 1 || page > totalPages ->
-                        error = context.getString(R.string.validation_value_range, totalPages)
+                        error = valueRangeError
                     else -> onConfirm(page)
                 }
             }) {
@@ -945,8 +952,7 @@ private fun RemoveBottomSection(
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
-                        onClick = onClearError,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onClearError
                     ) {
                         Icon(
                             Icons.Default.Close,

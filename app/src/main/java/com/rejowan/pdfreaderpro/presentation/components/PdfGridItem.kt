@@ -127,36 +127,27 @@ fun PdfGridItem(
 
                 // Options button or Selection checkbox
                 if (isSelectionMode) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.9f))
-                            .clickable(onClick = onSelectionToggle),
-                        contentAlignment = Alignment.Center
+                    CompactTouchTarget(
+                        onClick = onSelectionToggle,
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        visualSize = 32.dp,
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
                     ) {
                         Icon(
                             imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
-                            contentDescription = if (isSelected) "Selected" else "Not selected",
+                            contentDescription = if (isSelected) stringResource(R.string.item_selected) else stringResource(R.string.item_not_selected),
                             modifier = Modifier.size(24.dp),
                             tint = if (isSelected) SelectionBlue.color else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                         )
                     }
                 } else {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                            .size(32.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.85f))
-                            .combinedClickable(
-                                onClick = onOptionsClick,
-                                onLongClick = onOptionsClick
-                            ),
-                        contentAlignment = Alignment.Center
+                    CompactTouchTarget(
+                        onClick = onOptionsClick,
+                        onLongClick = onOptionsClick,
+                        modifier = Modifier.align(Alignment.TopEnd),
+                        visualSize = 32.dp,
+                        shape = RoundedCornerShape(8.dp),
+                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f)
                     ) {
                         Icon(
                             imageVector = Icons.Rounded.MoreVert,

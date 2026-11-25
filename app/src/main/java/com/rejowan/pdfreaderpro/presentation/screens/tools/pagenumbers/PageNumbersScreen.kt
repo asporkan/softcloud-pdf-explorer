@@ -110,6 +110,8 @@ import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Accent colors
 private val AccentOrange: AccentTone @Composable get() = MaterialTheme.accents.orange // Page numbers theme color
@@ -126,6 +128,7 @@ fun PageNumbersScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val sharePdfChooserTitle = stringResource(R.string.share_pdf_chooser)
     val focusManager = LocalFocusManager.current
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
@@ -219,7 +222,7 @@ fun PageNumbersScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_pdf_chooser)
+                                    sharePdfChooserTitle
                                 )
                             )
                         },
@@ -468,7 +471,7 @@ private fun PageNumbersContent(
         Spacer(modifier = Modifier.height(8.dp))
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             PdfOutputColors.PageNumberPresets.forEach { color ->
                 ColorCircle(
@@ -480,6 +483,7 @@ private fun PageNumbersContent(
             // Custom color picker button
             Box(
                 modifier = Modifier
+                    .minimumInteractiveComponentSize()
                     .size(36.dp)
                     .clip(CircleShape)
                     .background(
@@ -598,8 +602,7 @@ private fun PageNumbersContent(
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
-                        onClick = onClearError,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onClearError
                     ) {
                         Icon(
                             Icons.Default.Close,
@@ -796,6 +799,7 @@ private fun ColorCircle(
 ) {
     Box(
         modifier = Modifier
+            .minimumInteractiveComponentSize()
             .size(36.dp)
             .clip(CircleShape)
             .background(color)
@@ -1184,6 +1188,7 @@ private fun ColorPickerSheet(
     } else {
         ModalBottomSheet(
             onDismissRequest = onDismiss,
+            dragHandle = { AppDragHandle() },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             containerColor = MaterialTheme.colorScheme.surface
@@ -1241,7 +1246,7 @@ private fun PageSelector(
     Column {
         Row(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             FilterChip(
                 selected = selectedSelection == PageSelection.ALL,

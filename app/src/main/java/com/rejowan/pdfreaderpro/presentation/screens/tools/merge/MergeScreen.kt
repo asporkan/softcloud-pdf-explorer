@@ -120,6 +120,8 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutput
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Accent colors - consistent with app design system
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple    // Primary actions (merge)
@@ -139,6 +141,8 @@ fun MergeScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val openWithChooserTitle = stringResource(R.string.open_with)
+    val sharePdfChooserTitle = stringResource(R.string.share_pdf_chooser)
 
     // Load initial files if provided
     LaunchedEffect(initialFiles) {
@@ -263,7 +267,7 @@ fun MergeScreen(
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
                         context.startActivity(
-                            Intent.createChooser(intent, context.getString(R.string.open_with))
+                            Intent.createChooser(intent, openWithChooserTitle)
                         )
                     },
                     onShare = {
@@ -280,7 +284,7 @@ fun MergeScreen(
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
                         context.startActivity(
-                            Intent.createChooser(intent, context.getString(R.string.share_pdf_chooser))
+                            Intent.createChooser(intent, sharePdfChooserTitle)
                         )
                     },
                     onMergeMore = {
@@ -577,6 +581,7 @@ private fun MergeFileItem(
                 // Remove button
                 Box(
                     modifier = Modifier
+                        .minimumInteractiveComponentSize()
                         .size(28.dp)
                         .clip(RoundedCornerShape(6.dp))
                         .background(AccentRed.container)
@@ -641,6 +646,7 @@ private fun ActionChip(
 ) {
     Row(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(8.dp))
             .background(if (isHighlighted) tone.container else tone.container.copy(alpha = 0.6f))
             .clickable(onClick = onClick)
@@ -782,8 +788,7 @@ private fun MergeBottomSection(
                         }
                     }
                     IconButton(
-                        onClick = onClearError,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onClearError
                     ) {
                         Icon(
                             Icons.Default.Close,
@@ -1106,6 +1111,7 @@ private fun PageSelectionBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,

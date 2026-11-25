@@ -117,29 +117,29 @@ class RemovePagesViewModel(
                 val (loadedPath, file, pageData) = loaded
                 val (pageCount, pages) = pageData
 
-                    synchronized(thumbnailCache) { thumbnailCache.clear() }
-                    thumbnailRequests.clear()
+                synchronized(thumbnailCache) { thumbnailCache.clear() }
+                thumbnailRequests.clear()
 
-                    _state.update {
-                        it.copy(
-                            sourceFile = SourceFile(
-                                uri = uri,
-                                path = loadedPath,
-                                name = getFileNameFromUri(uri) ?: file.name,
-                                size = file.length(),
-                                pageCount = pageCount,
-                                pages = pages
-                            ),
-                            isLoading = false,
-                            error = null,
-                            result = null
-                        )
-                    }
+                _state.update {
+                    it.copy(
+                        sourceFile = SourceFile(
+                            uri = uri,
+                            path = loadedPath,
+                            name = getFileNameFromUri(uri) ?: file.name,
+                            size = file.length(),
+                            pageCount = pageCount,
+                            pages = pages
+                        ),
+                        isLoading = false,
+                        error = null,
+                        result = null
+                    )
+                }
 
-                    val baseName = file.nameWithoutExtension
-                    _state.update { it.copy(outputFileName = "${baseName}_modified") }
+                val baseName = file.nameWithoutExtension
+                _state.update { it.copy(outputFileName = "${baseName}_modified") }
 
-                    pages.take(PREFETCH_THUMBNAILS).forEach { ensureThumbnail(it.pageNumber - 1) }
+                pages.take(PREFETCH_THUMBNAILS).forEach { ensureThumbnail(it.pageNumber - 1) }
             } catch (e: Exception) {
                 Timber.e(e, "Failed to set source file")
                 _state.update {

@@ -68,6 +68,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
 private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
@@ -123,6 +124,7 @@ private fun PdfInfoBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,

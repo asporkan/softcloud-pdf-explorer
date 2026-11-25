@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,8 +59,7 @@ fun CompactTabRow(
         // The view-mode toggle sits to the right and never overlaps a tab.
         Row(
             modifier = Modifier
-                .weight(1f)
-                .padding(end = 8.dp),
+                .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -74,9 +74,9 @@ fun CompactTabRow(
             }
         }
 
-        // View Mode Toggle - Right aligned (unchanged)
+        // View Mode Toggle - Right aligned. Each icon has a 48dp touch target, so no extra gap.
         Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(0.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TooltipBox(
@@ -142,6 +142,7 @@ private fun CompactTab(
 
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(10.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(10.dp),
@@ -188,6 +189,7 @@ private fun ViewModeIcon(
 
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(6.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(6.dp),

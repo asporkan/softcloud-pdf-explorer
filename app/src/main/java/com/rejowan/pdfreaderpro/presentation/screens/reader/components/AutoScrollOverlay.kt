@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 @Composable
 fun AutoScrollOverlay(
@@ -121,6 +122,7 @@ private fun OverlayIconButton(
 ) {
     Box(
         modifier = Modifier
+            .minimumInteractiveComponentSize()
             .size(36.dp)
             .clip(RoundedCornerShape(10.dp))
             .clickable(

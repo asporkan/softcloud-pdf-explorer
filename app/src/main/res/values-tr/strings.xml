@@ -21,11 +21,7 @@
 
     <string name="settings">Ayarlar</string>
     <string name="search_pdf">PDF Ara</string>
-    <string name="files">Dosyalar</string>
     <string name="folders">Klasörler</string>
-    <string name="date">Tarih</string>
-    <string name="name">Ad</string>
-    <string name="size">Boyut</string>
     <string name="info">Bilgi</string>
     <string name="share">Paylaş</string>
     <string name="rename">Yeniden Adlandır</string>
@@ -33,15 +29,11 @@
     <string name="cancel">İptal</string>
     <string name="dismiss">Kapat</string>
     <string name="ok">Tamam</string>
-    <string name="rotate">Döndür</string>
     <string name="brightness">Parlaklık</string>
-    <string name="jump">Git</string>
     <string name="remove">Kaldır</string>
 
     <!-- Common Actions -->
     <string name="done">Tamam</string>
-    <string name="save">Kaydet</string>
-    <string name="close">Kapat</string>
     <string name="back">Geri</string>
     <string name="open">Aç</string>
     <string name="open_with">Birlikte Aç</string>
@@ -50,11 +42,8 @@
     <string name="show_less">Daha Az Göster</string>
     <string name="select_all">Tümünü Seç</string>
     <string name="merge">Birleştir</string>
-    <string name="download">İndir</string>
-    <string name="update">Güncelle</string>
     <string name="skip">Atla</string>
     <string name="continue_text">Devam</string>
-    <string name="confirm">Onayla</string>
     <string name="apply">Uygula</string>
     <string name="reset">Sıfırla</string>
     <string name="preview">Önizleme</string>
@@ -110,7 +99,6 @@
     <!-- File Info -->
     <string name="file_information">Dosya Bilgisi</string>
     <string name="file_size">Dosya Boyutu</string>
-    <string name="created">Oluşturulma</string>
 
     <!-- Delete Confirmation -->
     <string name="delete_file">Dosyayı Sil</string>
@@ -119,7 +107,6 @@
 
     <!-- Rename -->
     <string name="rename_file">Dosyayı Yeniden Adlandır</string>
-    <string name="new_name">Yeni Ad</string>
 
     <!-- Stats -->
     <string name="library_statistics">Kitaplık İstatistikleri</string>
@@ -127,9 +114,6 @@
 
     <!-- Settings Screen -->
     <string name="appearance">Görünüm</string>
-    <string name="reader">Okuyucu</string>
-    <string name="updates">Güncellemeler</string>
-    <string name="about">Hakkında</string>
     <string name="theme">Tema</string>
     <string name="app_language">Dil</string>
     <string name="choose_app_language">Uygulama dilini seçin</string>
@@ -140,17 +124,14 @@
     <string name="language_turkish_desc">Her zaman Türkçe kullan</string>
     <string name="vertical">Dikey</string>
     <string name="horizontal">Yatay</string>
-    <string name="single_page">Tek Sayfa</string>
     <string name="quick_zoom">Hızlı Yakınlaştırma</string>
     <string name="fit_width">Genişliğe Sığdır</string>
     <string name="fit_page">Sayfaya Sığdır</string>
     <string name="actual_size">Gerçek Boyut</string>
     <string name="reading_theme">Okuma Teması</string>
     <string name="keep_screen_on">Ekranı Açık Tut</string>
-    <string name="version">Sürüm %s</string>
     <string name="adjust_brightness">Ekran parlaklığını ayarla</string>
     <string name="changelog">Sürüm Notları</string>
-    <string name="latest">EN YENİ</string>
     <string name="privacy_policy">Gizlilik Politikası</string>
     <string name="last_updated">Son güncelleme: %s</string>
     <string name="open_source_licenses">Açık Kaynak Lisansları</string>
@@ -159,10 +140,8 @@
     <string name="creator_title">Uygulama Geliştiricisi</string>
 
     <!-- Update Sheet -->
-    <string name="current">Mevcut</string>
 
     <!-- Download Progress -->
-    <string name="downloading">İndiriliyor…</string>
     <string name="retry">Yeniden Dene</string>
 
     <!-- Reader Screen -->
@@ -173,7 +152,6 @@
     <string name="auto_scroll">Otomatik Kaydırma</string>
     <string name="print">Yazdır</string>
     <string name="more_options">Diğer Seçenekler</string>
-    <string name="display">Görüntüleme</string>
     <string name="reading_tools">Okuma Araçları</string>
     <string name="document">Belge</string>
 
@@ -196,22 +174,15 @@
     <string name="pdf_to_images">PDF\'den Görseller</string>
 
     <!-- Tool Common -->
-    <string name="processing">İşleniyor…</string>
-    <string name="success">Başarılı!</string>
     <string name="output_file_name">Çıktı Dosya Adı</string>
-    <string name="pages">Sayfalar</string>
 
     <!-- Merge -->
 
     <!-- Split -->
     <string name="split_mode">Bölme Modu</string>
-    <string name="split">Böl</string>
 
     <!-- Compress -->
-    <string name="low">Düşük</string>
     <string name="medium">Orta</string>
-    <string name="high">Yüksek</string>
-    <string name="compress">Sıkıştır</string>
 
     <!-- Rotate -->
     <string name="rotation">Döndürme</string>
@@ -220,38 +191,27 @@
     <string name="password">Şifre</string>
     <string name="user_password">Kullanıcı Şifresi</string>
     <string name="owner_password">Sahip Şifresi</string>
-    <string name="permissions">İzinler</string>
     <string name="allow_printing">Yazdırmaya İzin Ver</string>
     <string name="allow_modifying">Değiştirmeye İzin Ver</string>
     <string name="allow_annotations">Açıklamalara İzin Ver</string>
-    <string name="lock">Kilitle</string>
-    <string name="unlock">Kilidi Aç</string>
     <string name="incorrect_password">Yanlış şifre.</string>
     <string name="pdf_not_protected">Bu PDF şifre korumalı değil</string>
 
     <!-- Watermark -->
-    <string name="watermark">Filigran</string>
-    <string name="position">Konum</string>
     <string name="opacity">Opaklık</string>
     <string name="font_size">Yazı Boyutu</string>
     <string name="color">Renk</string>
-    <string name="add">Ekle</string>
 
     <!-- Remove Pages -->
 
     <!-- Reorder -->
-    <string name="reorder">Yeniden Sırala</string>
 
     <!-- Page Numbers -->
     <string name="start_number">Başlangıç Numarası</string>
 
     <!-- Images to PDF -->
-    <string name="convert">Dönüştür</string>
 
     <!-- PDF to Images -->
-    <string name="png">PNG</string>
-    <string name="jpg">JPG</string>
-    <string name="export">Dışa Aktar</string>
 
     <!-- Error Messages -->
     <string name="error_loading_pdf">PDF yüklenirken hata</string>
@@ -283,7 +243,6 @@
     <string name="error_hint_generic">Lütfen tekrar deneyin. Sorun devam ederse uygulamayı yeniden başlatın.</string>
 
     <!-- PDF Thumbnail -->
-    <string name="pdf">PDF</string>
     <string name="pdf_thumbnail">PDF küçük resmi</string>
     <string name="loading">Yükleniyor…</string>
 
@@ -295,8 +254,6 @@
     <string name="library_stats_desc">Kitaplık istatistikleri</string>
     <string name="grid_view">Izgara görünümü</string>
     <string name="list_view">Liste görünümü</string>
-    <string name="more">Daha fazla</string>
-    <string name="favorite">Favori</string>
 
     <!-- Content Descriptions - Navigation -->
     <string name="cd_close">Kapat</string>
@@ -440,7 +397,6 @@
     <string name="path_copied">Yol panoya kopyalandı</string>
 
     <!-- Download Progress -->
-    <string name="later">Daha sonra</string>
 
     <!-- Update Sheet -->
 
@@ -489,13 +445,9 @@
     <string name="view_options">Görünüm Seçenekleri</string>
     <string name="customize_reading_layout">Okuma düzeninizi özelleştirin</string>
     <string name="scroll_mode">Kaydırma Modu</string>
-    <string name="wrapped">Sarmalı</string>
-    <string name="spread_mode">Sayfa Yayılımı</string>
-    <string name="center_align">Orta</string>
     <string name="option_selected">Seçili</string>
     <string name="snap_to_page">Sayfaya Yapıştır</string>
     <string name="snap_to_page_desc">Sayfa sınırlarına otomatik hizala</string>
-    <string name="scroll_speed_limit">Kaydırma Hızı Limiti</string>
     <string name="auto_hide_toolbar">Araç Çubuğunu Otomatik Gizle</string>
     <string name="auto_hide_toolbar_desc">5 saniye sonra araç çubuğunu gizle</string>
 
@@ -601,11 +553,7 @@
     <string name="fast">Hızlı</string>
     <string name="bookmarks_title">Yer İmleri</string>
     <string name="no_bookmarks_yet">Henüz yer imi yok</string>
-    <string name="continuous">Sürekli</string>
-    <string name="author">Yazar</string>
-    <string name="subject">Konu</string>
     <string name="creator">Geliştirici</string>
-    <string name="producer">Üretici</string>
     <string name="unknown">Bilinmiyor</string>
 
     <!-- Floating Search Bar -->
@@ -658,8 +606,6 @@
     <string name="double_tap_zoom_subtitle">Çift dokunuşta uygulanan yakınlaştırma düzeyi</string>
     <string name="show_tools_tab">Araçlar Sekmesini Göster</string>
     <string name="show_tools_tab_subtitle">Uygulamayı yalnızca PDF okuyucu olarak kullanmak için gizleyin</string>
-    <string name="checking">Kontrol ediliyor…</string>
-    <string name="error_message">Hata: %s</string>
     <string name="view_changelog">Sürüm notlarını görüntüle</string>
     <string name="view_privacy_policy">Gizlilik politikamızı görüntüleyin</string>
     <string name="view_third_party">Üçüncü taraf kitaplıkları görüntüle</string>
@@ -686,9 +632,7 @@
     <string name="choose_scroll">Sayfaların nasıl kaydırılacağını seçin</string>
     <string name="scroll_up_down">Yukarı ve aşağı kaydır</string>
     <string name="scroll_left_right">Sola ve sağa kaydır</string>
-    <string name="left">Sol</string>
     <string name="center">Orta</string>
-    <string name="right">Sağ</string>
     <string name="initial_zoom">PDF açılırken başlangıç yakınlaştırması</string>
     <string name="show_entire_page">Sayfanın tamamını göster</string>
     <string name="match_width">Sayfa genişliğini ekrana uydur</string>
@@ -700,7 +644,6 @@
     <string name="warm_paper">Sıcak kağıt tonu</string>
     <string name="dark_gray">Koyu gri arka plan</string>
     <string name="pure_black">Saf siyah (AMOLED)</string>
-    <string name="never">Asla</string>
     <string name="set_custom_level">Özel düzey ayarla</string>
     <string name="custom">Özel</string>
     <string name="app_logo">Uygulama Logosu</string>
@@ -808,9 +751,7 @@
     <string name="saving">Kaydediliyor…</string>
     <string name="locking">Kilitleniyor…</string>
     <string name="unlocking">Kilit açılıyor…</string>
-    <string name="splitting">Bölünüyor…</string>
     <string name="compressing">Sıkıştırılıyor…</string>
-    <string name="merging">Birleştiriliyor…</string>
     <string name="exporting">Dışa aktarılıyor…</string>
     <string name="creating_pdf">PDF oluşturuluyor…</string>
     <string name="removing_pages">Siliniyor…</string>

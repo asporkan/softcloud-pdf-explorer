@@ -58,6 +58,8 @@ import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlin.math.roundToInt
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
 private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
@@ -431,6 +433,11 @@ private fun SettingToggleItem(
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .toggleable(
+                value = isChecked,
+                role = Role.Switch,
+                onValueChange = onCheckedChange
+            )
             .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -445,7 +452,7 @@ private fun SettingToggleItem(
             ) {
                 Icon(
                     imageVector = icon,
-                    contentDescription = stringResource(R.string.cd_decorative),
+                    contentDescription = null,
                     modifier = Modifier.size(18.dp),
                     tint = accentColor.color
                 )
@@ -468,7 +475,7 @@ private fun SettingToggleItem(
         }
         Switch(
             checked = isChecked,
-            onCheckedChange = onCheckedChange,
+            onCheckedChange = null,
             colors = accentSwitchColors(accentColor)
         )
     }

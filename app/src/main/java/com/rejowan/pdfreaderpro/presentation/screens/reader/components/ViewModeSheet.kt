@@ -73,6 +73,9 @@ import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ScrollMode
 import kotlinx.coroutines.delay
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
 
 // Design colors
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
@@ -131,6 +134,7 @@ private fun ViewModeBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -517,7 +521,13 @@ private fun ToggleRow(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .scale(scale),
+            .scale(scale)
+            .clip(RoundedCornerShape(14.dp))
+            .toggleable(
+                value = isEnabled,
+                role = Role.Switch,
+                onValueChange = onToggle
+            ),
         shape = RoundedCornerShape(14.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
@@ -560,7 +570,7 @@ private fun ToggleRow(
 
             Switch(
                 checked = isEnabled,
-                onCheckedChange = onToggle,
+                onCheckedChange = null,
                 colors = accentSwitchColors(accentColor)
             )
         }

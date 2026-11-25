@@ -108,6 +108,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -130,6 +131,11 @@ import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.semantics.Role
+import androidx.compose.foundation.layout.heightIn
+import com.rejowan.pdfreaderpro.presentation.components.bottomNavContentPadding
 
 // Accent colors
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
@@ -149,6 +155,7 @@ fun SettingsScreenContent(
     val preferences by viewModel.preferences.collectAsState()
 
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     // Sheet visibility states
     var showThemeModeSheet by remember { mutableStateOf(false) }
@@ -173,7 +180,7 @@ fun SettingsScreenContent(
             .padding(paddingValues)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
-            .padding(top = 8.dp, bottom = 80.dp)
+            .padding(top = 8.dp, bottom = bottomNavContentPadding())
     ) {
         // App Header Card
         SettingsHeaderCard()
@@ -426,8 +433,8 @@ fun SettingsScreenContent(
             accentColor = AccentTeal,
             onClick = {
                 val intent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = "mailto:${context.getString(R.string.creator_email_address)}".toUri()
-                    putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.feedback_email_subject))
+                    data = "mailto:${resources.getString(R.string.creator_email_address)}".toUri()
+                    putExtra(Intent.EXTRA_SUBJECT, resources.getString(R.string.feedback_email_subject))
                 }
                 context.startActivity(intent)
             },
@@ -444,7 +451,7 @@ fun SettingsScreenContent(
             onClick = {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    context.getString(R.string.creator_github_url).toUri()
+                    resources.getString(R.string.creator_github_url).toUri()
                 )
                 context.startActivity(intent)
             },
@@ -867,14 +874,18 @@ private fun SettingsToggleItem(
             .fillMaxWidth()
             .scale(scale)
             .clip(RoundedCornerShape(12.dp))
-            .clickable { onCheckedChange(!checked) },
+            .toggleable(
+                value = checked,
+                role = Role.Switch,
+                onValueChange = onCheckedChange
+            ),
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .heightIn(min = 64.dp)
                 .padding(horizontal = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -884,7 +895,7 @@ private fun SettingsToggleItem(
             ) {
                 Icon(
                     imageVector = icon,
-                    contentDescription = stringResource(R.string.cd_decorative),
+                    contentDescription = null,
                     modifier = Modifier
                         .padding(8.dp)
                         .size(20.dp),
@@ -912,7 +923,7 @@ private fun SettingsToggleItem(
 
             Switch(
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                onCheckedChange = null,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = accentColor.onColor,
                     checkedTrackColor = accentColor.color,
@@ -990,6 +1001,7 @@ private fun PickerBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -1316,6 +1328,7 @@ private fun BrightnessBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
@@ -1745,6 +1758,7 @@ private fun AboutSheet(
     } else {
         ModalBottomSheet(
             onDismissRequest = onDismiss,
+            dragHandle = { AppDragHandle() },
             sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
             shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
             containerColor = MaterialTheme.colorScheme.surface,
@@ -2146,6 +2160,7 @@ private fun LicensesContent() {
 @Composable
 private fun CreatorContent() {
     val context = LocalContext.current
+    val resources = LocalResources.current
 
     Column(
         modifier = Modifier
@@ -2197,7 +2212,7 @@ private fun CreatorContent() {
                     accentColor = AccentAmber,
                     onClick = {
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = "mailto:${context.getString(R.string.creator_email_address)}".toUri()
+                            data = "mailto:${resources.getString(R.string.creator_email_address)}".toUri()
                         }
                         context.startActivity(intent)
                     }
@@ -2213,7 +2228,7 @@ private fun CreatorContent() {
                     onClick = {
                         val intent = Intent(
                             Intent.ACTION_VIEW,
-                            context.getString(R.string.creator_github_url).toUri()
+                            resources.getString(R.string.creator_github_url).toUri()
                         )
                         context.startActivity(intent)
                     }
@@ -2393,6 +2408,7 @@ private fun DoubleTapZoomSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,

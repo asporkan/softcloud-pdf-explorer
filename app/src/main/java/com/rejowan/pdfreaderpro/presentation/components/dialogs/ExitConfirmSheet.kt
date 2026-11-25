@@ -71,6 +71,7 @@ import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 
 // Accent colors
 private val AccentOrange: AccentTone @Composable get() = MaterialTheme.accents.orange
@@ -103,6 +104,7 @@ private fun ExitConfirmBottomSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = sheetState,
         shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
         containerColor = MaterialTheme.colorScheme.surface,

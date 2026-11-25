@@ -94,6 +94,7 @@ import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 // Accent colors
 private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal // Image to PDF theme
@@ -110,6 +111,7 @@ fun ImageToPdfScreen(
     val state by viewModel.state.collectAsState()
     val exitHandler = rememberToolExitHandler(navController, state.result)
     val context = LocalContext.current
+    val sharePdfChooserTitle = stringResource(R.string.share_pdf_chooser)
     val focusManager = LocalFocusManager.current
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
@@ -182,7 +184,7 @@ fun ImageToPdfScreen(
                             context.startActivity(
                                 Intent.createChooser(
                                     shareIntent,
-                                    context.getString(R.string.share_pdf_chooser)
+                                    sharePdfChooserTitle
                                 )
                             )
                         },
@@ -355,7 +357,6 @@ private fun ImageListContent(
                     )
                     OutlinedButton(
                         onClick = onAddMore,
-                        modifier = Modifier.height(32.dp),
                         contentPadding = PaddingValues(horizontal = 12.dp)
                     ) {
                         Icon(
@@ -451,6 +452,7 @@ private fun ImageThumbnailItem(
             // (IconButton enforces a 48dp touch target that pushed the circle outside and clipped it).
             Box(
                 modifier = Modifier
+                    .minimumInteractiveComponentSize()
                     .align(Alignment.TopEnd)
                     .size(40.dp)
                     .clip(CircleShape)
@@ -515,8 +517,7 @@ private fun ConvertBottomSection(
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
-                        onClick = onClearError,
-                        modifier = Modifier.size(24.dp)
+                        onClick = onClearError
                     ) {
                         Icon(
                             Icons.Default.Close,

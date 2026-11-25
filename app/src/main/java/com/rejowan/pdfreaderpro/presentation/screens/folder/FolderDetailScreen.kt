@@ -102,6 +102,8 @@ import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import androidx.compose.material3.minimumInteractiveComponentSize
 
 private val FolderAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 private val SoftBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
@@ -456,6 +458,7 @@ private fun BatchDeleteConfirmSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        dragHandle = { AppDragHandle() },
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {
@@ -606,9 +609,9 @@ private fun FolderDetailHeader(
             }
         }
 
-        // View mode and sort controls with tooltips
+        // View mode and sort controls with tooltips (each has a 48dp touch target)
         Row(
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalArrangement = Arrangement.spacedBy(0.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // List view
@@ -690,6 +693,7 @@ private fun ViewModeButton(
 
     Surface(
         modifier = modifier
+            .minimumInteractiveComponentSize()
             .clip(RoundedCornerShape(6.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(6.dp),

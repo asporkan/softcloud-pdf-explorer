@@ -5,7 +5,6 @@
     <string name="settings_output_folder_title">Default save folder</string>
     <string name="settings_output_folder_none">Not selected</string>
     <string name="settings_output_folder_ask">%1$s · asks every time</string>
-    <string name="settings_output_folder_sheet_subtitle">Where results of the PDF tools are saved</string>
     <string name="settings_output_change_folder">Change folder</string>
     <string name="settings_output_change_folder_desc">Pick the folder for new files</string>
     <string name="settings_output_ask_desc">Choose a destination for every save</string>
@@ -19,4 +18,6 @@
         <item quantity="other">Share %d PDFs</item>
     </plurals>
     <string name="share_failed">The file could not be shared.</string>
+    <string name="cd_previous_search_result">Previous search result</string>
+    <string name="cd_next_search_result">Next search result</string>
 </resources>

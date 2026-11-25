@@ -41,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -86,6 +87,7 @@ fun ReaderScreen(
     viewModel: ReaderViewModel = koinViewModel()
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val view = LocalView.current
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -232,7 +234,7 @@ fun ReaderScreen(
         viewModel.events.collect { event ->
             when (event) {
                 is ReaderEvent.ShowMessage -> {
-                    snackbarHostState.showSnackbar(context.getString(event.messageRes, *event.args.toTypedArray()))
+                    snackbarHostState.showSnackbar(resources.getString(event.messageRes, *event.args.toTypedArray()))
                 }
                 is ReaderEvent.NavigateToPage -> { }
                 is ReaderEvent.DocumentClosed -> {
@@ -255,11 +257,11 @@ fun ReaderScreen(
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
                         context.startActivity(
-                            Intent.createChooser(shareIntent, context.getString(R.string.share_pdf_chooser))
+                            Intent.createChooser(shareIntent, resources.getString(R.string.share_pdf_chooser))
                         )
                     } catch (e: Exception) {
                         snackbarHostState.showSnackbar(
-                            context.getString(R.string.reader_err_share, e.localizedMessage ?: e.javaClass.simpleName)
+                            resources.getString(R.string.reader_err_share, e.localizedMessage ?: e.javaClass.simpleName)
                         )
                     }
                 }
@@ -275,11 +277,11 @@ fun ReaderScreen(
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
                         context.startActivity(
-                            Intent.createChooser(viewIntent, context.getString(R.string.open_with))
+                            Intent.createChooser(viewIntent, resources.getString(R.string.open_with))
                         )
                     } catch (e: Exception) {
                         snackbarHostState.showSnackbar(
-                            context.getString(
+                            resources.getString(
                                 R.string.reader_err_open_external,
                                 e.localizedMessage ?: e.javaClass.simpleName
                             )
@@ -290,10 +292,10 @@ fun ReaderScreen(
                     saveDocumentLauncher.launch(viewModel.getDocumentFileName())
                 }
                 is ReaderEvent.FavoriteAdded -> {
-                    snackbarHostState.showSnackbar(context.getString(R.string.reader_msg_added_to_favourites))
+                    snackbarHostState.showSnackbar(resources.getString(R.string.reader_msg_added_to_favourites))
                 }
                 is ReaderEvent.Error -> {
-                    snackbarHostState.showSnackbar(context.getString(event.messageRes, *event.args.toTypedArray()))
+                    snackbarHostState.showSnackbar(resources.getString(event.messageRes, *event.args.toTypedArray()))
                 }
             }
         }
