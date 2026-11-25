@@ -10,7 +10,6 @@
 ### Dalga 2
 - [ ] @android-dev · F2-6b. Okuyucu kontrastı + okuyucu alt menüleri (Diğer Seçenekler, Yakınlaştırma, Görüntüleme) + RemoveFavoriteSheet; token API: MaterialTheme.accents.<rol>.{color,container,onContainer,onColor}
 - [ ] @android-dev · F2-12. Açık temada ikincil metin kontrastı (onSurfaceVariant alpha 0.4–0.7 → ≥4.5:1) + PDF'den Görseller'e dosya adı öneki (Böl'deki gibi); okuyucu hariç
-- [ ] @ana-denetleyici · F2-13. Play Console "Tüm dosyalara erişim" gerekçe metni güncellemesi (Edge)
 ### Kapanış
 - [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon (bekler: F2-6b)
 - [ ] @devops · F2-8. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F2-7, TODO-Faruk #1 keystore)

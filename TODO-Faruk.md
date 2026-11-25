@@ -6,4 +6,5 @@
 
 ## Sonra netleşecekler
 1. Müşterinin Android sürümü ve telefon modeli (silme düzeltmesinin onun cihazında da doğrulanması için).
-2. Play Console kontrolü (Claude Edge üzerinden bakıyor): "All files access" beyanındaki gerekçe; Veri güvenliği formunda "veri toplanmıyor/paylaşılmıyor" işaretli mi; yayınlanmış gizlilik politikası URL'si var mı?
+2. Play Console Veri güvenliği: Console özetinde "11 veri türü toplanıyor veya paylaşılıyor" yazıyor, herkese açık mağaza sayfası ise "veri toplanmıyor" diyor. Console'da bir kez gözle bakılmalı (salt okuma ile nedeni görülemedi).
+3. strings.xml'de eski şablondan kalan ~390 referanssız anahtar: silinsin mi? (cd_* erişilebilirlik anahtarları ayrıca incelenmeli)
