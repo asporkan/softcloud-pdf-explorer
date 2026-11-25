@@ -13,6 +13,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -57,7 +61,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -65,7 +68,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -103,11 +105,11 @@ import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors - consistent with app design system
-private val AccentAmber = Color(0xFFFFB74D)     // Split theme color
-private val AccentTeal = Color(0xFF4DB6AC)      // Preview
-private val AccentGreen = Color(0xFF81C784)     // Success
-private val AccentRed = Color(0xFFEF5350)       // PDF icon
-private val AccentBlue = Color(0xFF64B5F6)      // Info/General
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber     // Split theme color
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal      // Preview
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green     // Success
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red       // PDF icon
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue      // Info/General
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -188,7 +190,7 @@ fun SplitScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentAmber)
+                            CircularProgressIndicator(color = AccentAmber.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pdf))
                         }
@@ -402,14 +404,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentAmber.copy(alpha = 0.1f)),
+                .background(AccentAmber.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.AutoMirrored.Filled.CallSplit,
                 contentDescription = stringResource(R.string.cd_split_pdf),
                 modifier = Modifier.size(40.dp),
-                tint = AccentAmber
+                tint = AccentAmber.color
             )
         }
 
@@ -466,14 +468,14 @@ private fun SourceFileCard(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(AccentRed.copy(alpha = 0.1f)),
+                    .background(AccentRed.container),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.PictureAsPdf,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(24.dp),
-                    tint = AccentRed
+                    tint = AccentRed.color
                 )
             }
 
@@ -507,14 +509,14 @@ private fun SourceFileCard(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(AccentTeal.copy(alpha = 0.15f)),
+                        .background(AccentTeal.container),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Outlined.Visibility,
                         contentDescription = stringResource(R.string.cd_preview),
                         modifier = Modifier.size(18.dp),
-                        tint = AccentTeal
+                        tint = AccentTeal.color
                     )
                 }
             }
@@ -615,20 +617,20 @@ private fun SplitModeChip(
                     label,
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
-                    color = if (selected) AccentAmber else MaterialTheme.colorScheme.onSurface
+                    color = if (selected) AccentAmber.color else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     description,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (selected) AccentAmber.copy(alpha = 0.8f)
+                    color = if (selected) AccentAmber.color.copy(alpha = 0.8f)
                             else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         },
         modifier = modifier.height(56.dp),
         colors = FilterChipDefaults.filterChipColors(
-            selectedContainerColor = AccentAmber.copy(alpha = 0.15f),
-            selectedLabelColor = AccentAmber,
+            selectedContainerColor = AccentAmber.container,
+            selectedLabelColor = AccentAmber.color,
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow
         )
     )
@@ -662,7 +664,7 @@ private fun SplitOptionsSection(
                         placeholder = { Text(stringResource(R.string.page_ranges_example)) },
                         supportingText = {
                             state.rangesError?.let { error ->
-                                Text(error, color = AccentRed)
+                                Text(error, color = AccentRed.color)
                             } ?: Text(stringResource(R.string.split_range_help, state.sourceFile?.pageCount ?: 0))
                         },
                         isError = hasError,
@@ -677,7 +679,7 @@ private fun SplitOptionsSection(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = AccentAmber.copy(alpha = 0.1f)
+                                containerColor = AccentAmber.container
                             ),
                             shape = RoundedCornerShape(8.dp)
                         ) {
@@ -691,7 +693,7 @@ private fun SplitOptionsSection(
                                     Icons.AutoMirrored.Filled.CallSplit,
                                     contentDescription = stringResource(R.string.cd_split_pdf),
                                     modifier = Modifier.size(18.dp),
-                                    tint = AccentAmber
+                                    tint = AccentAmber.color
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
@@ -738,7 +740,7 @@ private fun SplitOptionsSection(
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
-                        containerColor = AccentAmber.copy(alpha = 0.1f)
+                        containerColor = AccentAmber.container
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -752,7 +754,7 @@ private fun SplitOptionsSection(
                             Icons.Default.Description,
                             contentDescription = stringResource(R.string.cd_pdf_file),
                             modifier = Modifier.size(24.dp),
-                            tint = AccentAmber
+                            tint = AccentAmber.color
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
@@ -785,7 +787,7 @@ private fun SplitOptionsSection(
                         placeholder = { Text(stringResource(R.string.page_numbers_example)) },
                         supportingText = {
                             state.specificPagesError?.let { error ->
-                                Text(error, color = AccentRed)
+                                Text(error, color = AccentRed.color)
                             } ?: Text(stringResource(R.string.extract_pages_help, state.sourceFile?.pageCount ?: 0))
                         },
                         isError = hasError,
@@ -800,7 +802,7 @@ private fun SplitOptionsSection(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
-                                containerColor = AccentBlue.copy(alpha = 0.1f)
+                                containerColor = AccentBlue.container
                             ),
                             shape = RoundedCornerShape(8.dp)
                         ) {
@@ -814,7 +816,7 @@ private fun SplitOptionsSection(
                                     Icons.Default.Description,
                                     contentDescription = stringResource(R.string.cd_pdf_file),
                                     modifier = Modifier.size(18.dp),
-                                    tint = AccentBlue
+                                    tint = AccentBlue.color
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
@@ -857,7 +859,7 @@ private fun SplitBottomSection(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -870,7 +872,7 @@ private fun SplitBottomSection(
                     Text(
                         error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -881,7 +883,7 @@ private fun SplitBottomSection(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -946,7 +948,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { animatedProgress },
                     modifier = Modifier.size(48.dp),
-                    color = AccentAmber
+                    color = AccentAmber.color
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -962,7 +964,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { animatedProgress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentAmber
+                    color = AccentAmber.color
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -1005,14 +1007,14 @@ private fun SuccessState(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(RoundedCornerShape(16.dp))
-                        .background(AccentGreen.copy(alpha = 0.1f)),
+                        .background(AccentGreen.container),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = stringResource(R.string.cd_success),
                         modifier = Modifier.size(36.dp),
-                        tint = AccentGreen
+                        tint = AccentGreen.color
                     )
                 }
             }
@@ -1103,14 +1105,14 @@ private fun SplitResultFileItem(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(RoundedCornerShape(8.dp))
-                    .background(AccentRed.copy(alpha = 0.1f)),
+                    .background(AccentRed.container),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.PictureAsPdf,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentRed
+                    tint = AccentRed.color
                 )
             }
 
@@ -1141,14 +1143,14 @@ private fun SplitResultFileItem(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(AccentTeal.copy(alpha = 0.15f)),
+                        .background(AccentTeal.container),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Outlined.Visibility,
                         contentDescription = stringResource(R.string.cd_view),
                         modifier = Modifier.size(16.dp),
-                        tint = AccentTeal
+                        tint = AccentTeal.color
                     )
                 }
             }
@@ -1164,14 +1166,14 @@ private fun SplitResultFileItem(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(AccentBlue.copy(alpha = 0.15f)),
+                        .background(AccentBlue.container),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Share,
                         contentDescription = stringResource(R.string.cd_share),
                         modifier = Modifier.size(16.dp),
-                        tint = AccentBlue
+                        tint = AccentBlue.color
                     )
                 }
             }

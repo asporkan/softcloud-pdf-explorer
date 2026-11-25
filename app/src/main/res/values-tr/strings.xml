@@ -1370,10 +1370,6 @@
     <string name="cd_close_selection">Seçimi kapat</string>
 
     <!-- Sprint 3A — Tools hub categories & short card descriptions -->
-    <string name="tool_category_organize">Düzenle</string>
-    <string name="tool_category_edit">Düzenleme</string>
-    <string name="tool_category_security">Güvenlik</string>
-    <string name="tool_category_convert">Dönüştür</string>
     <string name="tools_hub_merge_desc">Birden fazla PDF dosyasını tek dosyada birleştirin</string>
     <string name="tools_hub_split_desc">Bir PDF\'yi birden fazla dosyaya bölün</string>
     <string name="tools_hub_compress_desc">Kaliteyi koruyarak dosya boyutunu küçültün</string>

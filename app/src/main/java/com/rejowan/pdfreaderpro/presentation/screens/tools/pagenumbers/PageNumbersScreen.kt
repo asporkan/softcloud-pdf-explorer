@@ -55,6 +55,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ExposedDropdownMenuDefaults
@@ -63,7 +64,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -104,25 +104,17 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.PdfOutputColors
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors
-private val AccentOrange = Color(0xFFFF9800) // Page numbers theme color
-private val AccentGreen = Color(0xFF81C784)
-private val AccentBlue = Color(0xFF64B5F6)
-
-// Preset colors for page numbers
-private val PresetColors = listOf(
-    Color(0xFF000000), // Black
-    Color(0xFF424242), // Dark Gray
-    Color(0xFF757575), // Gray
-    Color(0xFFEF5350), // Red
-    Color(0xFF42A5F5), // Blue
-    Color(0xFF66BB6A), // Green
-    Color(0xFFAB47BC), // Purple
-)
+private val AccentOrange: AccentTone @Composable get() = MaterialTheme.accents.orange // Page numbers theme color
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -201,7 +193,7 @@ fun PageNumbersScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentOrange)
+                            CircularProgressIndicator(color = AccentOrange.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pdf))
                         }
@@ -315,14 +307,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentOrange.copy(alpha = 0.1f)),
+                .background(AccentOrange.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.FormatListNumbered,
                 contentDescription = stringResource(R.string.cd_add_page_numbers),
                 modifier = Modifier.size(40.dp),
-                tint = AccentOrange
+                tint = AccentOrange.color
             )
         }
 
@@ -478,7 +470,7 @@ private fun PageNumbersContent(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PresetColors.forEach { color ->
+            PdfOutputColors.PageNumberPresets.forEach { color ->
                 ColorCircle(
                     color = color,
                     isSelected = color == state.textColor,
@@ -589,7 +581,7 @@ private fun PageNumbersContent(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFFEF5350).copy(alpha = 0.1f)
+                    containerColor = MaterialTheme.colorScheme.errorContainer
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -602,7 +594,7 @@ private fun PageNumbersContent(
                     Text(
                         state.error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFFEF5350),
+                        color = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -613,7 +605,7 @@ private fun PageNumbersContent(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = Color(0xFFEF5350)
+                            tint = MaterialTheme.colorScheme.onErrorContainer
                         )
                     }
                 }
@@ -631,7 +623,7 @@ private fun PageNumbersContent(
             Checkbox(
                 checked = state.overwriteOriginal,
                 onCheckedChange = onOverwriteChange,
-                colors = CheckboxDefaults.colors(checkedColor = AccentOrange)
+                colors = CheckboxDefaults.colors(checkedColor = AccentOrange.color)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.overwrite_original_file), style = MaterialTheme.typography.bodyMedium)
@@ -703,8 +695,8 @@ private fun CompactPositionSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentOrange
+                    selectedContainerColor = AccentOrange.container,
+                    selectedLabelColor = AccentOrange.color
                 )
             )
         }
@@ -781,7 +773,7 @@ private fun SettingSlider(
             Text(
                 valueLabel,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
-                color = AccentOrange
+                color = AccentOrange.color
             )
         }
         Slider(
@@ -789,8 +781,8 @@ private fun SettingSlider(
             onValueChange = onValueChange,
             valueRange = valueRange,
             colors = SliderDefaults.colors(
-                thumbColor = AccentOrange,
-                activeTrackColor = AccentOrange
+                thumbColor = AccentOrange.color,
+                activeTrackColor = AccentOrange.color
             )
         )
     }
@@ -809,8 +801,11 @@ private fun ColorCircle(
             .background(color)
             .then(
                 if (isSelected) {
-                    Modifier.border(3.dp, AccentOrange, CircleShape)
-                } else Modifier
+                    Modifier.border(3.dp, AccentOrange.color, CircleShape)
+                } else {
+                    // Thin outline keeps black/dark-gray swatches visible on dark surfaces.
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                }
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -820,7 +815,7 @@ private fun ColorCircle(
                 Icons.Default.Check,
                 contentDescription = stringResource(R.string.cd_checkbox),
                 modifier = Modifier.size(18.dp),
-                tint = if (color == Color.Black || color == Color(0xFF424242)) Color.White else Color.Black
+                tint = PdfOutputColors.contentOn(color)
             )
         }
     }
@@ -987,14 +982,14 @@ private fun ColorPickerSheet(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(AccentOrange.copy(alpha = 0.1f)),
+                            .background(AccentOrange.container),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.FormatListNumbered,
                             contentDescription = stringResource(R.string.cd_add_page_numbers),
                             modifier = Modifier.size(20.dp),
-                            tint = AccentOrange
+                            tint = AccentOrange.color
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
@@ -1036,7 +1031,7 @@ private fun ColorPickerSheet(
                             "#${String.format("%02X%02X%02X", red, green, blue)}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = AccentOrange
+                            color = AccentOrange.color
                         )
                         Text(
                             stringResource(R.string.rgb_values, red, green, blue),
@@ -1258,8 +1253,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentOrange
+                    selectedContainerColor = AccentOrange.container,
+                    selectedLabelColor = AccentOrange.color
                 )
             )
             FilterChip(
@@ -1272,8 +1267,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentOrange
+                    selectedContainerColor = AccentOrange.container,
+                    selectedLabelColor = AccentOrange.color
                 )
             )
             FilterChip(
@@ -1286,8 +1281,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentOrange
+                    selectedContainerColor = AccentOrange.container,
+                    selectedLabelColor = AccentOrange.color
                 )
             )
             FilterChip(
@@ -1300,8 +1295,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentOrange
+                    selectedContainerColor = AccentOrange.container,
+                    selectedLabelColor = AccentOrange.color
                 )
             )
             FilterChip(
@@ -1314,8 +1309,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentOrange.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentOrange
+                    selectedContainerColor = AccentOrange.container,
+                    selectedLabelColor = AccentOrange.color
                 )
             )
         }
@@ -1374,14 +1369,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -1421,7 +1416,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentBlue
+                    tint = AccentBlue.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -1526,7 +1521,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentOrange,
+                    color = AccentOrange.color,
                     strokeWidth = 4.dp
                 )
 
@@ -1544,7 +1539,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentOrange
+                    color = AccentOrange.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

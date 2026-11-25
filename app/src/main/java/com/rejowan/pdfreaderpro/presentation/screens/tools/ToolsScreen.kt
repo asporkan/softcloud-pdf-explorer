@@ -70,23 +70,22 @@ import com.rejowan.pdfreaderpro.presentation.navigation.navigateToRotateTool
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToSplitTool
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToImageToPdfTool
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToPdfToImageTool
+import com.rejowan.pdfreaderpro.presentation.theme.AccentColors
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 
 // Accent colors (consistent with app design system)
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentAmber = Color(0xFFFFB74D)
-private val AccentGreen = Color(0xFF81C784)
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 
 enum class ToolCategory(
     @param:StringRes val titleRes: Int,
-    val accentColor: Color
+    val accent: (AccentColors) -> AccentTone
 ) {
-    ORGANIZE(R.string.tools_category_organize, AccentPurple),
-    EDIT(R.string.tools_category_edit, AccentBlue),
-    SECURITY(R.string.tools_category_security, AccentAmber),
-    CONVERT(R.string.tools_category_convert, AccentTeal)
+    ORGANIZE(R.string.tools_category_organize, { it.purple }),
+    EDIT(R.string.tools_category_edit, { it.blue }),
+    SECURITY(R.string.tools_category_security, { it.amber }),
+    CONVERT(R.string.tools_category_convert, { it.teal })
 }
 
 data class PdfTool(
@@ -228,7 +227,7 @@ fun ToolsScreen(
                 toolsInCategory.forEach { tool ->
                     ToolItem(
                         tool = tool,
-                        accentColor = category.accentColor,
+                        accentColor = category.accent(MaterialTheme.accents),
                         animationDelay = animationIndex * 25,
                         onClick = {
                             when (tool.id) {
@@ -292,7 +291,7 @@ private fun SectionLabel(
 @Composable
 private fun ToolItem(
     tool: PdfTool,
-    accentColor: Color,
+    accentColor: AccentTone,
     animationDelay: Int,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -310,7 +309,10 @@ private fun ToolItem(
         label = "tool scale"
     )
 
-    val effectiveAccentColor = if (tool.isEnabled) accentColor else accentColor.copy(alpha = 0.4f)
+    // Disabled ("coming soon") tools follow the Material 3 disabled look: onSurface 12% fill, 38% icon.
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val iconContainerColor = if (tool.isEnabled) accentColor.container else onSurface.copy(alpha = 0.12f)
+    val iconTint = if (tool.isEnabled) accentColor.color else onSurface.copy(alpha = 0.38f)
 
     Surface(
         modifier = modifier
@@ -321,7 +323,7 @@ private fun ToolItem(
                 if (tool.isEnabled) {
                     Modifier.clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(color = accentColor),
+                        indication = ripple(color = accentColor.color),
                         onClick = onClick
                     )
                 } else {
@@ -341,7 +343,7 @@ private fun ToolItem(
             // Icon container
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = effectiveAccentColor.copy(alpha = 0.12f)
+                color = iconContainerColor
             ) {
                 Icon(
                     imageVector = tool.icon,
@@ -349,7 +351,7 @@ private fun ToolItem(
                     modifier = Modifier
                         .padding(10.dp)
                         .size(24.dp),
-                    tint = effectiveAccentColor
+                    tint = iconTint
                 )
             }
 
@@ -410,7 +412,7 @@ private fun ComingSoonBadge() {
     Box(
         modifier = Modifier
             .background(
-                color = AccentAmber.copy(alpha = 0.15f),
+                color = AccentAmber.container,
                 shape = RoundedCornerShape(4.dp)
             )
             .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -420,7 +422,7 @@ private fun ComingSoonBadge() {
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = AccentAmber
+            color = AccentAmber.color
         )
     }
 }

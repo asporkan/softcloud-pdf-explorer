@@ -12,13 +12,13 @@ val primaryContainerDark = Color(0xFF5B21B6)
 val onPrimaryContainerDark = Color(0xFFEDE9FE)
 
 val secondaryDark = Color(0xFF60A5FA)
-val onSecondaryDark = Color(0xFF1E3A8A)
-val secondaryContainerDark = Color(0xFF1D4ED8)
+val onSecondaryDark = Color(0xFF0B2559)
+val secondaryContainerDark = Color(0xFF1E3A8A)
 val onSecondaryContainerDark = Color(0xFFDBEAFE)
 
 val tertiaryDark = Color(0xFF4ADE80)
 val onTertiaryDark = Color(0xFF14532D)
-val tertiaryContainerDark = Color(0xFF16A34A)
+val tertiaryContainerDark = Color(0xFF14532D)
 val onTertiaryContainerDark = Color(0xFFDCFCE7)
 
 val inversePrimaryDark = Color(0xFF7C3AED)
@@ -46,10 +46,10 @@ object DarkSurfaces {
     val surfaceContainer = Color(0xFF1E293B)
     val surfaceContainerHigh = Color(0xFF273449)
     val surfaceContainerHighest = Color(0xFF334155)
-    val error = Color(0xFFD32F2F)
-    val onError = Color(0xFFFFFFFF)
-    val errorContainer = Color(0xFFEF5350)
-    val onErrorContainer = Color(0xFFFFFFFF)
+    val error = Color(0xFFFFB4AB)
+    val onError = Color(0xFF690005)
+    val errorContainer = Color(0xFF93000A)
+    val onErrorContainer = Color(0xFFFFDAD6)
 }
 
 // ============================================================================
@@ -75,10 +75,10 @@ object BlackSurfaces {
     val surfaceContainer = Color(0xFF101014)
     val surfaceContainerHigh = Color(0xFF17161B)
     val surfaceContainerHighest = Color(0xFF1D1C22)
-    val error = Color(0xFFD32F2F)
-    val onError = Color(0xFFFFFFFF)
-    val errorContainer = Color(0xFFEF5350)
-    val onErrorContainer = Color(0xFFFFFFFF)
+    val error = Color(0xFFFFB4AB)
+    val onError = Color(0xFF690005)
+    val errorContainer = Color(0xFF93000A)
+    val onErrorContainer = Color(0xFFFFDAD6)
 }
 
 // ============================================================================
@@ -119,12 +119,12 @@ val onPrimaryLight = Color(0xFFFFFFFF)
 val primaryContainerLight = Color(0xFFEDE9FE)
 val onPrimaryContainerLight = Color(0xFF4C1D95)
 
-val secondaryLight = Color(0xFF3B82F6)
+val secondaryLight = Color(0xFF2563EB)
 val onSecondaryLight = Color(0xFFFFFFFF)
 val secondaryContainerLight = Color(0xFFDBEAFE)
 val onSecondaryContainerLight = Color(0xFF1E3A8A)
 
-val tertiaryLight = Color(0xFF22C55E)
+val tertiaryLight = Color(0xFF15803D)
 val onTertiaryLight = Color(0xFFFFFFFF)
 val tertiaryContainerLight = Color(0xFFDCFCE7)
 val onTertiaryContainerLight = Color(0xFF14532D)

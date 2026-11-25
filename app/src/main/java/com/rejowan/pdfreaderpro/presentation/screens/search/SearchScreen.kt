@@ -99,16 +99,18 @@ import com.rejowan.pdfreaderpro.presentation.components.dialogs.DeleteConfirmShe
 import com.rejowan.pdfreaderpro.presentation.components.dialogs.FileInfoDialog
 import com.rejowan.pdfreaderpro.presentation.components.dialogs.RenameSheet
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 // Accent colors
-private val SoftPurple = Color(0xFF9575CD)
-private val SoftBlue = Color(0xFF64B5F6)
-private val SoftTeal = Color(0xFF4DB6AC)
-private val SoftAmber = Color(0xFFFFB74D)
-private val SoftPink = Color(0xFFF06292)
+private val SoftPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val SoftBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val SoftTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val SoftAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val SoftPink: AccentTone @Composable get() = MaterialTheme.accents.pink
 
 // Recent searches preferences
 private const val RECENT_SEARCHES_PREFS = "recent_searches"
@@ -443,7 +445,7 @@ private fun SearchIdleContent(
                             imageVector = Icons.Outlined.History,
                             contentDescription = stringResource(R.string.cd_decorative),
                             modifier = Modifier.size(18.dp),
-                            tint = SoftPurple
+                            tint = SoftPurple.color
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
@@ -457,7 +459,7 @@ private fun SearchIdleContent(
                     Text(
                         text = stringResource(R.string.clear_all),
                         style = MaterialTheme.typography.labelMedium,
-                        color = SoftPurple,
+                        color = SoftPurple.color,
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
                             .clickable(onClick = onClearAllRecent)
@@ -495,7 +497,7 @@ private fun SearchIdleContent(
                             style = MaterialTheme.typography.labelMedium.copy(
                                 fontWeight = FontWeight.Medium
                             ),
-                            color = SoftPurple
+                            color = SoftPurple.color
                         )
                     }
                 }
@@ -595,7 +597,7 @@ private fun SearchTipsSection(
                 imageVector = Icons.Outlined.TipsAndUpdates,
                 contentDescription = stringResource(R.string.cd_decorative),
                 modifier = Modifier.size(18.dp),
-                tint = SoftAmber
+                tint = SoftAmber.color
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -644,7 +646,7 @@ private fun SearchTipCard(
     icon: ImageVector,
     title: String,
     description: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     animationDelay: Int,
     modifier: Modifier = Modifier
 ) {
@@ -666,7 +668,7 @@ private fun SearchTipCard(
             .fillMaxWidth()
             .scale(scale),
         shape = RoundedCornerShape(14.dp),
-        color = accentColor.copy(alpha = 0.08f)
+        color = accentColor.container
     ) {
         Row(
             modifier = Modifier.padding(14.dp),
@@ -674,7 +676,7 @@ private fun SearchTipCard(
         ) {
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -682,7 +684,7 @@ private fun SearchTipCard(
                     modifier = Modifier
                         .padding(10.dp)
                         .size(20.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -785,14 +787,14 @@ private fun SearchResultsHeader(
         // Result count badge
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = SoftBlue.copy(alpha = 0.12f)
+            color = SoftBlue.container
         ) {
             Text(
                 text = resultCount.toString(),
                 style = MaterialTheme.typography.labelLarge.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
-                color = SoftBlue,
+                color = SoftBlue.color,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
             )
         }
@@ -874,19 +876,19 @@ private fun SearchResultItem(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
                             text = com.rejowan.pdfreaderpro.util.FormattingUtils.formattedFileSize(pdfFile.size),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
                     Text(
                         text = "•",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFF9E9E9E)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = com.rejowan.pdfreaderpro.util.FormattingUtils.formattedDate(pdfFile.dateModified),
@@ -904,7 +906,7 @@ private fun SearchResultItem(
                         imageVector = Icons.Outlined.Folder,
                         contentDescription = stringResource(R.string.cd_decorative),
                         modifier = Modifier.size(14.dp),
-                        tint = Color(0xFF9E9E9E).copy(alpha = 0.7f)
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )
                     Text(
                         text = pdfFile.folderName,
@@ -962,7 +964,7 @@ private fun buildHighlightedText(text: String, query: String) = buildAnnotatedSt
         // Append highlighted match
         withStyle(
             SpanStyle(
-                color = SoftPurple,
+                color = SoftPurple.color,
                 fontWeight = FontWeight.Bold
             )
         ) {

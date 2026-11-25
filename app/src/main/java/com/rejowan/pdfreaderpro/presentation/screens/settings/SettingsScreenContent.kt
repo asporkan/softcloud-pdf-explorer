@@ -79,9 +79,9 @@ import androidx.compose.material.icons.rounded.FitScreen
 import androidx.compose.material.icons.rounded.Fullscreen
 import androidx.compose.material.icons.rounded.ZoomIn
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -111,6 +111,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.compose.ui.res.painterResource
@@ -125,14 +126,16 @@ import com.rejowan.pdfreaderpro.domain.model.ThemeMode
 import com.rejowan.licensy.LicenseContent
 import com.rejowan.licensy.Licenses
 import com.rejowan.licensy.compose.LicensyList
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
 
 // Accent colors
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentAmber = Color(0xFFFFB74D)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 
 /**
  * Redesigned Settings content with consistent UI patterns.
@@ -224,6 +227,17 @@ fun SettingsScreenContent(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Saving Section (default folder for PDF tool outputs)
+        SectionLabel(text = stringResource(R.string.settings_output_section), delay = 55)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutputFolderSetting(
+            accentColor = AccentTeal,
+            animationDelay = 58
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
         // Reader Section
         SectionLabel(text = stringResource(R.string.reader_section), delay = 60)
         Spacer(modifier = Modifier.height(8.dp))
@@ -242,7 +256,10 @@ fun SettingsScreenContent(
         SettingsOptionItem(
             icon = Icons.Rounded.SwapVert,
             title = stringResource(R.string.scroll_mode),
-            subtitle = preferences.readerScrollMode.name.lowercase().replace("_", " ").replaceFirstChar { it.uppercase() },
+            subtitle = when (preferences.readerScrollMode) {
+                ScrollMode.VERTICAL -> stringResource(R.string.vertical)
+                ScrollMode.HORIZONTAL -> stringResource(R.string.horizontal)
+            },
             accentColor = AccentPurple,
             onClick = { showScrollModeSheet = true },
             animationDelay = 100
@@ -279,7 +296,12 @@ fun SettingsScreenContent(
         SettingsOptionItem(
             icon = Icons.Rounded.ColorLens,
             title = stringResource(R.string.reading_theme),
-            subtitle = preferences.readerTheme.name.lowercase().replaceFirstChar { it.uppercase() },
+            subtitle = when (preferences.readerTheme) {
+                ReadingTheme.LIGHT -> stringResource(R.string.light)
+                ReadingTheme.SEPIA -> stringResource(R.string.sepia)
+                ReadingTheme.DARK -> stringResource(R.string.dark)
+                ReadingTheme.BLACK -> stringResource(R.string.black)
+            },
             accentColor = AccentAmber,
             onClick = { showReadingThemeSheet = true },
             animationDelay = 155
@@ -713,13 +735,13 @@ private fun SettingsHeaderCard() {
             // License badge
             Surface(
                 shape = RoundedCornerShape(6.dp),
-                color = AccentTeal.copy(alpha = 0.15f)
+                color = AccentTeal.container
             ) {
                 Text(
                     text = stringResource(R.string.license_gpl),
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Medium,
-                    color = AccentTeal,
+                    color = AccentTeal.color,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                 )
             }
@@ -728,11 +750,11 @@ private fun SettingsHeaderCard() {
 }
 
 @Composable
-private fun SettingsOptionItem(
+internal fun SettingsOptionItem(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     animationDelay: Int,
     modifier: Modifier = Modifier
@@ -757,7 +779,7 @@ private fun SettingsOptionItem(
             .clip(RoundedCornerShape(12.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             ),
         shape = RoundedCornerShape(12.dp),
@@ -772,7 +794,7 @@ private fun SettingsOptionItem(
         ) {
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -780,7 +802,7 @@ private fun SettingsOptionItem(
                     modifier = Modifier
                         .padding(8.dp)
                         .size(20.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -792,13 +814,17 @@ private fun SettingsOptionItem(
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
@@ -817,7 +843,7 @@ private fun SettingsToggleItem(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     animationDelay: Int,
@@ -854,7 +880,7 @@ private fun SettingsToggleItem(
         ) {
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -862,7 +888,7 @@ private fun SettingsToggleItem(
                     modifier = Modifier
                         .padding(8.dp)
                         .size(20.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -888,8 +914,8 @@ private fun SettingsToggleItem(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = accentColor,
+                    checkedThumbColor = accentColor.onColor,
+                    checkedTrackColor = accentColor.color,
                     uncheckedThumbColor = Color.White,
                     uncheckedTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
                 )
@@ -914,7 +940,7 @@ private fun SettingsPickerSheet(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    accentColor: Color,
+    accentColor: AccentTone,
     options: List<PickerOption>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -954,13 +980,13 @@ private fun PickerBottomSheet(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    accentColor: Color,
+    accentColor: AccentTone,
     options: List<PickerOption>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -977,7 +1003,9 @@ private fun PickerBottomSheet(
             options = options,
             selectedIndex = selectedIndex,
             onSelect = onSelect,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -987,7 +1015,7 @@ private fun PickerSideSheet(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    accentColor: Color,
+    accentColor: AccentTone,
     options: List<PickerOption>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -1066,7 +1094,7 @@ private fun PickerContent(
     title: String,
     subtitle: String,
     icon: ImageVector,
-    accentColor: Color,
+    accentColor: AccentTone,
     options: List<PickerOption>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
@@ -1084,7 +1112,7 @@ private fun PickerContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -1092,7 +1120,7 @@ private fun PickerContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -1136,7 +1164,7 @@ private fun PickerContent(
 private fun PickerOptionItem(
     option: PickerOption,
     isSelected: Boolean,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     animationDelay: Int,
     modifier: Modifier = Modifier
@@ -1155,14 +1183,14 @@ private fun PickerOptionItem(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
+        targetValue = if (isSelected) accentColor.container
         else MaterialTheme.colorScheme.surfaceContainerLow,
         animationSpec = tween(120),
         label = "option bg"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
+        targetValue = if (isSelected) accentColor.color.copy(alpha = 0.5f)
         else Color.Transparent,
         animationSpec = tween(120),
         label = "option border"
@@ -1175,7 +1203,7 @@ private fun PickerOptionItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             )
             .then(
@@ -1197,7 +1225,7 @@ private fun PickerOptionItem(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = if (isSelected) accentColor.copy(alpha = 0.2f)
+                color = if (isSelected) accentColor.container
                 else MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Icon(
@@ -1206,7 +1234,7 @@ private fun PickerOptionItem(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = if (isSelected) accentColor
+                    tint = if (isSelected) accentColor.color
                     else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -1219,7 +1247,7 @@ private fun PickerOptionItem(
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                     ),
-                    color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface
+                    color = if (isSelected) accentColor.color else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = option.subtitle,
@@ -1233,14 +1261,14 @@ private fun PickerOptionItem(
                     modifier = Modifier
                         .size(18.dp)
                         .clip(CircleShape)
-                        .background(accentColor),
+                        .background(accentColor.color),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
                         contentDescription = stringResource(R.string.cd_selected),
                         modifier = Modifier.size(12.dp),
-                        tint = Color.White
+                        tint = accentColor.onColor
                     )
                 }
             }
@@ -1284,7 +1312,7 @@ private fun BrightnessBottomSheet(
     onBrightnessChange: (Float) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -1296,7 +1324,9 @@ private fun BrightnessBottomSheet(
         BrightnessContent(
             currentBrightness = currentBrightness,
             onBrightnessChange = onBrightnessChange,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -1389,7 +1419,7 @@ private fun BrightnessContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentAmber.copy(alpha = 0.12f)
+                color = AccentAmber.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Brightness6,
@@ -1397,7 +1427,7 @@ private fun BrightnessContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentAmber
+                    tint = AccentAmber.color
                 )
             }
 
@@ -1482,9 +1512,9 @@ private fun BrightnessContent(
                                 .weight(1f)
                                 .padding(horizontal = 8.dp),
                             colors = SliderDefaults.colors(
-                                thumbColor = AccentAmber,
-                                activeTrackColor = AccentAmber,
-                                inactiveTrackColor = AccentAmber.copy(alpha = 0.24f)
+                                thumbColor = AccentAmber.color,
+                                activeTrackColor = AccentAmber.color,
+                                inactiveTrackColor = AccentAmber.color.copy(alpha = 0.24f)
                             )
                         )
 
@@ -1507,7 +1537,7 @@ private fun BrightnessOptionItem(
     title: String,
     subtitle: String,
     isSelected: Boolean,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     animationDelay: Int,
     modifier: Modifier = Modifier
@@ -1526,14 +1556,14 @@ private fun BrightnessOptionItem(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
+        targetValue = if (isSelected) accentColor.container
         else MaterialTheme.colorScheme.surfaceContainerLow,
         animationSpec = tween(120),
         label = "brightness option bg"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
+        targetValue = if (isSelected) accentColor.color.copy(alpha = 0.5f)
         else Color.Transparent,
         animationSpec = tween(120),
         label = "brightness option border"
@@ -1546,7 +1576,7 @@ private fun BrightnessOptionItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             )
             .then(
@@ -1568,7 +1598,7 @@ private fun BrightnessOptionItem(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = if (isSelected) accentColor.copy(alpha = 0.2f)
+                color = if (isSelected) accentColor.container
                 else MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Icon(
@@ -1577,7 +1607,7 @@ private fun BrightnessOptionItem(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = if (isSelected) accentColor
+                    tint = if (isSelected) accentColor.color
                     else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -1590,7 +1620,7 @@ private fun BrightnessOptionItem(
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                     ),
-                    color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface
+                    color = if (isSelected) accentColor.color else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
@@ -1604,14 +1634,14 @@ private fun BrightnessOptionItem(
                     modifier = Modifier
                         .size(18.dp)
                         .clip(CircleShape)
-                        .background(accentColor),
+                        .background(accentColor.color),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
                         contentDescription = stringResource(R.string.cd_selected),
                         modifier = Modifier.size(12.dp),
-                        tint = Color.White
+                        tint = accentColor.onColor
                     )
                 }
             }
@@ -2199,7 +2229,7 @@ private fun CreatorLinkItem(
     icon: ImageVector,
     label: String,
     value: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit
 ) {
     Row(
@@ -2212,7 +2242,7 @@ private fun CreatorLinkItem(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = accentColor.copy(alpha = 0.12f)
+            color = accentColor.container
         ) {
             Icon(
                 imageVector = icon,
@@ -2220,7 +2250,7 @@ private fun CreatorLinkItem(
                 modifier = Modifier
                     .padding(8.dp)
                     .size(18.dp),
-                tint = accentColor
+                tint = accentColor.color
             )
         }
 
@@ -2360,7 +2390,7 @@ private fun DoubleTapZoomSheet(
     onValueChange: (Float) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -2376,6 +2406,7 @@ private fun DoubleTapZoomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 8.dp)
                 .padding(bottom = 24.dp)
         ) {
@@ -2385,7 +2416,7 @@ private fun DoubleTapZoomSheet(
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = AccentBlue.copy(alpha = 0.12f)
+                    color = AccentBlue.container
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.ZoomIn,
@@ -2393,7 +2424,7 @@ private fun DoubleTapZoomSheet(
                         modifier = Modifier
                             .padding(6.dp)
                             .size(16.dp),
-                        tint = AccentBlue
+                        tint = AccentBlue.color
                     )
                 }
                 Spacer(modifier = Modifier.width(10.dp))
@@ -2416,7 +2447,7 @@ private fun DoubleTapZoomSheet(
             Text(
                 text = "${displayValue}×",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = AccentBlue,
+                color = AccentBlue.color,
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
@@ -2427,9 +2458,9 @@ private fun DoubleTapZoomSheet(
                 onValueChangeFinished = { onValueChange((sliderValue * 10f).toInt() / 10f) },
                 valueRange = 1.1f..5f,
                 colors = SliderDefaults.colors(
-                    thumbColor = AccentBlue,
-                    activeTrackColor = AccentBlue,
-                    inactiveTrackColor = AccentBlue.copy(alpha = 0.2f)
+                    thumbColor = AccentBlue.color,
+                    activeTrackColor = AccentBlue.color,
+                    inactiveTrackColor = AccentBlue.color.copy(alpha = 0.2f)
                 )
             )
 

@@ -32,11 +32,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.AppError
 import com.rejowan.pdfreaderpro.util.ErrorUtils
 
-private val ErrorRed = Color(0xFFEF5350)
-private val WarningOrange = Color(0xFFFF9800)
+private val ErrorRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 /**
  * Displays an error message with optional recovery hint and retry button.
@@ -54,7 +55,7 @@ fun ErrorDisplay(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        color = ErrorRed.copy(alpha = 0.1f),
+        color = ErrorRed.container,
         tonalElevation = 0.dp
     ) {
         Column(
@@ -64,7 +65,7 @@ fun ErrorDisplay(
             Icon(
                 imageVector = Icons.Rounded.ErrorOutline,
                 contentDescription = stringResource(R.string.cd_error),
-                tint = ErrorRed,
+                tint = ErrorRed.color,
                 modifier = Modifier.size(32.dp)
             )
 
@@ -105,7 +106,8 @@ fun ErrorDisplay(
                         Button(
                             onClick = onRetry,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = ErrorRed
+                                containerColor = ErrorRed.color,
+                                contentColor = ErrorRed.onColor
                             )
                         ) {
                             Icon(
@@ -179,7 +181,7 @@ fun ErrorBanner(
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        color = ErrorRed.copy(alpha = 0.15f)
+        color = ErrorRed.container
     ) {
         Row(
             modifier = Modifier
@@ -190,7 +192,7 @@ fun ErrorBanner(
             Icon(
                 imageVector = Icons.Rounded.WarningAmber,
                 contentDescription = stringResource(R.string.cd_error),
-                tint = ErrorRed,
+                tint = ErrorRed.color,
                 modifier = Modifier.size(20.dp)
             )
 
@@ -207,7 +209,7 @@ fun ErrorBanner(
                 TextButton(
                     onClick = onRetry,
                     colors = ButtonDefaults.textButtonColors(
-                        contentColor = ErrorRed
+                        contentColor = ErrorRed.color
                     )
                 ) {
                     Text(
@@ -254,13 +256,13 @@ fun FullScreenError(
     ) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = ErrorRed.copy(alpha = 0.1f),
+            color = ErrorRed.container,
             modifier = Modifier.size(72.dp)
         ) {
             Icon(
                 imageVector = Icons.Rounded.ErrorOutline,
                 contentDescription = stringResource(R.string.cd_error),
-                tint = ErrorRed,
+                tint = ErrorRed.color,
                 modifier = Modifier
                     .padding(16.dp)
                     .size(40.dp)
@@ -303,7 +305,8 @@ fun FullScreenError(
                 Button(
                     onClick = onRetry,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = ErrorRed
+                        containerColor = ErrorRed.color,
+                        contentColor = ErrorRed.onColor
                     )
                 ) {
                     Icon(

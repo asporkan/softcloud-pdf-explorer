@@ -92,15 +92,17 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors
-private val AccentAmber = Color(0xFFFFB74D)
-private val AccentGreen = Color(0xFF81C784)
-private val AccentRed = Color(0xFFEF5350)
-private val AccentTeal = Color(0xFF4DB6AC)
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,7 +150,7 @@ fun UnlockScreen(
                             Text(
                                 stringResource(if (file.isPasswordProtected) R.string.password_protected else R.string.not_protected),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (file.isPasswordProtected) AccentAmber else AccentGreen
+                                color = if (file.isPasswordProtected) AccentAmber.color else AccentGreen.color
                             )
                         }
                     }
@@ -182,7 +184,7 @@ fun UnlockScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentTeal)
+                            CircularProgressIndicator(color = AccentTeal.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.checking_pdf))
                         }
@@ -277,14 +279,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentTeal.copy(alpha = 0.1f)),
+                .background(AccentTeal.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.LockOpen,
                 contentDescription = stringResource(R.string.cd_decorative),
                 modifier = Modifier.size(40.dp),
-                tint = AccentTeal
+                tint = AccentTeal.color
             )
         }
 
@@ -348,7 +350,7 @@ private fun UnlockContent(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentGreen.copy(alpha = 0.1f)
+                    containerColor = AccentGreen.container
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -362,7 +364,7 @@ private fun UnlockContent(
                         Icons.Default.LockOpen,
                         contentDescription = stringResource(R.string.cd_decorative),
                         modifier = Modifier.size(24.dp),
-                        tint = AccentGreen
+                        tint = AccentGreen.color
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
@@ -371,7 +373,7 @@ private fun UnlockContent(
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontWeight = FontWeight.Medium
                             ),
-                            color = AccentGreen
+                            color = AccentGreen.color
                         )
                         Text(
                             stringResource(R.string.pdf_not_protected),
@@ -414,7 +416,7 @@ private fun UnlockContent(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -427,7 +429,7 @@ private fun UnlockContent(
                     Text(
                         state.error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -438,7 +440,7 @@ private fun UnlockContent(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -458,7 +460,7 @@ private fun UnlockContent(
                 Checkbox(
                     checked = state.overwriteOriginal,
                     onCheckedChange = onOverwriteChange,
-                    colors = CheckboxDefaults.colors(checkedColor = AccentTeal)
+                    colors = CheckboxDefaults.colors(checkedColor = AccentTeal.color)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.overwrite_original_file), style = MaterialTheme.typography.bodyMedium)
@@ -535,9 +537,9 @@ private fun SourceFileCard(
                         .clip(RoundedCornerShape(8.dp))
                         .background(
                             if (sourceFile.isPasswordProtected) {
-                                AccentAmber.copy(alpha = 0.1f)
+                                AccentAmber.container
                             } else {
-                                AccentGreen.copy(alpha = 0.1f)
+                                AccentGreen.container
                             }
                         ),
                     contentAlignment = Alignment.Center
@@ -546,7 +548,7 @@ private fun SourceFileCard(
                         if (sourceFile.isPasswordProtected) Icons.Default.Lock else Icons.Default.LockOpen,
                         contentDescription = stringResource(R.string.cd_decorative),
                         modifier = Modifier.size(28.dp),
-                        tint = if (sourceFile.isPasswordProtected) AccentAmber else AccentGreen
+                        tint = if (sourceFile.isPasswordProtected) AccentAmber.color else AccentGreen.color
                     )
                 }
 
@@ -636,14 +638,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -684,7 +686,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentTeal
+                    tint = AccentTeal.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -707,7 +709,7 @@ private fun SuccessState(
                     Icons.Default.LockOpen,
                     contentDescription = stringResource(R.string.cd_decorative),
                     modifier = Modifier.size(18.dp),
-                    tint = AccentGreen
+                    tint = AccentGreen.color
                 )
             }
         }
@@ -791,7 +793,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentTeal,
+                    color = AccentTeal.color,
                     strokeWidth = 4.dp
                 )
 
@@ -809,7 +811,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentTeal
+                    color = AccentTeal.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

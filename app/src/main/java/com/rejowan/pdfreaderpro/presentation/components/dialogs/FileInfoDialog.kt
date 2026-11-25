@@ -1,6 +1,8 @@
 package com.rejowan.pdfreaderpro.presentation.components.dialogs
 
 import android.content.res.Configuration
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
 import androidx.compose.animation.AnimatedVisibility
@@ -37,12 +39,10 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Schedule
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,15 +59,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FormattingUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 // Accent colors matching UI guide
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,7 +93,7 @@ private fun FileInfoBottomSheet(
     pdfFile: PdfFile,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -102,7 +104,9 @@ private fun FileInfoBottomSheet(
     ) {
         FileInfoContent(
             pdfFile = pdfFile,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -192,7 +196,7 @@ private fun FileInfoContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentPurple.copy(alpha = 0.12f)
+                color = AccentPurple.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Description,
@@ -200,7 +204,7 @@ private fun FileInfoContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentPurple
+                    tint = AccentPurple.color
                 )
             }
 
@@ -233,12 +237,12 @@ private fun FileInfoContent(
         ) {
             StatChip(
                 label = stringResource(R.string.pages_count, pdfFile.pageCount),
-                color = AccentBlue,
+                tone = AccentBlue,
                 modifier = Modifier.weight(1f)
             )
             StatChip(
                 label = FormattingUtils.formattedFileSize(pdfFile.size),
-                color = AccentTeal,
+                tone = AccentTeal,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -258,7 +262,7 @@ private fun FileInfoContent(
         InfoSection(
             title = stringResource(R.string.location_section),
             icon = Icons.Rounded.Folder,
-            accentColor = Color(0xFF78909C)
+            accentColor = MaterialTheme.accents.gray
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 InfoItem(stringResource(R.string.folder_label), pdfFile.parentFolder)
@@ -280,13 +284,13 @@ private fun FileInfoContent(
 @Composable
 private fun StatChip(
     label: String,
-    color: Color,
+    tone: AccentTone,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(color.copy(alpha = 0.12f))
+            .background(tone.container)
             .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -295,7 +299,7 @@ private fun StatChip(
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.SemiBold
             ),
-            color = color
+            color = tone.onContainer
         )
     }
 }
@@ -304,7 +308,7 @@ private fun StatChip(
 private fun InfoSection(
     title: String,
     icon: ImageVector,
-    accentColor: Color,
+    accentColor: AccentTone,
     content: @Composable () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -315,7 +319,7 @@ private fun InfoSection(
             Icon(
                 imageVector = icon,
                 contentDescription = stringResource(R.string.cd_decorative),
-                tint = accentColor,
+                tint = accentColor.color,
                 modifier = Modifier.size(14.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -324,7 +328,7 @@ private fun InfoSection(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
-                color = accentColor
+                color = accentColor.color
             )
         }
         Surface(

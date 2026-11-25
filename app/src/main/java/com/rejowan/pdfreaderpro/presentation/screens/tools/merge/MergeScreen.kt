@@ -56,6 +56,10 @@ import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 import androidx.compose.material3.Button
@@ -69,7 +73,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -82,7 +85,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -120,12 +122,12 @@ import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors - consistent with app design system
-private val AccentPurple = Color(0xFF9575CD)    // Primary actions (merge)
-private val AccentBlue = Color(0xFF64B5F6)      // General/Info actions
-private val AccentTeal = Color(0xFF4DB6AC)      // Preview/View
-private val AccentAmber = Color(0xFFFFB74D)     // Range/Pages selection
-private val AccentGreen = Color(0xFF81C784)     // Success
-private val AccentRed = Color(0xFFEF5350)       // PDF icon, Remove
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple    // Primary actions (merge)
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue      // General/Info actions
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal      // Preview/View
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber     // Range/Pages selection
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green     // Success
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red       // PDF icon, Remove
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,7 +204,7 @@ fun MergeScreen(
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = stringResource(R.string.cd_add_more_pdfs),
-                                tint = AccentBlue
+                                tint = AccentBlue.color
                             )
                         }
                     }
@@ -231,7 +233,7 @@ fun MergeScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentBlue)
+                            CircularProgressIndicator(color = AccentBlue.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pdf))
                         }
@@ -397,14 +399,14 @@ private fun EmptyState(
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentBlue.copy(alpha = 0.1f)),
+                .background(AccentBlue.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.AutoMirrored.Filled.CallMerge,
                 contentDescription = stringResource(R.string.cd_merge_pdfs),
                 modifier = Modifier.size(40.dp),
-                tint = AccentBlue
+                tint = AccentBlue.color
             )
         }
 
@@ -484,7 +486,7 @@ private fun MergeFileItem(
                         .size(32.dp)
                         .clip(RoundedCornerShape(6.dp))
                         .background(
-                            if (isDragging) AccentPurple.copy(alpha = 0.15f)
+                            if (isDragging) AccentPurple.container
                             else MaterialTheme.colorScheme.surfaceContainerHigh
                         ),
                     contentAlignment = Alignment.Center
@@ -494,7 +496,7 @@ private fun MergeFileItem(
                         contentDescription = stringResource(R.string.cd_drag_to_reorder),
                         modifier = Modifier.size(20.dp),
                         tint = if (isDragging) {
-                            AccentPurple
+                            AccentPurple.color
                         } else {
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         }
@@ -508,14 +510,14 @@ private fun MergeFileItem(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(AccentPurple.copy(alpha = 0.1f)),
+                        .background(AccentPurple.container),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         "$index",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Bold,
-                        color = AccentPurple
+                        color = AccentPurple.color
                     )
                 }
 
@@ -545,7 +547,7 @@ private fun MergeFileItem(
                             Icons.Default.PictureAsPdf,
                             contentDescription = stringResource(R.string.cd_pdf_file),
                             modifier = Modifier.size(20.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -577,7 +579,7 @@ private fun MergeFileItem(
                     modifier = Modifier
                         .size(28.dp)
                         .clip(RoundedCornerShape(6.dp))
-                        .background(AccentRed.copy(alpha = 0.08f))
+                        .background(AccentRed.container)
                         .clickable { onRemove() },
                     contentAlignment = Alignment.Center
                 ) {
@@ -585,7 +587,7 @@ private fun MergeFileItem(
                         Icons.Default.Close,
                         contentDescription = stringResource(R.string.cd_remove),
                         modifier = Modifier.size(16.dp),
-                        tint = AccentRed
+                        tint = AccentRed.color
                     )
                 }
             }
@@ -601,7 +603,7 @@ private fun MergeFileItem(
                 ActionChip(
                     icon = Icons.Outlined.Visibility,
                     label = stringResource(R.string.preview),
-                    color = AccentTeal,
+                    tone = AccentTeal,
                     onClick = onPreview,
                     modifier = Modifier.weight(1f)
                 )
@@ -618,7 +620,7 @@ private fun MergeFileItem(
                     } else {
                         stringResource(R.string.all_pages_count, file.pageCount)
                     },
-                    color = AccentAmber,
+                    tone = AccentAmber,
                     isHighlighted = isPartialSelection,
                     onClick = onSelectPages,
                     modifier = Modifier.weight(1f)
@@ -632,7 +634,7 @@ private fun MergeFileItem(
 private fun ActionChip(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    color: Color,
+    tone: AccentTone,
     modifier: Modifier = Modifier,
     isHighlighted: Boolean = false,
     onClick: () -> Unit
@@ -640,7 +642,7 @@ private fun ActionChip(
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(8.dp))
-            .background(color.copy(alpha = if (isHighlighted) 0.15f else 0.08f))
+            .background(if (isHighlighted) tone.container else tone.container.copy(alpha = 0.6f))
             .clickable(onClick = onClick)
             .padding(horizontal = 10.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -650,7 +652,7 @@ private fun ActionChip(
             icon,
             contentDescription = stringResource(R.string.cd_decorative),
             modifier = Modifier.size(16.dp),
-            tint = color
+            tint = tone.color
         )
         Spacer(modifier = Modifier.width(6.dp))
         Text(
@@ -674,11 +676,11 @@ private fun AddMoreFilesCard(
             .clip(RoundedCornerShape(12.dp))
             .border(
                 width = 1.5.dp,
-                color = AccentTeal.copy(alpha = 0.5f),
+                color = AccentTeal.color.copy(alpha = 0.5f),
                 shape = RoundedCornerShape(12.dp)
             )
             .clickable(onClick = onAddFiles),
-        color = AccentTeal.copy(alpha = 0.08f),
+        color = AccentTeal.container,
         shape = RoundedCornerShape(12.dp)
     ) {
         Row(
@@ -690,7 +692,7 @@ private fun AddMoreFilesCard(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentTeal.copy(alpha = 0.15f)
+                color = AccentTeal.container
             ) {
                 Icon(
                     Icons.Default.Add,
@@ -698,7 +700,7 @@ private fun AddMoreFilesCard(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(18.dp),
-                    tint = AccentTeal
+                    tint = AccentTeal.color
                 )
             }
             Spacer(modifier = Modifier.width(10.dp))
@@ -747,7 +749,7 @@ private fun MergeBottomSection(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -760,7 +762,7 @@ private fun MergeBottomSection(
                     Text(
                         error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     if (isRecoverableError && !isProcessing) {
@@ -770,7 +772,7 @@ private fun MergeBottomSection(
                                 onMerge()
                             },
                             colors = ButtonDefaults.textButtonColors(
-                                contentColor = AccentRed
+                                contentColor = AccentRed.color
                             )
                         ) {
                             Text(
@@ -787,7 +789,7 @@ private fun MergeBottomSection(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -853,7 +855,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { animatedProgress },
                     modifier = Modifier.size(48.dp),
-                    color = AccentBlue
+                    color = AccentBlue.color
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -869,7 +871,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { animatedProgress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentBlue
+                    color = AccentBlue.color
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -909,14 +911,14 @@ private fun SuccessState(
                 modifier = Modifier
                     .size(80.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .background(AccentGreen.copy(alpha = 0.1f)),
+                    .background(AccentGreen.container),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.CheckCircle,
                     contentDescription = stringResource(R.string.cd_success),
                     modifier = Modifier.size(48.dp),
-                    tint = AccentGreen
+                    tint = AccentGreen.color
                 )
             }
         }
@@ -949,7 +951,7 @@ private fun SuccessState(
                         Icons.Default.PictureAsPdf,
                         contentDescription = stringResource(R.string.cd_pdf_file),
                         modifier = Modifier.size(24.dp),
-                        tint = AccentRed
+                        tint = AccentRed.color
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
@@ -1246,7 +1248,7 @@ private fun PageSelectionContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentAmber.copy(alpha = 0.12f)
+                color = AccentAmber.container
             ) {
                 Icon(
                     Icons.Default.Pages,
@@ -1254,7 +1256,7 @@ private fun PageSelectionContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentAmber
+                    tint = AccentAmber.color
                 )
             }
 
@@ -1296,7 +1298,7 @@ private fun PageSelectionContent(
                     Icons.Default.PictureAsPdf,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(16.dp),
-                    tint = AccentRed
+                    tint = AccentRed.color
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
@@ -1333,7 +1335,7 @@ private fun PageSelectionContent(
                 label = { Text(stringResource(R.string.quick_select_all)) },
                 modifier = Modifier.weight(1f),
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentAmber.copy(alpha = 0.15f),
+                    selectedContainerColor = AccentAmber.container,
                     selectedLabelColor = MaterialTheme.colorScheme.onSurface
                 )
             )
@@ -1343,7 +1345,7 @@ private fun PageSelectionContent(
                 label = { Text(stringResource(R.string.range_option)) },
                 modifier = Modifier.weight(1f),
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentAmber.copy(alpha = 0.15f),
+                    selectedContainerColor = AccentAmber.container,
                     selectedLabelColor = MaterialTheme.colorScheme.onSurface
                 )
             )
@@ -1353,7 +1355,7 @@ private fun PageSelectionContent(
                 label = { Text(stringResource(R.string.custom)) },
                 modifier = Modifier.weight(1f),
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentAmber.copy(alpha = 0.15f),
+                    selectedContainerColor = AccentAmber.container,
                     selectedLabelColor = MaterialTheme.colorScheme.onSurface
                 )
             )
@@ -1367,7 +1369,7 @@ private fun PageSelectionContent(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(8.dp),
-                    color = AccentGreen.copy(alpha = 0.1f)
+                    color = AccentGreen.container
                 ) {
                     Row(
                         modifier = Modifier
@@ -1379,7 +1381,7 @@ private fun PageSelectionContent(
                             Icons.Default.CheckCircle,
                             contentDescription = stringResource(R.string.cd_success),
                             modifier = Modifier.size(18.dp),
-                            tint = AccentGreen
+                            tint = AccentGreen.color
                         )
                         Spacer(modifier = Modifier.width(10.dp))
                         Text(

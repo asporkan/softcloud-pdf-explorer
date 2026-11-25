@@ -71,11 +71,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.model.PdfFolder
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 
-private val AccentAmber = Color(0xFFFFB74D)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -109,7 +111,7 @@ private fun FolderOptionsBottomSheet(
     onDismiss: () -> Unit,
     onOpenClick: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -122,7 +124,9 @@ private fun FolderOptionsBottomSheet(
             folder = folder,
             onDismiss = onDismiss,
             onOpenClick = onOpenClick,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -307,7 +311,7 @@ private fun FolderOptionsHeader(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = AccentAmber.copy(alpha = 0.12f)
+            color = AccentAmber.container
         ) {
             Icon(
                 imageVector = Icons.Outlined.Folder,
@@ -315,7 +319,7 @@ private fun FolderOptionsHeader(
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
-                tint = AccentAmber
+                tint = AccentAmber.color
             )
         }
 
@@ -345,7 +349,7 @@ private fun InfoItem(
     icon: ImageVector,
     label: String,
     value: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     animationDelay: Int,
     modifier: Modifier = Modifier
 ) {
@@ -377,7 +381,7 @@ private fun InfoItem(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -385,7 +389,7 @@ private fun InfoItem(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -416,7 +420,7 @@ private fun ActionItem(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     animationDelay: Int,
     modifier: Modifier = Modifier
@@ -441,7 +445,7 @@ private fun ActionItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             ),
         shape = RoundedCornerShape(8.dp),
@@ -456,7 +460,7 @@ private fun ActionItem(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -464,7 +468,7 @@ private fun ActionItem(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 

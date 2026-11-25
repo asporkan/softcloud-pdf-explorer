@@ -9,6 +9,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,8 +26,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -43,18 +47,17 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberTooltipState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -94,13 +97,14 @@ import com.rejowan.pdfreaderpro.presentation.components.dialogs.FileInfoDialog
 import com.rejowan.pdfreaderpro.presentation.components.dialogs.RenameSheet
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToMergeTool
 import com.rejowan.pdfreaderpro.presentation.navigation.navigateToReader
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
-private val FolderAmber = Color(0xFFFFB74D)
-private val FolderAmberDark = Color(0xFFF57C00)
-private val SoftBlue = Color(0xFF64B5F6)
+private val FolderAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val SoftBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -452,11 +456,13 @@ private fun BatchDeleteConfirmSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -464,7 +470,7 @@ private fun BatchDeleteConfirmSheet(
                 imageVector = Icons.Default.Delete,
                 contentDescription = stringResource(R.string.cd_decorative),
                 modifier = Modifier.size(48.dp),
-                tint = Color(0xFFEF5350)
+                tint = MaterialTheme.colorScheme.error
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -503,7 +509,8 @@ private fun BatchDeleteConfirmSheet(
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFEF5350)
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
                     )
                 ) {
                     Text(stringResource(R.string.delete))
@@ -549,7 +556,7 @@ private fun FolderDetailHeader(
             // File count chip
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = SoftBlue.copy(alpha = 0.12f)
+                color = SoftBlue.container
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -560,7 +567,7 @@ private fun FolderDetailHeader(
                         imageVector = Icons.Outlined.Description,
                         contentDescription = stringResource(R.string.cd_decorative),
                         modifier = Modifier.size(16.dp),
-                        tint = SoftBlue
+                        tint = SoftBlue.color
                     )
                     Text(
                         text = "$fileCount PDF${if (fileCount != 1) "s" else ""}",
@@ -575,7 +582,7 @@ private fun FolderDetailHeader(
             // Total size chip
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = FolderAmber.copy(alpha = 0.12f)
+                color = FolderAmber.container
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
@@ -586,7 +593,7 @@ private fun FolderDetailHeader(
                         imageVector = Icons.Rounded.Folder,
                         contentDescription = stringResource(R.string.cd_decorative),
                         modifier = Modifier.size(16.dp),
-                        tint = FolderAmber
+                        tint = FolderAmber.color
                     )
                     Text(
                         text = formatSize(totalSize),

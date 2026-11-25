@@ -34,10 +34,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.PdfThumbnailManager
 
-private val PdfRed = Color(0xFFE53935)
-private val PdfRedLight = Color(0xFFFF6F60)
+private val PdfRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @Composable
 fun PdfThumbnail(
@@ -81,12 +82,12 @@ fun PdfThumbnail(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(PdfRedLight.copy(alpha = 0.1f)),
+                        .background(PdfRed.container),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(size * 0.4f),
-                        color = PdfRed,
+                        color = PdfRed.color,
                         strokeWidth = 2.dp
                     )
                 }
@@ -96,7 +97,7 @@ fun PdfThumbnail(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(PdfRedLight.copy(alpha = 0.15f)),
+                        .background(PdfRed.container),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -110,7 +111,7 @@ fun PdfThumbnail(
                                 fontSize = (size.value * 0.22f).sp,
                                 letterSpacing = 1.sp
                             ),
-                            color = PdfRed
+                            color = PdfRed.color
                         )
                         if (pageCount != null) {
                             Text(
@@ -118,7 +119,7 @@ fun PdfThumbnail(
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = (size.value * 0.16f).sp
                                 ),
-                                color = PdfRed.copy(alpha = 0.7f)
+                                color = PdfRed.color.copy(alpha = 0.7f)
                             )
                         }
                     }
@@ -169,12 +170,12 @@ fun PdfThumbnailGrid(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(PdfRedLight.copy(alpha = 0.1f)),
+                        .background(PdfRed.container),
                     contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(32.dp),
-                        color = PdfRed,
+                        color = PdfRed.color,
                         strokeWidth = 2.dp
                     )
                 }
@@ -184,7 +185,7 @@ fun PdfThumbnailGrid(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(PdfRedLight.copy(alpha = 0.12f)),
+                        .background(PdfRed.container),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -197,17 +198,17 @@ fun PdfThumbnailGrid(
                                 fontWeight = FontWeight.Bold,
                                 letterSpacing = 2.sp
                             ),
-                            color = PdfRed
+                            color = PdfRed.color
                         )
                         if (pageCount != null) {
                             Surface(
                                 shape = RoundedCornerShape(4.dp),
-                                color = PdfRed.copy(alpha = 0.15f)
+                                color = PdfRed.container
                             ) {
                                 Text(
                                     text = "$pageCount pages",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = PdfRed.copy(alpha = 0.8f),
+                                    color = PdfRed.color.copy(alpha = 0.8f),
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                 )
                             }

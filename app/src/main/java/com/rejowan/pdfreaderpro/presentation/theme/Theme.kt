@@ -198,7 +198,16 @@ fun PdfExplorerTheme(
         }
     }
 
-    CompositionLocalProvider(LocalIsDarkTheme provides isDarkTheme) {
+    val accentColors = when {
+        themeMode == ThemeMode.BLACK -> BlackAccentColors
+        isDarkTheme -> DarkAccentColors
+        else -> LightAccentColors
+    }
+
+    CompositionLocalProvider(
+        LocalIsDarkTheme provides isDarkTheme,
+        LocalAccentColors provides accentColors
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = AppTypography,

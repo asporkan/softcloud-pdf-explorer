@@ -67,13 +67,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 // Accent colors
-private val AccentOrange = Color(0xFFFF7043)
-private val AccentOrangeDark = Color(0xFFE64A19)
-private val AccentAmber = Color(0xFFFFB74D)
+private val AccentOrange: AccentTone @Composable get() = MaterialTheme.accents.orange
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,7 +98,7 @@ private fun ExitConfirmBottomSheet(
     onDismiss: () -> Unit,
     onConfirmExit: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
@@ -120,7 +121,9 @@ private fun ExitConfirmBottomSheet(
                     onConfirmExit()
                 }
             },
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 32.dp)
         )
     }
 }
@@ -278,8 +281,8 @@ private fun ExitConfirmContent(
                     .background(
                         Brush.radialGradient(
                             colors = listOf(
-                                AccentOrange.copy(alpha = ringAlpha * 0.5f),
-                                AccentAmber.copy(alpha = ringAlpha * 0.3f),
+                                AccentOrange.color.copy(alpha = ringAlpha * 0.5f),
+                                AccentAmber.color.copy(alpha = ringAlpha * 0.3f),
                                 Color.Transparent
                             )
                         )
@@ -292,14 +295,14 @@ private fun ExitConfirmContent(
                     .size(67.dp)
                     .scale(iconScale)
                     .clip(RoundedCornerShape(30))
-                    .background(AccentOrange.copy(alpha = ringAlpha))
+                    .background(AccentOrange.color.copy(alpha = ringAlpha * 0.5f))
             )
 
             // Inner icon container
             Surface(
                 modifier = Modifier.size(47.dp),
                 shape = RoundedCornerShape(15.dp),
-                color = AccentOrange.copy(alpha = 0.15f)
+                color = AccentOrange.container
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -311,7 +314,7 @@ private fun ExitConfirmContent(
                         modifier = Modifier
                             .size(24.dp)
                             .scale(iconScale),
-                        tint = AccentOrangeDark
+                        tint = AccentOrange.onContainer
                     )
                 }
             }
@@ -395,7 +398,8 @@ private fun ExitConfirmContent(
                     .height(52.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = AccentOrange
+                    containerColor = AccentOrange.color,
+                    contentColor = AccentOrange.onColor
                 )
             ) {
                 Icon(

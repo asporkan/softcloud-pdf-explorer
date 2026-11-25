@@ -90,15 +90,17 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors
-private val AccentPurple = Color(0xFF9575CD) // PDF to Image theme
-private val AccentGreen = Color(0xFF81C784)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentRed = Color(0xFFEF5350)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple // PDF to Image theme
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -176,7 +178,7 @@ fun PdfToImageScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentPurple)
+                            CircularProgressIndicator(color = AccentPurple.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pdf))
                         }
@@ -309,14 +311,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentPurple.copy(alpha = 0.1f)),
+                .background(AccentPurple.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.Photo,
                 contentDescription = stringResource(R.string.cd_pdf_to_image),
                 modifier = Modifier.size(40.dp),
-                tint = AccentPurple
+                tint = AccentPurple.color
             )
         }
 
@@ -400,7 +402,7 @@ private fun ExportContent(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = AccentPurple.copy(alpha = 0.1f)
+                containerColor = AccentPurple.container
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -414,7 +416,7 @@ private fun ExportContent(
                     Icons.Outlined.Image,
                     contentDescription = stringResource(R.string.cd_image),
                     modifier = Modifier.size(18.dp),
-                    tint = AccentPurple
+                    tint = AccentPurple.color
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 val pageCount = when (state.pageSelection) {
@@ -427,7 +429,7 @@ private fun ExportContent(
                 Text(
                     stringResource(R.string.will_create_images, pageCount, state.imageFormat.extension.uppercase()),
                     style = MaterialTheme.typography.bodySmall,
-                    color = AccentPurple
+                    color = AccentPurple.color
                 )
             }
         }
@@ -441,7 +443,7 @@ private fun ExportContent(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -454,7 +456,7 @@ private fun ExportContent(
                     Text(
                         state.error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -465,7 +467,7 @@ private fun ExportContent(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -520,7 +522,7 @@ private fun SourceFileCard(sourceFile: SourceFile) {
                         Icons.Default.PictureAsPdf,
                         contentDescription = stringResource(R.string.cd_pdf_file),
                         modifier = Modifier.size(32.dp),
-                        tint = AccentPurple
+                        tint = AccentPurple.color
                     )
                 }
             }
@@ -593,13 +595,13 @@ private fun FormatCard(
             .clip(RoundedCornerShape(12.dp))
             .then(
                 if (isSelected) {
-                    Modifier.border(2.dp, AccentPurple, RoundedCornerShape(12.dp))
+                    Modifier.border(2.dp, AccentPurple.color, RoundedCornerShape(12.dp))
                 } else Modifier
             )
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) {
-                AccentPurple.copy(alpha = 0.1f)
+                AccentPurple.container
             } else {
                 MaterialTheme.colorScheme.surfaceContainerLow
             }
@@ -616,7 +618,7 @@ private fun FormatCard(
             Text(
                 stringResource(format.labelRes),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = if (isSelected) AccentPurple else MaterialTheme.colorScheme.onSurface
+                color = if (isSelected) AccentPurple.color else MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -651,8 +653,8 @@ private fun PageSelector(
                 onClick = { onSelectionChange(PageSelection.ALL) },
                 label = { Text(stringResource(R.string.all_pages_label, totalPages)) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentPurple.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentPurple
+                    selectedContainerColor = AccentPurple.container,
+                    selectedLabelColor = AccentPurple.color
                 )
             )
             FilterChip(
@@ -660,8 +662,8 @@ private fun PageSelector(
                 onClick = { onSelectionChange(PageSelection.CUSTOM) },
                 label = { Text(stringResource(R.string.custom)) },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentPurple.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentPurple
+                    selectedContainerColor = AccentPurple.container,
+                    selectedLabelColor = AccentPurple.color
                 )
             )
         }
@@ -708,14 +710,14 @@ private fun SuccessState(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(AccentGreen.copy(alpha = 0.1f)),
+                    .background(AccentGreen.container),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Default.CheckCircle,
                     contentDescription = stringResource(R.string.cd_success),
                     modifier = Modifier.size(28.dp),
-                    tint = AccentGreen
+                    tint = AccentGreen.color
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
@@ -739,7 +741,7 @@ private fun SuccessState(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = AccentPurple.copy(alpha = 0.1f)
+                containerColor = AccentPurple.container
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -753,13 +755,13 @@ private fun SuccessState(
                     Icons.Default.Folder,
                     contentDescription = stringResource(R.string.cd_decorative),
                     modifier = Modifier.size(18.dp),
-                    tint = AccentPurple
+                    tint = AccentPurple.color
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     stringResource(R.string.tools_output_location, result.locationLabel),
                     style = MaterialTheme.typography.bodySmall,
-                    color = AccentPurple,
+                    color = AccentPurple.color,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -843,13 +845,13 @@ private fun ImageResultItem(
             Box(
                 modifier = Modifier
                     .size(32.dp)
-                    .background(AccentPurple.copy(alpha = 0.1f), RoundedCornerShape(6.dp)),
+                    .background(AccentPurple.container, RoundedCornerShape(6.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     "$index",
                     style = MaterialTheme.typography.labelMedium,
-                    color = AccentPurple,
+                    color = AccentPurple.color,
                     fontWeight = FontWeight.SemiBold
                 )
             }
@@ -875,7 +877,7 @@ private fun ImageResultItem(
                     Icons.Default.Visibility,
                     contentDescription = stringResource(R.string.cd_view),
                     modifier = Modifier.size(18.dp),
-                    tint = AccentGreen
+                    tint = AccentGreen.color
                 )
             }
             IconButton(
@@ -886,7 +888,7 @@ private fun ImageResultItem(
                     Icons.Default.Share,
                     contentDescription = stringResource(R.string.cd_share),
                     modifier = Modifier.size(18.dp),
-                    tint = AccentBlue
+                    tint = AccentBlue.color
                 )
             }
         }
@@ -916,7 +918,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentPurple,
+                    color = AccentPurple.color,
                     strokeWidth = 4.dp
                 )
 
@@ -934,7 +936,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentPurple
+                    color = AccentPurple.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -35,6 +37,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,7 +47,7 @@ fun PermissionBottomSheet(
     onGrantClick: () -> Unit
 ) {
     val context = LocalContext.current
-    val softPurple = Color(0xFF9575CD)
+    val softPurple = MaterialTheme.accents.purple
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -55,6 +58,7 @@ fun PermissionBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 28.dp)
                 .padding(bottom = 36.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -65,7 +69,7 @@ fun PermissionBottomSheet(
                 modifier = Modifier
                     .size(80.dp)
                     .background(
-                        color = softPurple.copy(alpha = 0.12f),
+                        color = softPurple.container,
                         shape = RoundedCornerShape(24.dp)
                     )
             ) {
@@ -73,7 +77,7 @@ fun PermissionBottomSheet(
                     imageVector = Icons.Rounded.Folder,
                     contentDescription = stringResource(R.string.cd_folder),
                     modifier = Modifier.size(40.dp),
-                    tint = softPurple
+                    tint = softPurple.color
                 )
             }
 
@@ -115,7 +119,8 @@ fun PermissionBottomSheet(
                     .height(50.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = softPurple
+                    containerColor = softPurple.color,
+                    contentColor = softPurple.onColor
                 )
             ) {
                 Text(

@@ -1,6 +1,8 @@
 package com.rejowan.pdfreaderpro.presentation.components
 
 import android.content.res.Configuration
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
 import androidx.compose.animation.AnimatedVisibility
@@ -48,13 +50,11 @@ import androidx.compose.material.icons.rounded.ArrowDownward
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,12 +71,14 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.domain.model.SortOption
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 
 // Accent colors matching UI guide
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +112,7 @@ private fun SortOptionsBottomSheet(
     onSortSelected: (SortOption) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -123,7 +125,9 @@ private fun SortOptionsBottomSheet(
             currentSort = currentSort,
             onSortSelected = onSortSelected,
             onDismiss = onDismiss,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -274,7 +278,7 @@ private fun SortSheetHeader(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.primaryContainer
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Outlined.Sort,
@@ -282,7 +286,7 @@ private fun SortSheetHeader(
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
 
@@ -310,7 +314,7 @@ private fun SortCategoryCard(
     title: String,
     description: String,
     icon: ImageVector,
-    accentColor: Color,
+    accentColor: AccentTone,
     options: List<SortOption>,
     currentSort: SortOption,
     onSortSelected: (SortOption) -> Unit,
@@ -337,7 +341,7 @@ private fun SortCategoryCard(
             .scale(scale),
         shape = RoundedCornerShape(12.dp),
         color = if (hasSelection) {
-            accentColor.copy(alpha = 0.06f)
+            accentColor.container
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
         }
@@ -354,7 +358,7 @@ private fun SortCategoryCard(
             ) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = accentColor.copy(alpha = 0.12f)
+                    color = accentColor.container
                 ) {
                     Icon(
                         imageVector = icon,
@@ -362,7 +366,7 @@ private fun SortCategoryCard(
                         modifier = Modifier
                             .padding(6.dp)
                             .size(16.dp),
-                        tint = accentColor
+                        tint = accentColor.color
                     )
                 }
 
@@ -387,7 +391,7 @@ private fun SortCategoryCard(
                 if (hasSelection) {
                     Surface(
                         shape = CircleShape,
-                        color = accentColor.copy(alpha = 0.15f)
+                        color = accentColor.container
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
@@ -395,7 +399,7 @@ private fun SortCategoryCard(
                             modifier = Modifier
                                 .padding(4.dp)
                                 .size(14.dp),
-                            tint = accentColor
+                            tint = accentColor.color
                         )
                     }
                 }
@@ -426,26 +430,26 @@ private fun SortCategoryCard(
 private fun SortOptionChip(
     option: SortOption,
     isSelected: Boolean,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
+        targetValue = if (isSelected) accentColor.container
         else MaterialTheme.colorScheme.surfaceContainerHigh,
         animationSpec = tween(200),
         label = "chip bg"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
+        targetValue = if (isSelected) accentColor.color.copy(alpha = 0.5f)
         else Color.Transparent,
         animationSpec = tween(200),
         label = "chip border"
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor
+        targetValue = if (isSelected) accentColor.color
         else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(200),
         label = "chip content"
@@ -465,7 +469,7 @@ private fun SortOptionChip(
             .clip(RoundedCornerShape(10.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             )
             .then(
@@ -517,14 +521,14 @@ private fun SortOptionChip(
                         modifier = Modifier
                             .size(14.dp)
                             .clip(CircleShape)
-                            .background(accentColor),
+                            .background(accentColor.color),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
                             contentDescription = stringResource(R.string.cd_selected),
                             modifier = Modifier.size(9.dp),
-                            tint = Color.White
+                            tint = accentColor.onColor
                         )
                     }
                 }

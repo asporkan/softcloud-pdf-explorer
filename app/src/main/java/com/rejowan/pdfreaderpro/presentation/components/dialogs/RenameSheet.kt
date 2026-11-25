@@ -64,9 +64,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
 // Accent color for rename
-private val AccentBlue = Color(0xFF64B5F6)
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,7 +94,7 @@ private fun RenameBottomSheet(
     onDismiss: () -> Unit,
     onRename: (String) -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -105,7 +107,9 @@ private fun RenameBottomSheet(
             pdfFile = pdfFile,
             onDismiss = onDismiss,
             onRename = onRename,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -225,7 +229,7 @@ private fun RenameContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentBlue.copy(alpha = 0.12f)
+                color = AccentBlue.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.DriveFileRenameOutline,
@@ -233,7 +237,7 @@ private fun RenameContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentBlue
+                    tint = AccentBlue.color
                 )
             }
 

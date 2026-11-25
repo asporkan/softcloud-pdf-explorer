@@ -77,6 +77,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.presentation.navigation.Home
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 
@@ -98,7 +100,7 @@ data class OnboardingPage(
     val icon: ImageVector,
     val title: String,
     val description: String,
-    val accentColor: Color,
+    val accentColor: AccentTone,
     // Icon container shape morphing parameters
     val topStartCorner: Int,
     val topEndCorner: Int,
@@ -121,7 +123,7 @@ private fun getOnboardingPages(): List<OnboardingPage> = listOf(
         icon = Icons.Rounded.PictureAsPdf,
         title = stringResource(R.string.onboarding_welcome),
         description = stringResource(R.string.onboarding_welcome_desc),
-        accentColor = Color(0xFF6366F1), // Indigo
+        accentColor = MaterialTheme.accents.indigo,
         // Circle shape for icon
         topStartCorner = 50,
         topEndCorner = 50,
@@ -158,7 +160,7 @@ private fun getOnboardingPages(): List<OnboardingPage> = listOf(
         icon = Icons.Rounded.Folder,
         title = stringResource(R.string.onboarding_all_pdfs),
         description = stringResource(R.string.onboarding_all_pdfs_desc),
-        accentColor = Color(0xFF8B5CF6), // Purple
+        accentColor = MaterialTheme.accents.purple,
         // Asymmetric rounded for icon
         topStartCorner = 40,
         topEndCorner = 20,
@@ -196,7 +198,7 @@ private fun getOnboardingPages(): List<OnboardingPage> = listOf(
         icon = Icons.Rounded.Tune,
         title = stringResource(R.string.onboarding_powerful),
         description = stringResource(R.string.onboarding_powerful_desc),
-        accentColor = Color(0xFFEC4899), // Pink
+        accentColor = MaterialTheme.accents.pink,
         // Diamond-like shape for icon
         topStartCorner = 15,
         topEndCorner = 45,
@@ -234,7 +236,7 @@ private fun getOnboardingPages(): List<OnboardingPage> = listOf(
         icon = Icons.Rounded.Security,
         title = stringResource(R.string.onboarding_storage),
         description = stringResource(R.string.onboarding_storage_desc),
-        accentColor = Color(0xFF10B981), // Emerald
+        accentColor = MaterialTheme.accents.green,
         // Squircle for icon
         topStartCorner = 30,
         topEndCorner = 30,
@@ -313,9 +315,14 @@ fun OnboardingScreen(
 
     // Animated values for current page
     val currentAccentColor by animateColorAsState(
-        targetValue = onboardingPages[currentPage].accentColor,
+        targetValue = onboardingPages[currentPage].accentColor.color,
         animationSpec = tween(500),
         label = "accent"
+    )
+    val currentOnAccentColor by animateColorAsState(
+        targetValue = onboardingPages[currentPage].accentColor.onColor,
+        animationSpec = tween(500),
+        label = "on accent"
     )
 
     // Animated corner values for asymmetric shapes
@@ -733,7 +740,8 @@ fun OnboardingScreen(
                             bottomEnd = bottomEndCorner.toInt().coerceIn(14, 28).dp
                         ),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = currentAccentColor
+                            containerColor = currentAccentColor,
+                            contentColor = currentOnAccentColor
                         )
                     ) {
                         Text(

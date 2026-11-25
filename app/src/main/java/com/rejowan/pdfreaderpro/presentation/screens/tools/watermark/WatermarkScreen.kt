@@ -58,6 +58,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import android.content.res.Configuration
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.FilterChip
@@ -65,7 +66,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -108,25 +108,17 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.PdfOutputColors
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors
-private val AccentCyan = Color(0xFF00BCD4) // Watermark theme color
-private val AccentGreen = Color(0xFF81C784)
-private val AccentBlue = Color(0xFF64B5F6)
-
-// Preset colors for text watermark
-private val PresetColors = listOf(
-    Color(0xFF808080), // Gray
-    Color(0xFFEF5350), // Red
-    Color(0xFF42A5F5), // Blue
-    Color(0xFF66BB6A), // Green
-    Color(0xFFFFCA28), // Amber
-    Color(0xFFAB47BC), // Purple
-    Color(0xFF000000), // Black
-)
+private val AccentCyan: AccentTone @Composable get() = MaterialTheme.accents.cyan // Watermark theme color
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -211,7 +203,7 @@ fun WatermarkScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentCyan)
+                            CircularProgressIndicator(color = AccentCyan.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pdf))
                         }
@@ -326,14 +318,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentCyan.copy(alpha = 0.1f)),
+                .background(AccentCyan.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.WaterDrop,
                 contentDescription = stringResource(R.string.cd_add_watermark),
                 modifier = Modifier.size(40.dp),
-                tint = AccentCyan
+                tint = AccentCyan.color
             )
         }
 
@@ -529,7 +521,7 @@ private fun WatermarkContent(
                         .fillMaxWidth()
                         .padding(bottom = 12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFEF5350).copy(alpha = 0.1f)
+                        containerColor = MaterialTheme.colorScheme.errorContainer
                     ),
                     shape = RoundedCornerShape(8.dp)
                 ) {
@@ -542,7 +534,7 @@ private fun WatermarkContent(
                         Text(
                             state.error ?: "",
                             style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFEF5350),
+                            color = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(
@@ -553,7 +545,7 @@ private fun WatermarkContent(
                                 Icons.Default.Close,
                                 contentDescription = stringResource(R.string.cd_dismiss),
                                 modifier = Modifier.size(16.dp),
-                                tint = Color(0xFFEF5350)
+                                tint = MaterialTheme.colorScheme.onErrorContainer
                             )
                         }
                     }
@@ -571,7 +563,7 @@ private fun WatermarkContent(
                 Checkbox(
                     checked = state.overwriteOriginal,
                     onCheckedChange = onOverwriteChange,
-                    colors = CheckboxDefaults.colors(checkedColor = AccentCyan)
+                    colors = CheckboxDefaults.colors(checkedColor = AccentCyan.color)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(stringResource(R.string.overwrite_original_file), style = MaterialTheme.typography.bodyMedium)
@@ -619,7 +611,7 @@ private fun WatermarkTypeTabs(
                 .clip(RoundedCornerShape(8.dp))
                 .background(
                     if (selectedType == WatermarkType.TEXT)
-                        AccentCyan.copy(alpha = 0.15f)
+                        AccentCyan.container
                     else Color.Transparent
                 )
                 .clickable { onTypeChange(WatermarkType.TEXT) }
@@ -632,14 +624,14 @@ private fun WatermarkTypeTabs(
                     contentDescription = stringResource(R.string.cd_decorative),
                     modifier = Modifier.size(18.dp),
                     tint = if (selectedType == WatermarkType.TEXT)
-                        AccentCyan else MaterialTheme.colorScheme.onSurfaceVariant
+                        AccentCyan.color else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     stringResource(R.string.watermark_type_text),
                     style = MaterialTheme.typography.labelLarge,
                     color = if (selectedType == WatermarkType.TEXT)
-                        AccentCyan else MaterialTheme.colorScheme.onSurfaceVariant
+                        AccentCyan.color else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -651,7 +643,7 @@ private fun WatermarkTypeTabs(
                 .clip(RoundedCornerShape(8.dp))
                 .background(
                     if (selectedType == WatermarkType.IMAGE)
-                        AccentCyan.copy(alpha = 0.15f)
+                        AccentCyan.container
                     else Color.Transparent
                 )
                 .clickable { onTypeChange(WatermarkType.IMAGE) }
@@ -664,14 +656,14 @@ private fun WatermarkTypeTabs(
                     contentDescription = stringResource(R.string.cd_decorative),
                     modifier = Modifier.size(18.dp),
                     tint = if (selectedType == WatermarkType.IMAGE)
-                        AccentCyan else MaterialTheme.colorScheme.onSurfaceVariant
+                        AccentCyan.color else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     stringResource(R.string.watermark_type_image),
                     style = MaterialTheme.typography.labelLarge,
                     color = if (selectedType == WatermarkType.IMAGE)
-                        AccentCyan else MaterialTheme.colorScheme.onSurfaceVariant
+                        AccentCyan.color else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -731,7 +723,7 @@ private fun TextWatermarkSettings(
             modifier = Modifier.horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            PresetColors.forEach { color ->
+            PdfOutputColors.WatermarkPresets.forEach { color ->
                 ColorCircle(
                     color = color,
                     isSelected = color == textColor,
@@ -842,7 +834,7 @@ private fun ImageWatermarkSettings(
                             Icons.Default.Add,
                             contentDescription = stringResource(R.string.cd_add),
                             modifier = Modifier.size(40.dp),
-                            tint = AccentCyan
+                            tint = AccentCyan.color
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
@@ -901,7 +893,7 @@ private fun SettingSlider(
             Text(
                 valueLabel,
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
-                color = AccentCyan
+                color = AccentCyan.color
             )
         }
         Slider(
@@ -909,8 +901,8 @@ private fun SettingSlider(
             onValueChange = onValueChange,
             valueRange = valueRange,
             colors = SliderDefaults.colors(
-                thumbColor = AccentCyan,
-                activeTrackColor = AccentCyan
+                thumbColor = AccentCyan.color,
+                activeTrackColor = AccentCyan.color
             )
         )
     }
@@ -929,8 +921,11 @@ private fun ColorCircle(
             .background(color)
             .then(
                 if (isSelected) {
-                    Modifier.border(3.dp, AccentCyan, CircleShape)
-                } else Modifier
+                    Modifier.border(3.dp, AccentCyan.color, CircleShape)
+                } else {
+                    // Thin outline keeps black/dark-gray swatches visible on dark surfaces.
+                    Modifier.border(1.dp, MaterialTheme.colorScheme.outline, CircleShape)
+                }
             )
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -940,7 +935,7 @@ private fun ColorCircle(
                 Icons.Default.Check,
                 contentDescription = stringResource(R.string.cd_checkbox),
                 modifier = Modifier.size(18.dp),
-                tint = if (color == Color.Black || color == Color(0xFF808080)) Color.White else Color.Black
+                tint = PdfOutputColors.contentOn(color)
             )
         }
     }
@@ -1020,14 +1015,14 @@ private fun ColorPickerSheet(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(RoundedCornerShape(8.dp))
-                            .background(AccentCyan.copy(alpha = 0.1f)),
+                            .background(AccentCyan.container),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.WaterDrop,
                             contentDescription = stringResource(R.string.cd_add_watermark),
                             modifier = Modifier.size(20.dp),
-                            tint = AccentCyan
+                            tint = AccentCyan.color
                         )
                     }
                     Spacer(modifier = Modifier.width(12.dp))
@@ -1069,7 +1064,7 @@ private fun ColorPickerSheet(
                             "#${String.format("%02X%02X%02X", red, green, blue)}",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = AccentCyan
+                            color = AccentCyan.color
                         )
                         Text(
                             stringResource(R.string.rgb_values, red, green, blue),
@@ -1336,8 +1331,8 @@ private fun PositionSelector(
                         )
                     },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
-                        selectedLabelColor = AccentCyan
+                        selectedContainerColor = AccentCyan.container,
+                        selectedLabelColor = AccentCyan.color
                     )
                 )
             }
@@ -1503,7 +1498,7 @@ private fun WatermarkElement(
                     modifier = Modifier
                         .size(if (isTiled) 16.dp else 28.dp)
                         .graphicsLayer { alpha = 0.3f },
-                    tint = AccentCyan
+                    tint = AccentCyan.color
                 )
             }
         }
@@ -1546,8 +1541,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentCyan
+                    selectedContainerColor = AccentCyan.container,
+                    selectedLabelColor = AccentCyan.color
                 )
             )
             FilterChip(
@@ -1560,8 +1555,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentCyan
+                    selectedContainerColor = AccentCyan.container,
+                    selectedLabelColor = AccentCyan.color
                 )
             )
             FilterChip(
@@ -1574,8 +1569,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentCyan
+                    selectedContainerColor = AccentCyan.container,
+                    selectedLabelColor = AccentCyan.color
                 )
             )
             FilterChip(
@@ -1588,8 +1583,8 @@ private fun PageSelector(
                     )
                 },
                 colors = FilterChipDefaults.filterChipColors(
-                    selectedContainerColor = AccentCyan.copy(alpha = 0.2f),
-                    selectedLabelColor = AccentCyan
+                    selectedContainerColor = AccentCyan.container,
+                    selectedLabelColor = AccentCyan.color
                 )
             )
         }
@@ -1633,14 +1628,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -1680,7 +1675,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentBlue
+                    tint = AccentBlue.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -1785,7 +1780,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentCyan,
+                    color = AccentCyan.color,
                     strokeWidth = 4.dp
                 )
 
@@ -1803,7 +1798,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentCyan
+                    color = AccentCyan.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

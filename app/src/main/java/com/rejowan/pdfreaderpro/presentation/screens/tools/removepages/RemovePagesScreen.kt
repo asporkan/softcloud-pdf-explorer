@@ -98,14 +98,16 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors
-private val AccentRed = Color(0xFFEF5350)  // Remove pages theme color
-private val AccentGreen = Color(0xFF81C784)
-private val AccentBlue = Color(0xFF64B5F6)
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red  // Remove pages theme color
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -148,7 +150,7 @@ fun RemovePagesScreen(
                                         file.pageCount
                                     ),
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = AccentRed
+                                    color = AccentRed.color
                                 )
                             } else {
                                 Text(
@@ -195,7 +197,7 @@ fun RemovePagesScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentRed)
+                            CircularProgressIndicator(color = AccentRed.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pages))
                         }
@@ -369,14 +371,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentRed.copy(alpha = 0.1f)),
+                .background(AccentRed.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.DeleteSweep,
                 contentDescription = stringResource(R.string.cd_remove_pages),
                 modifier = Modifier.size(40.dp),
-                tint = AccentRed
+                tint = AccentRed.color
             )
         }
 
@@ -451,7 +453,7 @@ private fun SelectionHeader(
                     Text(
                         "($selectedCount/$totalCount)",
                         style = MaterialTheme.typography.labelSmall,
-                        color = AccentRed
+                        color = AccentRed.color
                     )
                 }
             }
@@ -614,14 +616,14 @@ private fun QuickSelectChip(
             .clip(RoundedCornerShape(8.dp))
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(8.dp),
-        color = AccentRed.copy(alpha = 0.1f)
+        color = AccentRed.container
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = AccentRed,
+            color = AccentRed.color,
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
@@ -679,7 +681,7 @@ private fun RangeInputDialog(
                 }
                 error?.let {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(it, color = AccentRed, style = MaterialTheme.typography.bodySmall)
+                    Text(it, color = AccentRed.color, style = MaterialTheme.typography.bodySmall)
                 }
             }
         },
@@ -743,7 +745,7 @@ private fun PageInputDialog(
                 )
                 error?.let {
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(it, color = AccentRed, style = MaterialTheme.typography.bodySmall)
+                    Text(it, color = AccentRed.color, style = MaterialTheme.typography.bodySmall)
                 }
             }
         },
@@ -783,13 +785,13 @@ private fun PageThumbnailItem(
             .clip(RoundedCornerShape(8.dp))
             .then(
                 if (page.isSelected) {
-                    Modifier.border(2.dp, AccentRed, RoundedCornerShape(8.dp))
+                    Modifier.border(2.dp, AccentRed.color, RoundedCornerShape(8.dp))
                 } else Modifier
             )
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = if (page.isSelected) {
-                AccentRed.copy(alpha = 0.05f)
+                AccentRed.container
             } else {
                 MaterialTheme.colorScheme.surfaceContainerLow
             }
@@ -806,7 +808,7 @@ private fun PageThumbnailItem(
                         .fillMaxSize()
                         .then(
                             if (page.isSelected) {
-                                Modifier.background(AccentRed.copy(alpha = 0.1f))
+                                Modifier.background(AccentRed.container)
                             } else Modifier
                         ),
                     contentScale = ContentScale.Fit
@@ -850,14 +852,14 @@ private fun PageThumbnailItem(
                         .align(Alignment.TopEnd)
                         .padding(4.dp)
                         .size(22.dp)
-                        .background(AccentRed, CircleShape),
+                        .background(AccentRed.color, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Delete,
                         contentDescription = stringResource(R.string.cd_delete),
                         modifier = Modifier.size(14.dp),
-                        tint = Color.White
+                        tint = AccentRed.onColor
                     )
                 }
             }
@@ -893,7 +895,7 @@ private fun RemoveBottomSection(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -907,13 +909,13 @@ private fun RemoveBottomSection(
                         Icons.Default.Close,
                         contentDescription = stringResource(R.string.cd_close),
                         modifier = Modifier.size(18.dp),
-                        tint = AccentRed
+                        tint = AccentRed.color
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         stringResource(R.string.cannot_remove_all_pages),
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed
+                        color = AccentRed.color
                     )
                 }
             }
@@ -926,7 +928,7 @@ private fun RemoveBottomSection(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -939,7 +941,7 @@ private fun RemoveBottomSection(
                     Text(
                         error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -950,7 +952,7 @@ private fun RemoveBottomSection(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -968,7 +970,7 @@ private fun RemoveBottomSection(
             Checkbox(
                 checked = overwriteOriginal,
                 onCheckedChange = onOverwriteChange,
-                colors = CheckboxDefaults.colors(checkedColor = AccentBlue)
+                colors = CheckboxDefaults.colors(checkedColor = AccentBlue.color)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -1046,14 +1048,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -1093,7 +1095,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentBlue
+                    tint = AccentBlue.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -1125,7 +1127,7 @@ private fun SuccessState(
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(
-                containerColor = AccentRed.copy(alpha = 0.1f)
+                containerColor = AccentRed.container
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -1145,7 +1147,7 @@ private fun SuccessState(
                 Text(
                     "→",
                     style = MaterialTheme.typography.bodyMedium,
-                    color = AccentRed
+                    color = AccentRed.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
@@ -1153,7 +1155,7 @@ private fun SuccessState(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold
                     ),
-                    color = AccentRed
+                    color = AccentRed.color
                 )
             }
         }
@@ -1237,7 +1239,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentRed,
+                    color = AccentRed.color,
                     strokeWidth = 4.dp
                 )
 
@@ -1255,7 +1257,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentRed
+                    color = AccentRed.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

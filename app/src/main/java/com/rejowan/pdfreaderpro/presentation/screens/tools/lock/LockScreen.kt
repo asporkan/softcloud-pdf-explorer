@@ -93,15 +93,16 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors
-private val AccentAmber = Color(0xFFFFB74D)  // Lock theme color
-private val AccentGreen = Color(0xFF81C784)
-private val AccentRed = Color(0xFFEF5350)
-private val AccentBlue = Color(0xFF64B5F6)
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber  // Lock theme color
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -178,7 +179,7 @@ fun LockScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentAmber)
+                            CircularProgressIndicator(color = AccentAmber.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pdf))
                         }
@@ -288,14 +289,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentAmber.copy(alpha = 0.1f)),
+                .background(AccentAmber.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.Lock,
                 contentDescription = stringResource(R.string.cd_decorative),
                 modifier = Modifier.size(40.dp),
-                tint = AccentAmber
+                tint = AccentAmber.color
             )
         }
 
@@ -447,7 +448,7 @@ private fun LockContent(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -460,7 +461,7 @@ private fun LockContent(
                     Text(
                         state.error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -471,7 +472,7 @@ private fun LockContent(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -489,7 +490,7 @@ private fun LockContent(
             Checkbox(
                 checked = state.overwriteOriginal,
                 onCheckedChange = onOverwriteChange,
-                colors = CheckboxDefaults.colors(checkedColor = AccentAmber)
+                colors = CheckboxDefaults.colors(checkedColor = AccentAmber.color)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.overwrite_original_file), style = MaterialTheme.typography.bodyMedium)
@@ -596,7 +597,7 @@ private fun SourceFileCard(
                             Icons.Default.PictureAsPdf,
                             contentDescription = stringResource(R.string.cd_pdf_file),
                             modifier = Modifier.size(28.dp),
-                            tint = AccentAmber
+                            tint = AccentAmber.color
                         )
                     }
                 }
@@ -727,7 +728,7 @@ private fun PermissionItem(
             checked = checked,
             onCheckedChange = onCheckedChange,
             colors = CheckboxDefaults.colors(
-                checkedColor = AccentAmber
+                checkedColor = AccentAmber.color
             )
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -759,14 +760,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -807,7 +808,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentAmber
+                    tint = AccentAmber.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -835,7 +836,7 @@ private fun SuccessState(
                     Icons.Default.Lock,
                     contentDescription = stringResource(R.string.cd_lock_pdf),
                     modifier = Modifier.size(18.dp),
-                    tint = AccentAmber
+                    tint = AccentAmber.color
                 )
             }
         }
@@ -919,7 +920,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentAmber,
+                    color = AccentAmber.color,
                     strokeWidth = 4.dp
                 )
 
@@ -937,7 +938,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentAmber
+                    color = AccentAmber.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

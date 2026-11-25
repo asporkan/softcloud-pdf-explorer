@@ -76,6 +76,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.graphics.graphicsLayer
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -109,12 +111,9 @@ import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors
-private val AccentOrange = Color(0xFFFF9800)  // Rotate theme color
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentGreen = Color(0xFF81C784)
-private val AccentRed = Color(0xFFEF5350)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentPurple = Color(0xFF9575CD)
+private val AccentOrange: AccentTone @Composable get() = MaterialTheme.accents.orange  // Rotate theme color
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -196,7 +195,7 @@ fun RotateScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentOrange)
+                            CircularProgressIndicator(color = AccentOrange.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pages))
                         }
@@ -419,14 +418,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentOrange.copy(alpha = 0.1f)),
+                .background(AccentOrange.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.AutoMirrored.Filled.RotateRight,
                 contentDescription = stringResource(R.string.cd_decorative),
                 modifier = Modifier.size(40.dp),
-                tint = AccentOrange
+                tint = AccentOrange.color
             )
         }
 
@@ -506,13 +505,13 @@ private fun RotationChip(
             .clip(RoundedCornerShape(10.dp))
             .then(
                 if (isSelected) {
-                    Modifier.border(1.5.dp, AccentOrange, RoundedCornerShape(10.dp))
+                    Modifier.border(1.5.dp, AccentOrange.color, RoundedCornerShape(10.dp))
                 } else Modifier
             )
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(10.dp),
         color = if (isSelected) {
-            AccentOrange.copy(alpha = 0.1f)
+            AccentOrange.container
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
         }
@@ -530,7 +529,7 @@ private fun RotationChip(
                 modifier = Modifier
                     .size(18.dp)
                     .rotate(angle.degrees.toFloat() - 90f),
-                tint = if (isSelected) AccentOrange else MaterialTheme.colorScheme.onSurfaceVariant
+                tint = if (isSelected) AccentOrange.color else MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.width(6.dp))
             Text(
@@ -538,7 +537,7 @@ private fun RotationChip(
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                 ),
-                color = if (isSelected) AccentOrange else MaterialTheme.colorScheme.onSurface
+                color = if (isSelected) AccentOrange.color else MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -573,7 +572,7 @@ private fun QuickSelectionSection(
                     Text(
                         "($selectedCount/$totalCount)",
                         style = MaterialTheme.typography.labelSmall,
-                        color = AccentOrange
+                        color = AccentOrange.color
                     )
                 }
             }
@@ -584,12 +583,12 @@ private fun QuickSelectionSection(
                         .clip(RoundedCornerShape(6.dp))
                         .clickable(onClick = onClear),
                     shape = RoundedCornerShape(6.dp),
-                    color = AccentRed.copy(alpha = 0.1f)
+                    color = AccentRed.container
                 ) {
                     Text(
                         stringResource(R.string.clear),
                         style = MaterialTheme.typography.labelSmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
@@ -673,7 +672,7 @@ private fun PageThumbnailItem(
             .clip(RoundedCornerShape(8.dp))
             .then(
                 if (isSelected) {
-                    Modifier.border(2.dp, AccentOrange, RoundedCornerShape(8.dp))
+                    Modifier.border(2.dp, AccentOrange.color, RoundedCornerShape(8.dp))
                 } else Modifier
             )
             .clickable(onClick = onClick),
@@ -732,14 +731,14 @@ private fun PageThumbnailItem(
                         .align(Alignment.TopEnd)
                         .padding(4.dp)
                         .size(20.dp)
-                        .background(AccentOrange, CircleShape),
+                        .background(AccentOrange.color, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = stringResource(R.string.cd_checkbox),
                         modifier = Modifier.size(16.dp),
-                        tint = Color.White
+                        tint = AccentOrange.onColor
                     )
                 }
             }
@@ -773,7 +772,7 @@ private fun RotateBottomSection(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -786,7 +785,7 @@ private fun RotateBottomSection(
                     Text(
                         error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -797,7 +796,7 @@ private fun RotateBottomSection(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -815,7 +814,7 @@ private fun RotateBottomSection(
             Checkbox(
                 checked = overwriteOriginal,
                 onCheckedChange = onOverwriteChange,
-                colors = CheckboxDefaults.colors(checkedColor = AccentOrange)
+                colors = CheckboxDefaults.colors(checkedColor = AccentOrange.color)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.overwrite_original_file), style = MaterialTheme.typography.bodyMedium)
@@ -893,14 +892,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -940,7 +939,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_decorative),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentOrange
+                    tint = AccentOrange.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -1041,7 +1040,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentOrange,
+                    color = AccentOrange.color,
                     strokeWidth = 4.dp
                 )
 
@@ -1059,7 +1058,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentOrange
+                    color = AccentOrange.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

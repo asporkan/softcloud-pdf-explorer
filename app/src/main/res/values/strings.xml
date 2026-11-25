@@ -1369,10 +1369,6 @@
     <string name="cd_close_selection">Close selection</string>
 
     <!-- Sprint 3A — Tools hub categories & short card descriptions -->
-    <string name="tool_category_organize">Organize</string>
-    <string name="tool_category_edit">Edit</string>
-    <string name="tool_category_security">Security</string>
-    <string name="tool_category_convert">Convert</string>
     <string name="tools_hub_merge_desc">Combine multiple PDF files into one</string>
     <string name="tools_hub_split_desc">Split a PDF into multiple files</string>
     <string name="tools_hub_compress_desc">Reduce file size while maintaining quality</string>

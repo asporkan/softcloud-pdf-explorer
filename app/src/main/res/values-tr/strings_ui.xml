@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings: default save folder for PDF tool outputs -->
+    <string name="settings_output_section">Kaydetme</string>
+    <string name="settings_output_folder_title">Varsayılan kayıt klasörü</string>
+    <string name="settings_output_folder_none">Seçilmedi</string>
+    <string name="settings_output_folder_ask">%1$s · her seferinde sorar</string>
+    <string name="settings_output_folder_sheet_subtitle">PDF araçlarının sonuçlarının kaydedileceği yer</string>
+    <string name="settings_output_change_folder">Klasörü değiştir</string>
+    <string name="settings_output_change_folder_desc">Yeni dosyalar için klasörü seçin</string>
+    <string name="settings_output_ask_desc">Her kayıtta hedefi siz seçin</string>
+    <string name="settings_output_reset">Sıfırla</string>
+    <string name="settings_output_reset_desc">Klasörü unutur; sonraki kayıtta yeniden sorulur</string>
+    <string name="settings_output_folder_failed">Bu klasör kullanılamıyor. Lütfen başka bir klasör seçin.</string>
+
+    <!-- Sharing -->
+    <plurals name="share_pdfs_chooser">
+        <item quantity="one">%d PDF paylaş</item>
+        <item quantity="other">%d PDF paylaş</item>
+    </plurals>
+    <string name="share_failed">Dosya paylaşılamadı.</string>
+</resources>

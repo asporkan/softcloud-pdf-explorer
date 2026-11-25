@@ -70,16 +70,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FormattingUtils
 import kotlinx.coroutines.delay
 
 // Accent colors matching UI guide
-private val AccentAmber = Color(0xFFFFB74D)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentOrange = Color(0xFFFF8A65)
-private val AccentRed = Color(0xFFEF5350)
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val AccentOrange: AccentTone @Composable get() = MaterialTheme.accents.orange
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -380,7 +382,7 @@ private fun FileOptionsHeader(
         // PDF icon
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.primaryContainer
         ) {
             Icon(
                 imageVector = Icons.Outlined.Description,
@@ -388,7 +390,7 @@ private fun FileOptionsHeader(
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
 
@@ -447,7 +449,7 @@ private fun FileActionCard(
     icon: ImageVector,
     label: String,
     description: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     animationDelay: Int,
     onClick: () -> Unit,
     isDestructive: Boolean = false,
@@ -466,11 +468,9 @@ private fun FileActionCard(
         label = "action scale"
     )
 
-    val effectiveColor = if (isDestructive) {
-        MaterialTheme.colorScheme.error.copy(alpha = 0.9f)
-    } else {
-        accentColor
-    }
+    // Destructive rows use the red accent so icon, label and fill keep contrast in every theme.
+    val tone = if (isDestructive) MaterialTheme.accents.red else accentColor
+    val effectiveColor = tone.color
 
     Surface(
         modifier = modifier
@@ -483,11 +483,7 @@ private fun FileActionCard(
                 onClick = onClick
             ),
         shape = RoundedCornerShape(8.dp),
-        color = if (isDestructive) {
-            MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.3f)
-        } else {
-            MaterialTheme.colorScheme.surfaceContainerLow
-        }
+        color = if (isDestructive) tone.container else MaterialTheme.colorScheme.surfaceContainerLow
     ) {
         Row(
             modifier = Modifier
@@ -497,7 +493,7 @@ private fun FileActionCard(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = effectiveColor.copy(alpha = 0.12f)
+                color = if (isDestructive) effectiveColor.copy(alpha = 0.16f) else tone.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -517,16 +513,16 @@ private fun FileActionCard(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = if (isDestructive) {
-                        MaterialTheme.colorScheme.error
-                    } else {
-                        MaterialTheme.colorScheme.onSurface
-                    }
+                    color = if (isDestructive) tone.onContainer else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = description,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = if (isDestructive) {
+                        tone.onContainer.copy(alpha = 0.8f)
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    }
                 )
             }
         }

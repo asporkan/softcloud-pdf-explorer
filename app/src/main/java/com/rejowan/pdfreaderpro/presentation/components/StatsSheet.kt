@@ -63,13 +63,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import java.util.Locale
 
 // Accent colors matching UI guide
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentPink = Color(0xFFF48FB1)
-private val AccentTeal = Color(0xFF4DB6AC)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentPink: AccentTone @Composable get() = MaterialTheme.accents.pink
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
 private fun formatFileSize(bytes: Long): String {
     if (bytes <= 0) return "0 B"
@@ -119,7 +121,7 @@ private fun StatsBottomSheet(
     recentCount: Int,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -133,7 +135,9 @@ private fun StatsBottomSheet(
             totalSize = totalSize,
             favoritesCount = favoritesCount,
             recentCount = recentCount,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -288,7 +292,7 @@ private fun StatsSheetHeader(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.primaryContainer
         ) {
             Icon(
                 imageVector = Icons.Outlined.Analytics,
@@ -296,7 +300,7 @@ private fun StatsSheetHeader(
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
 
@@ -325,7 +329,7 @@ private fun AnimatedStatCard(
     label: String,
     value: String,
     subtitle: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     progress: Float,
     animationDelay: Int,
     modifier: Modifier = Modifier
@@ -356,7 +360,7 @@ private fun AnimatedStatCard(
             .fillMaxWidth()
             .scale(scale),
         shape = RoundedCornerShape(12.dp),
-        color = accentColor.copy(alpha = 0.08f)
+        color = accentColor.container
     ) {
         Column(
             modifier = Modifier.padding(12.dp)
@@ -372,12 +376,12 @@ private fun AnimatedStatCard(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(8.dp),
-                        color = accentColor.copy(alpha = 0.12f)
+                        color = accentColor.container
                     ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = stringResource(R.string.cd_decorative),
-                            tint = accentColor,
+                            tint = accentColor.color,
                             modifier = Modifier
                                 .padding(6.dp)
                                 .size(16.dp)
@@ -409,8 +413,8 @@ private fun AnimatedStatCard(
                     .fillMaxWidth()
                     .height(4.dp)
                     .clip(RoundedCornerShape(2.dp)),
-                color = accentColor,
-                trackColor = accentColor.copy(alpha = 0.2f),
+                color = accentColor.color,
+                trackColor = accentColor.color.copy(alpha = 0.2f),
                 strokeCap = StrokeCap.Round
             )
 

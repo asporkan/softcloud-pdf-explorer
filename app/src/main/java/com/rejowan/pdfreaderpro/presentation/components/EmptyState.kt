@@ -40,20 +40,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
 // Soft accent colors for different states
-private val SoftBlue = Color(0xFF64B5F6)
-private val SoftPurple = Color(0xFF9575CD)
-private val SoftPink = Color(0xFFF06292)
-private val SoftTeal = Color(0xFF4DB6AC)
-private val SoftAmber = Color(0xFFFFB74D)
+private val SoftBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val SoftPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val SoftPink: AccentTone @Composable get() = MaterialTheme.accents.pink
+private val SoftTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val SoftAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 
 @Composable
 fun EmptyState(
     icon: ImageVector,
     title: String,
     message: String,
-    accentColor: Color = SoftPurple,
+    accentColor: AccentTone = SoftPurple,
     actionLabel: String? = null,
     onAction: (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -85,7 +87,7 @@ fun EmptyState(
                 .offset(y = (-floatOffset).dp)
                 .size(100.dp)
                 .background(
-                    color = accentColor.copy(alpha = 0.12f),
+                    color = accentColor.container,
                     shape = RoundedCornerShape(28.dp)
                 )
         ) {
@@ -93,7 +95,7 @@ fun EmptyState(
                 imageVector = icon,
                 contentDescription = stringResource(R.string.cd_illustration),
                 modifier = Modifier.size(48.dp),
-                tint = accentColor
+                tint = accentColor.color
             )
         }
 
@@ -124,7 +126,8 @@ fun EmptyState(
                 onClick = onAction,
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = accentColor
+                    containerColor = accentColor.color,
+                    contentColor = accentColor.onColor
                 ),
                 contentPadding = PaddingValues(horizontal = 28.dp, vertical = 12.dp)
             ) {
@@ -247,7 +250,7 @@ fun PermissionRequiredState(
                 .offset(y = (-floatOffset).dp)
                 .size(100.dp)
                 .background(
-                    color = SoftPurple.copy(alpha = 0.12f),
+                    color = SoftPurple.container,
                     shape = RoundedCornerShape(28.dp)
                 )
         ) {
@@ -255,7 +258,7 @@ fun PermissionRequiredState(
                 imageVector = Icons.Rounded.Folder,
                 contentDescription = stringResource(R.string.cd_folder),
                 modifier = Modifier.size(48.dp),
-                tint = SoftPurple
+                tint = SoftPurple.color
             )
         }
 
@@ -286,7 +289,8 @@ fun PermissionRequiredState(
             onClick = onGrantClick,
             shape = RoundedCornerShape(14.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = SoftPurple
+                containerColor = SoftPurple.color,
+                contentColor = SoftPurple.onColor
             ),
             contentPadding = PaddingValues(horizontal = 28.dp, vertical = 12.dp)
         ) {

@@ -13,7 +13,11 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -61,7 +65,6 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -69,7 +72,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -104,12 +106,12 @@ import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors - consistent with app design system
-private val AccentPurple = Color(0xFF9575CD)   // Compress theme color
-private val AccentTeal = Color(0xFF4DB6AC)     // Preview/Change
-private val AccentGreen = Color(0xFF81C784)    // Success
-private val AccentRed = Color(0xFFEF5350)      // PDF icon
-private val AccentBlue = Color(0xFF64B5F6)     // Info
-private val AccentAmber = Color(0xFFFFB74D)    // Warning/Size
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple   // Compress theme color
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal     // Preview/Change
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green    // Success
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red      // PDF icon
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue     // Info
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber    // Warning/Size
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -190,7 +192,7 @@ fun CompressScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentPurple)
+                            CircularProgressIndicator(color = AccentPurple.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pages))
                         }
@@ -397,14 +399,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentPurple.copy(alpha = 0.1f)),
+                .background(AccentPurple.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.Compress,
                 contentDescription = stringResource(R.string.cd_compress_pdf),
                 modifier = Modifier.size(40.dp),
-                tint = AccentPurple
+                tint = AccentPurple.color
             )
         }
 
@@ -466,7 +468,7 @@ private fun SourceFileCard(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(RoundedCornerShape(10.dp))
-                        .background(AccentRed.copy(alpha = 0.08f)),
+                        .background(AccentRed.container),
                     contentAlignment = Alignment.Center
                 ) {
                     if (sourceFile.thumbnail != null) {
@@ -481,7 +483,7 @@ private fun SourceFileCard(
                             Icons.Default.PictureAsPdf,
                             contentDescription = stringResource(R.string.cd_pdf_file),
                             modifier = Modifier.size(32.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -528,7 +530,7 @@ private fun SourceFileCard(
                         Icons.Outlined.Visibility,
                         contentDescription = stringResource(R.string.cd_page_preview),
                         modifier = Modifier.size(18.dp),
-                        tint = AccentTeal
+                        tint = AccentTeal.color
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.preview))
@@ -599,13 +601,13 @@ private fun CompressionLevelItem(
             .clip(RoundedCornerShape(12.dp))
             .then(
                 if (isSelected) {
-                    Modifier.border(1.5.dp, accentColor, RoundedCornerShape(12.dp))
+                    Modifier.border(1.5.dp, accentColor.color, RoundedCornerShape(12.dp))
                 } else Modifier
             )
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         color = if (isSelected) {
-            accentColor.copy(alpha = 0.08f)
+            accentColor.container
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
         }
@@ -619,7 +621,8 @@ private fun CompressionLevelItem(
             // Icon container
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                // On the selected card the fill already is the container; tint the icon box darker.
+                color = if (isSelected) accentColor.color.copy(alpha = 0.18f) else accentColor.container
             ) {
                 Icon(
                     imageVector = Icons.Default.Compress,
@@ -627,7 +630,7 @@ private fun CompressionLevelItem(
                     modifier = Modifier
                         .padding(8.dp)
                         .size(20.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -653,7 +656,7 @@ private fun CompressionLevelItem(
                     Icons.Default.CheckCircle,
                     contentDescription = stringResource(R.string.cd_checkbox),
                     modifier = Modifier.size(20.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
         }
@@ -687,7 +690,7 @@ private fun CompressBottomSection(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -700,7 +703,7 @@ private fun CompressBottomSection(
                     Text(
                         error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -711,7 +714,7 @@ private fun CompressBottomSection(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -729,7 +732,7 @@ private fun CompressBottomSection(
             Checkbox(
                 checked = overwriteOriginal,
                 onCheckedChange = onOverwriteChange,
-                colors = CheckboxDefaults.colors(checkedColor = AccentTeal)
+                colors = CheckboxDefaults.colors(checkedColor = AccentTeal.color)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -809,14 +812,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -878,7 +881,7 @@ private fun SuccessState(
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
-                        color = AccentGreen
+                        color = AccentGreen.color
                     )
                 }
 
@@ -911,7 +914,7 @@ private fun SuccessState(
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.SemiBold
                             ),
-                            color = if (result.reductionPercentage > 0) AccentGreen else AccentAmber
+                            color = if (result.reductionPercentage > 0) AccentGreen.color else AccentAmber.color
                         )
                         if (result.savedBytes > 0) {
                             Spacer(modifier = Modifier.width(8.dp))
@@ -949,7 +952,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentPurple
+                    tint = AccentPurple.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -1066,7 +1069,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentPurple,
+                    color = AccentPurple.color,
                     strokeWidth = 4.dp
                 )
 
@@ -1084,7 +1087,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentPurple
+                    color = AccentPurple.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

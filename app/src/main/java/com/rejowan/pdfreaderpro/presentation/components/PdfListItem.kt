@@ -4,8 +4,6 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,11 +46,13 @@ import com.rejowan.pdfreaderpro.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FormattingUtils
 import kotlinx.coroutines.delay
 
-private val SoftGray = Color(0xFF9E9E9E)
-private val SelectionBlue = Color(0xFF2196F3)
+private val SoftGray: AccentTone @Composable get() = MaterialTheme.accents.gray
+private val SelectionBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -84,7 +84,7 @@ fun PdfListItem(
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) {
-            SelectionBlue.copy(alpha = 0.12f)
+            SelectionBlue.container
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
         },
@@ -93,7 +93,7 @@ fun PdfListItem(
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) SelectionBlue else Color.Transparent,
+        targetValue = if (isSelected) SelectionBlue.color else Color.Transparent,
         animationSpec = tween(200),
         label = "border color"
     )
@@ -158,12 +158,12 @@ fun PdfListItem(
                     // Size chip
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
                             text = FormattingUtils.formattedFileSize(pdfFile.size),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }
@@ -171,7 +171,7 @@ fun PdfListItem(
                     Text(
                         text = "•",
                         style = MaterialTheme.typography.bodySmall,
-                        color = SoftGray
+                        color = SoftGray.color
                     )
 
                     Text(
@@ -190,7 +190,7 @@ fun PdfListItem(
                         imageVector = Icons.Outlined.Folder,
                         contentDescription = stringResource(R.string.cd_decorative),
                         modifier = Modifier.size(14.dp),
-                        tint = SoftGray.copy(alpha = 0.7f)
+                        tint = SoftGray.color.copy(alpha = 0.7f)
                     )
                     Text(
                         text = pdfFile.folderName,
@@ -215,7 +215,7 @@ fun PdfListItem(
                         imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
                         contentDescription = if (isSelected) "Selected" else "Not selected",
                         modifier = Modifier.size(26.dp),
-                        tint = if (isSelected) SelectionBlue else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        tint = if (isSelected) SelectionBlue.color else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                     )
                 }
             } else {

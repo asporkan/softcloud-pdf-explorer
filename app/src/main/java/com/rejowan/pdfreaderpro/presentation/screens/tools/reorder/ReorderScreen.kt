@@ -97,6 +97,8 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import sh.calvin.reorderable.ReorderableItem
@@ -104,11 +106,9 @@ import sh.calvin.reorderable.rememberReorderableLazyGridState
 import java.io.File
 
 // Accent colors
-private val AccentIndigo = Color(0xFF7986CB)  // Reorder theme color
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentGreen = Color(0xFF81C784)
-private val AccentRed = Color(0xFFEF5350)
-private val AccentBlue = Color(0xFF64B5F6)
+private val AccentIndigo: AccentTone @Composable get() = MaterialTheme.accents.indigo  // Reorder theme color
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,7 +145,7 @@ fun ReorderScreen(
                             Text(
                                 if (state.hasChanges) stringResource(R.string.pages_modified, file.pageCount) else stringResource(R.string.pages_count, file.pageCount),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = if (state.hasChanges) AccentIndigo else MaterialTheme.colorScheme.onSurfaceVariant
+                                color = if (state.hasChanges) AccentIndigo.color else MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -161,7 +161,7 @@ fun ReorderScreen(
                             Icon(
                                 Icons.Default.Refresh,
                                 contentDescription = stringResource(R.string.cd_reset_order),
-                                tint = AccentRed
+                                tint = AccentRed.color
                             )
                         }
                     }
@@ -196,7 +196,7 @@ fun ReorderScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = AccentIndigo)
+                            CircularProgressIndicator(color = AccentIndigo.color)
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(stringResource(R.string.loading_pages))
                         }
@@ -258,7 +258,7 @@ fun ReorderScreen(
                                 .fillMaxWidth()
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                             shape = RoundedCornerShape(8.dp),
-                            color = AccentIndigo.copy(alpha = 0.1f)
+                            color = AccentIndigo.container
                         ) {
                             Row(
                                 modifier = Modifier.padding(12.dp),
@@ -268,13 +268,13 @@ fun ReorderScreen(
                                     Icons.Default.SwapVert,
                                     contentDescription = stringResource(R.string.cd_decorative),
                                     modifier = Modifier.size(18.dp),
-                                    tint = AccentIndigo
+                                    tint = AccentIndigo.color
                                 )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
                                     stringResource(R.string.drag_hint),
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = AccentIndigo
+                                    color = AccentIndigo.color
                                 )
                             }
                         }
@@ -384,14 +384,14 @@ private fun EmptyState(onSelectFile: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentIndigo.copy(alpha = 0.1f)),
+                .background(AccentIndigo.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.SwapVert,
                 contentDescription = stringResource(R.string.cd_reorder_pages),
                 modifier = Modifier.size(40.dp),
-                tint = AccentIndigo
+                tint = AccentIndigo.color
             )
         }
 
@@ -452,7 +452,7 @@ private fun PageThumbnailItem(
             )
             .then(
                 if (hasChanged && !isDragging) {
-                    Modifier.border(2.dp, AccentIndigo, RoundedCornerShape(8.dp))
+                    Modifier.border(2.dp, AccentIndigo.color, RoundedCornerShape(8.dp))
                 } else Modifier
             )
             .clickable(onClick = onTap),
@@ -513,7 +513,7 @@ private fun PageThumbnailItem(
                     .align(Alignment.BottomStart)
                     .padding(4.dp)
                     .background(
-                        color = if (hasChanged) AccentIndigo else MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                        color = if (hasChanged) AccentIndigo.color else MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
                         shape = RoundedCornerShape(4.dp)
                     )
                     .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -523,7 +523,7 @@ private fun PageThumbnailItem(
                     style = MaterialTheme.typography.labelSmall.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    color = if (hasChanged) Color.White else MaterialTheme.colorScheme.onSurface
+                    color = if (hasChanged) AccentIndigo.onColor else MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -576,7 +576,7 @@ private fun ReorderBottomSection(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -589,7 +589,7 @@ private fun ReorderBottomSection(
                     Text(
                         error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -600,7 +600,7 @@ private fun ReorderBottomSection(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -618,7 +618,7 @@ private fun ReorderBottomSection(
             Checkbox(
                 checked = overwriteOriginal,
                 onCheckedChange = onOverwriteChange,
-                colors = CheckboxDefaults.colors(checkedColor = AccentIndigo)
+                colors = CheckboxDefaults.colors(checkedColor = AccentIndigo.color)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(stringResource(R.string.overwrite_original_file), style = MaterialTheme.typography.bodyMedium)
@@ -696,14 +696,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -744,7 +744,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentIndigo
+                    tint = AccentIndigo.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -845,7 +845,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentIndigo,
+                    color = AccentIndigo.color,
                     strokeWidth = 4.dp
                 )
 
@@ -863,7 +863,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentIndigo
+                    color = AccentIndigo.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

@@ -65,9 +65,11 @@ import com.rejowan.pdfreaderpro.presentation.components.FolderItem
 import com.rejowan.pdfreaderpro.presentation.components.FolderSortOptionsSheet
 import com.rejowan.pdfreaderpro.presentation.components.LoadingState
 import com.rejowan.pdfreaderpro.presentation.components.PermissionRequiredState
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
-private val FolderAmber = Color(0xFFFFB74D)
-private val SoftBlue = Color(0xFF64B5F6)
+private val FolderAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val SoftBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -411,14 +413,14 @@ private fun EmptySearchState() {
                 .size(56.dp)
                 .offset(y = (-floatOffset).dp),
             shape = RoundedCornerShape(16.dp),
-            color = FolderAmber.copy(alpha = 0.12f)
+            color = FolderAmber.container
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     imageVector = Icons.Outlined.Search,
                     contentDescription = stringResource(R.string.cd_decorative),
                     modifier = Modifier.size(28.dp),
-                    tint = FolderAmber
+                    tint = FolderAmber.color
                 )
             }
         }
@@ -441,13 +443,13 @@ private fun StatChip(
     icon: ImageVector,
     value: String,
     label: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        color = accentColor.copy(alpha = 0.1f)
+        color = accentColor.container
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
@@ -456,7 +458,7 @@ private fun StatChip(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = accentColor.copy(alpha = 0.15f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -464,7 +466,7 @@ private fun StatChip(
                     modifier = Modifier
                         .padding(8.dp)
                         .size(20.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
             Column {

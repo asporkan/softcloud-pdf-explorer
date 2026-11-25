@@ -9,9 +9,11 @@ import android.os.Build
 import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.documentfile.provider.DocumentFile
+import com.rejowan.pdfreaderpro.R
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -268,6 +270,7 @@ object FileOperations {
             val file = File(filePath)
             if (!file.exists()) {
                 Timber.e("File not found: $filePath")
+                showShareFailed(context)
                 return
             }
 
@@ -284,10 +287,11 @@ object FileOperations {
             }
 
             context.startActivity(
-                Intent.createChooser(shareIntent, "Share PDF")
+                Intent.createChooser(shareIntent, context.getString(R.string.share_pdf_chooser))
             )
         } catch (e: Exception) {
             Timber.e(e, "Error sharing file")
+            showShareFailed(context)
         }
     }
 
@@ -308,6 +312,7 @@ object FileOperations {
 
             if (uris.isEmpty()) {
                 Timber.e("No valid files to share")
+                showShareFailed(context)
                 return
             }
 
@@ -318,11 +323,19 @@ object FileOperations {
             }
 
             context.startActivity(
-                Intent.createChooser(shareIntent, "Share ${uris.size} PDFs")
+                Intent.createChooser(
+                    shareIntent,
+                    context.resources.getQuantityString(R.plurals.share_pdfs_chooser, uris.size, uris.size)
+                )
             )
         } catch (e: Exception) {
             Timber.e(e, "Error sharing multiple files")
+            showShareFailed(context)
         }
+    }
+
+    private fun showShareFailed(context: Context) {
+        Toast.makeText(context, R.string.share_failed, Toast.LENGTH_SHORT).show()
     }
 
     /**

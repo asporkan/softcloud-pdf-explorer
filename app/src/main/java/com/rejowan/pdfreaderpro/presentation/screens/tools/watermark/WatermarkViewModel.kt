@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PdfToolsRepository
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolOutputWriter
+import com.rejowan.pdfreaderpro.presentation.theme.PdfOutputColors
 import com.rejowan.pdfreaderpro.util.FileOperations
 import com.rejowan.pdfreaderpro.util.SafOutputHelper
 import com.rejowan.pdfreaderpro.util.passwordProtectedBlockMessage
@@ -65,7 +66,7 @@ data class WatermarkState(
     // Text watermark settings
     val watermarkText: String = "",
     val fontSize: Float = 48f,
-    val textColor: Color = Color(0xFF808080),
+    val textColor: Color = PdfOutputColors.WatermarkDefaultText,
     val textOpacity: Float = 50f,
     val textRotation: Float = -45f,
 

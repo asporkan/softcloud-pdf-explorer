@@ -26,8 +26,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,10 +43,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FormattingUtils
 import kotlinx.coroutines.delay
 
-private val SelectionBlue = Color(0xFF2196F3)
+private val SelectionBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -78,7 +80,7 @@ fun PdfGridItem(
 
     val backgroundColor by animateColorAsState(
         targetValue = if (isSelected) {
-            SelectionBlue.copy(alpha = 0.12f)
+            SelectionBlue.container
         } else {
             MaterialTheme.colorScheme.surfaceContainerLow
         },
@@ -87,7 +89,7 @@ fun PdfGridItem(
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) SelectionBlue else Color.Transparent,
+        targetValue = if (isSelected) SelectionBlue.color else Color.Transparent,
         animationSpec = tween(200),
         label = "border color"
     )
@@ -139,7 +141,7 @@ fun PdfGridItem(
                             imageVector = if (isSelected) Icons.Filled.CheckCircle else Icons.Outlined.Circle,
                             contentDescription = if (isSelected) "Selected" else "Not selected",
                             modifier = Modifier.size(24.dp),
-                            tint = if (isSelected) SelectionBlue else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                            tint = if (isSelected) SelectionBlue.color else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
                         )
                     }
                 } else {
@@ -191,12 +193,12 @@ fun PdfGridItem(
                 ) {
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                        color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
                             text = FormattingUtils.formattedFileSize(pdfFile.size),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }

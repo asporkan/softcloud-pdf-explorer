@@ -1,6 +1,8 @@
 package com.rejowan.pdfreaderpro.presentation.components.dialogs
 
 import android.content.res.Configuration
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
 import androidx.compose.animation.AnimatedVisibility
@@ -35,13 +37,11 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -57,9 +57,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.launch
 
-private val AccentRed = Color(0xFFEF5350)
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -120,7 +122,9 @@ private fun DeleteConfirmBottomSheet(
                     onDismiss()
                 }
             },
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -217,7 +221,7 @@ private fun DeleteConfirmContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentRed.copy(alpha = 0.12f)
+                color = AccentRed.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.DeleteForever,
@@ -225,7 +229,7 @@ private fun DeleteConfirmContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentRed
+                    tint = AccentRed.color
                 )
             }
 
@@ -295,7 +299,8 @@ private fun DeleteConfirmContent(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = AccentRed
+                    containerColor = AccentRed.color,
+                    contentColor = AccentRed.onColor
                 )
             ) {
                 Text(stringResource(R.string.delete), style = MaterialTheme.typography.labelMedium)

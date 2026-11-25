@@ -6,6 +6,10 @@ import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,13 +38,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
-private val SelectionBlue = Color(0xFF2196F3)
-private val AccentRed = Color(0xFFEF5350)
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentTeal = Color(0xFF26A69A)
+private val SelectionBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
 @Composable
 fun SelectionActionBar(
@@ -59,9 +66,12 @@ fun SelectionActionBar(
         shadowElevation = 8.dp,
         tonalElevation = 2.dp
     ) {
+        // The surface runs under the system navigation bar; the content stays above it,
+        // so the Merge/Share/Delete labels never collide with the gesture/3-button bar.
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(horizontal = 8.dp, vertical = 12.dp)
         ) {
             // Top row: Close button, count, select all
@@ -84,36 +94,42 @@ fun SelectionActionBar(
                         text = stringResource(R.string.selected_count_format, selectedCount),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        color = SelectionBlue
+                        color = SelectionBlue.color,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = stringResource(R.string.of_files_count, totalCount),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
 
                 // Select All button
                 Surface(
                     modifier = Modifier
+                        .padding(end = 4.dp)
+                        .widthIn(max = 160.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .clickable(onClick = onSelectAll),
                     color = if (selectedCount == totalCount) {
-                        SelectionBlue.copy(alpha = 0.15f)
+                        SelectionBlue.container
                     } else {
                         MaterialTheme.colorScheme.surfaceContainerHigh
                     },
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
                             Icons.Default.SelectAll,
                             contentDescription = stringResource(R.string.cd_select_all),
                             modifier = Modifier.size(18.dp),
-                            tint = if (selectedCount == totalCount) SelectionBlue
+                            tint = if (selectedCount == totalCount) SelectionBlue.color
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -125,8 +141,10 @@ fun SelectionActionBar(
                             },
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Medium,
-                            color = if (selectedCount == totalCount) SelectionBlue
-                            else MaterialTheme.colorScheme.onSurface
+                            color = if (selectedCount == totalCount) SelectionBlue.onContainer
+                            else MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -143,7 +161,7 @@ fun SelectionActionBar(
                 ActionButton(
                     icon = Icons.AutoMirrored.Filled.CallMerge,
                     label = stringResource(R.string.merge),
-                    color = AccentPurple,
+                    tone = AccentPurple,
                     enabled = selectedCount >= 2,
                     onClick = onMerge,
                     modifier = Modifier.weight(1f)
@@ -153,7 +171,7 @@ fun SelectionActionBar(
                 ActionButton(
                     icon = Icons.Default.Share,
                     label = stringResource(R.string.share),
-                    color = AccentTeal,
+                    tone = AccentTeal,
                     enabled = selectedCount > 0,
                     onClick = onShare,
                     modifier = Modifier.weight(1f)
@@ -163,7 +181,7 @@ fun SelectionActionBar(
                 ActionButton(
                     icon = Icons.Default.Delete,
                     label = stringResource(R.string.delete),
-                    color = AccentRed,
+                    tone = AccentRed,
                     enabled = selectedCount > 0,
                     onClick = onDelete,
                     modifier = Modifier.weight(1f)
@@ -177,18 +195,22 @@ fun SelectionActionBar(
 private fun ActionButton(
     icon: ImageVector,
     label: String,
-    color: Color,
+    tone: AccentTone,
     enabled: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val alpha = if (enabled) 1f else 0.4f
+    // Disabled state follows the Material 3 defaults (onSurface 12% fill, 38% content).
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val containerColor = if (enabled) tone.container else onSurface.copy(alpha = 0.12f)
+    val iconColor = if (enabled) tone.color else onSurface.copy(alpha = 0.38f)
+    val labelColor = if (enabled) onSurface else onSurface.copy(alpha = 0.38f)
 
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .then(if (enabled) Modifier.clickable(onClick = onClick) else Modifier),
-        color = color.copy(alpha = 0.12f * alpha),
+        color = containerColor,
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
@@ -201,13 +223,15 @@ private fun ActionButton(
                 imageVector = icon,
                 contentDescription = label,
                 modifier = Modifier.size(22.dp),
-                tint = color.copy(alpha = alpha)
+                tint = iconColor
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Medium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = alpha),
+                color = labelColor,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 4.dp)
             )
         }

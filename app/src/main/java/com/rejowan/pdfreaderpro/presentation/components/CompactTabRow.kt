@@ -2,13 +2,11 @@ package com.rejowan.pdfreaderpro.presentation.components
 
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ViewList
@@ -31,8 +29,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,22 +46,21 @@ fun CompactTabRow(
     onViewModeToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val softPurple = Color(0xFF9575CD)
-    val tabsScrollState = rememberScrollState()
+    val softPurple = MaterialTheme.accents.purple
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Tabs — original typography/spacing; scroll horizontally when labels don't fit.
+        // Tabs share the free width equally, so every label stays fully visible (360dp included).
+        // The view-mode toggle sits to the right and never overlaps a tab.
         Row(
             modifier = Modifier
                 .weight(1f)
-                .horizontalScroll(tabsScrollState)
                 .padding(end = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             tabs.forEachIndexed { index, title ->
@@ -67,7 +68,8 @@ fun CompactTabRow(
                     title = title,
                     isSelected = index == selectedIndex,
                     accentColor = softPurple,
-                    onClick = { onTabSelected(index) }
+                    onClick = { onTabSelected(index) },
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
@@ -125,16 +127,16 @@ fun CompactTabRow(
 private fun CompactTab(
     title: String,
     isSelected: Boolean,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.18f) else Color.Transparent,
+        targetValue = if (isSelected) accentColor.container else Color.Transparent,
         label = "tab background"
     )
     val textColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+        targetValue = if (isSelected) accentColor.onContainer else MaterialTheme.colorScheme.onSurfaceVariant,
         label = "tab text"
     )
 
@@ -147,11 +149,17 @@ private fun CompactTab(
     ) {
         Text(
             text = title,
-            style = MaterialTheme.typography.bodyMedium.copy(
+            style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
             ),
             color = textColor,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+            maxLines = 1,
+            softWrap = false,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp, vertical = 8.dp)
         )
     }
 }
@@ -174,7 +182,7 @@ private fun ViewModeIcon(
         targetValue = if (isSelected)
             MaterialTheme.colorScheme.onSurface
         else
-            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            MaterialTheme.colorScheme.onSurfaceVariant,
         label = "view mode tint"
     )
 
@@ -187,7 +195,7 @@ private fun ViewModeIcon(
         contentColor = tint
     ) {
         Row(
-            modifier = Modifier.padding(6.dp),
+            modifier = Modifier.padding(5.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             content()

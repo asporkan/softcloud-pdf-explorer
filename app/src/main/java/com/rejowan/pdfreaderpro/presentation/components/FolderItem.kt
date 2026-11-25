@@ -41,10 +41,11 @@ import com.rejowan.pdfreaderpro.R
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.domain.model.PdfFolder
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 
-private val FolderAmber = Color(0xFFFFB74D)
-private val FolderAmberDark = Color(0xFFF57C00)
+private val FolderAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -93,7 +94,7 @@ fun FolderItem(
             Surface(
                 modifier = Modifier.size(48.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = FolderAmber.copy(alpha = 0.15f)
+                color = FolderAmber.container
             ) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -103,7 +104,7 @@ fun FolderItem(
                         imageVector = Icons.Rounded.Folder,
                         contentDescription = stringResource(R.string.cd_folder),
                         modifier = Modifier.size(28.dp),
-                        tint = FolderAmberDark
+                        tint = FolderAmber.color
                     )
                 }
             }
@@ -134,14 +135,14 @@ fun FolderItem(
                     // Count chip
                     Surface(
                         shape = RoundedCornerShape(4.dp),
-                        color = FolderAmber.copy(alpha = 0.2f)
+                        color = FolderAmber.container
                     ) {
                         Text(
                             text = pluralStringResource(R.plurals.folder_pdf_count, folder.pdfCount, folder.pdfCount),
                             style = MaterialTheme.typography.labelSmall.copy(
                                 fontWeight = FontWeight.Medium
                             ),
-                            color = FolderAmberDark,
+                            color = FolderAmber.onContainer,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                         )
                     }

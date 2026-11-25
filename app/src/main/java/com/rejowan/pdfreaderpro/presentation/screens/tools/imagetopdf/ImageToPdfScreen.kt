@@ -89,15 +89,17 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.OutputLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ResultLocationText
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.ToolContentWithLocation
 import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutputSaver
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
 
 // Accent colors
-private val AccentTeal = Color(0xFF26A69A) // Image to PDF theme
-private val AccentGreen = Color(0xFF81C784)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentRed = Color(0xFFEF5350)
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal // Image to PDF theme
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -132,7 +134,7 @@ fun ImageToPdfScreen(
                             Text(
                                 stringResource(R.string.images_selected, state.images.size),
                                 style = MaterialTheme.typography.labelSmall,
-                                color = AccentTeal
+                                color = AccentTeal.color
                             )
                         }
                     }
@@ -193,7 +195,7 @@ fun ImageToPdfScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = AccentTeal)
+                        CircularProgressIndicator(color = AccentTeal.color)
                     }
                 }
                 state.images.isEmpty() -> {
@@ -233,7 +235,7 @@ fun ImageToPdfScreen(
                         .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(color = AccentTeal)
+                    CircularProgressIndicator(color = AccentTeal.color)
                 }
             }
 
@@ -275,14 +277,14 @@ private fun EmptyState(onSelectImages: () -> Unit) {
                 .offset(y = (-floatOffset).dp)
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentTeal.copy(alpha = 0.1f)),
+                .background(AccentTeal.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.Image,
                 contentDescription = stringResource(R.string.cd_image_to_pdf),
                 modifier = Modifier.size(40.dp),
-                tint = AccentTeal
+                tint = AccentTeal.color
             )
         }
 
@@ -433,7 +435,7 @@ private fun ImageThumbnailItem(
                     .align(Alignment.BottomStart)
                     .padding(4.dp)
                     .background(
-                        color = AccentTeal,
+                        color = AccentTeal.color,
                         shape = RoundedCornerShape(4.dp)
                     )
                     .padding(horizontal = 6.dp, vertical = 2.dp)
@@ -441,7 +443,7 @@ private fun ImageThumbnailItem(
                 Text(
                     "$index",
                     style = MaterialTheme.typography.labelSmall,
-                    color = Color.White
+                    color = AccentTeal.onColor
                 )
             }
 
@@ -458,14 +460,14 @@ private fun ImageThumbnailItem(
                 Box(
                     modifier = Modifier
                         .size(22.dp)
-                        .background(AccentRed, CircleShape),
+                        .background(AccentRed.color, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Close,
                         contentDescription = stringResource(R.string.cd_remove),
                         modifier = Modifier.size(14.dp),
-                        tint = Color.White
+                        tint = AccentRed.onColor
                     )
                 }
             }
@@ -496,7 +498,7 @@ private fun ConvertBottomSection(
                     .fillMaxWidth()
                     .padding(bottom = 12.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = AccentRed.copy(alpha = 0.1f)
+                    containerColor = AccentRed.container
                 ),
                 shape = RoundedCornerShape(8.dp)
             ) {
@@ -509,7 +511,7 @@ private fun ConvertBottomSection(
                     Text(
                         error ?: "",
                         style = MaterialTheme.typography.bodySmall,
-                        color = AccentRed,
+                        color = AccentRed.color,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
@@ -520,7 +522,7 @@ private fun ConvertBottomSection(
                             Icons.Default.Close,
                             contentDescription = stringResource(R.string.cd_dismiss),
                             modifier = Modifier.size(16.dp),
-                            tint = AccentRed
+                            tint = AccentRed.color
                         )
                     }
                 }
@@ -573,14 +575,14 @@ private fun SuccessState(
             modifier = Modifier
                 .size(80.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(AccentGreen.copy(alpha = 0.1f)),
+                .background(AccentGreen.container),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 Icons.Default.CheckCircle,
                 contentDescription = stringResource(R.string.cd_success),
                 modifier = Modifier.size(48.dp),
-                tint = AccentGreen
+                tint = AccentGreen.color
             )
         }
 
@@ -619,7 +621,7 @@ private fun SuccessState(
                     Icons.Default.Description,
                     contentDescription = stringResource(R.string.cd_pdf_file),
                     modifier = Modifier.size(20.dp),
-                    tint = AccentBlue
+                    tint = AccentBlue.color
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -718,7 +720,7 @@ private fun ProcessingOverlay(progress: Float) {
                 CircularProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.size(56.dp),
-                    color = AccentTeal,
+                    color = AccentTeal.color,
                     strokeWidth = 4.dp
                 )
 
@@ -736,7 +738,7 @@ private fun ProcessingOverlay(progress: Float) {
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier.fillMaxWidth(),
-                    color = AccentTeal
+                    color = AccentTeal.color
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
