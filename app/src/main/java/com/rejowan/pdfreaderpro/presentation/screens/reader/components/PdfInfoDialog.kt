@@ -54,7 +54,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -63,15 +62,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentAmber = Color(0xFFFFB74D)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 
 data class PdfInfo(
     val title: String?,
@@ -117,7 +118,8 @@ private fun PdfInfoBottomSheet(
     info: PdfInfo,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last rows sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -153,7 +155,7 @@ private fun PdfInfoSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -217,7 +219,7 @@ private fun PdfInfoContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentPurple.copy(alpha = 0.12f)
+                color = AccentPurple.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Description,
@@ -225,7 +227,7 @@ private fun PdfInfoContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentPurple
+                    tint = AccentPurple.color
                 )
             }
 
@@ -244,7 +246,7 @@ private fun PdfInfoContent(
                 Text(
                     text = stringResource(R.string.document_information),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -258,18 +260,18 @@ private fun PdfInfoContent(
         ) {
             StatChip(
                 label = stringResource(R.string.pages_count, info.pageCount),
-                color = AccentBlue,
+                tone = AccentBlue,
                 modifier = Modifier.weight(1f)
             )
             StatChip(
                 label = formatFileSize(info.fileSize),
-                color = AccentTeal,
+                tone = AccentTeal,
                 modifier = Modifier.weight(1f)
             )
             info.pdfVersion?.let {
                 StatChip(
                     label = stringResource(R.string.pdf_version_label, it),
-                    color = AccentAmber,
+                    tone = AccentAmber,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -344,20 +346,20 @@ private fun PdfInfoContent(
                     if (info.isEncrypted) {
                         FeatureTag(
                             text = info.encryptionType?.let { stringResource(R.string.encrypted_type, it) } ?: stringResource(R.string.encrypted_label),
-                            color = Color(0xFFEF5350)
+                            tone = MaterialTheme.accents.red
                         )
                     }
                     if (info.hasForms) {
-                        FeatureTag(text = stringResource(R.string.forms_label), color = AccentBlue)
+                        FeatureTag(text = stringResource(R.string.forms_label), tone = AccentBlue)
                     }
                     if (info.hasSignatures) {
-                        FeatureTag(text = stringResource(R.string.signatures_label), color = AccentTeal)
+                        FeatureTag(text = stringResource(R.string.signatures_label), tone = AccentTeal)
                     }
                     if (info.hasXfa) {
-                        FeatureTag(text = stringResource(R.string.xfa_label), color = AccentPurple)
+                        FeatureTag(text = stringResource(R.string.xfa_label), tone = AccentPurple)
                     }
                     if (info.isLinearized) {
-                        FeatureTag(text = stringResource(R.string.web_optimized), color = AccentAmber)
+                        FeatureTag(text = stringResource(R.string.web_optimized), tone = AccentAmber)
                     }
                 }
             }
@@ -368,7 +370,7 @@ private fun PdfInfoContent(
         InfoSection(
             title = stringResource(R.string.location_section),
             icon = Icons.Rounded.Folder,
-            accentColor = Color(0xFF78909C)
+            accentColor = MaterialTheme.accents.gray
         ) {
             Text(
                 text = info.path,
@@ -387,13 +389,13 @@ private fun PdfInfoContent(
 @Composable
 private fun StatChip(
     label: String,
-    color: Color,
+    tone: AccentTone,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(6.dp))
-            .background(color.copy(alpha = 0.12f))
+            .background(tone.container)
             .padding(horizontal = 8.dp, vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -402,7 +404,7 @@ private fun StatChip(
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.SemiBold
             ),
-            color = color
+            color = tone.onContainer
         )
     }
 }
@@ -411,7 +413,7 @@ private fun StatChip(
 private fun InfoSection(
     title: String,
     icon: ImageVector,
-    accentColor: Color,
+    accentColor: AccentTone,
     content: @Composable () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -422,7 +424,7 @@ private fun InfoSection(
             Icon(
                 imageVector = icon,
                 contentDescription = stringResource(R.string.cd_decorative),
-                tint = accentColor,
+                tint = accentColor.color,
                 modifier = Modifier.size(14.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -431,7 +433,7 @@ private fun InfoSection(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.SemiBold
                 ),
-                color = accentColor
+                color = accentColor.color
             )
         }
         Surface(
@@ -480,12 +482,12 @@ private fun InfoItem(
 @Composable
 private fun FeatureTag(
     text: String,
-    color: Color
+    tone: AccentTone
 ) {
     Box(
         modifier = Modifier
             .clip(RoundedCornerShape(4.dp))
-            .background(color.copy(alpha = 0.12f))
+            .background(tone.container)
             .padding(horizontal = 6.dp, vertical = 3.dp)
     ) {
         Text(
@@ -493,7 +495,7 @@ private fun FeatureTag(
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = color
+            color = tone.onContainer
         )
     }
 }

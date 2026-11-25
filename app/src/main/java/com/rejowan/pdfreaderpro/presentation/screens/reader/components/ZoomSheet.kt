@@ -51,7 +51,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -75,13 +74,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ScreenOrientation
 import kotlinx.coroutines.delay
 
 // Design colors
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentAmber = Color(0xFFFFB74D)
-private val AccentBlue = Color(0xFF64B5F6)
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 // Zoom presets
 enum class ZoomPreset {
@@ -146,7 +147,8 @@ private fun ZoomBottomSheet(
     onDoubleTapZoomChange: (Float) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last rows sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -164,7 +166,9 @@ private fun ZoomBottomSheet(
             onZoomPreset = onZoomPreset,
             onOrientationChange = onOrientationChange,
             onDoubleTapZoomChange = onDoubleTapZoomChange,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -196,7 +200,7 @@ private fun ZoomSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -387,7 +391,7 @@ private fun ZoomSheetHeader(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = AccentTeal.copy(alpha = 0.12f)
+            color = AccentTeal.container
         ) {
             Icon(
                 imageVector = Icons.Rounded.ZoomIn,
@@ -395,7 +399,7 @@ private fun ZoomSheetHeader(
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
-                tint = AccentTeal
+                tint = AccentTeal.color
             )
         }
 
@@ -412,7 +416,7 @@ private fun ZoomSheetHeader(
             Text(
                 text = stringResource(R.string.adjust_view_orientation),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -442,7 +446,7 @@ private fun SectionLabel(
         style = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.Medium
         ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f * alpha),
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
         modifier = modifier.padding(start = 4.dp)
     )
 }
@@ -498,12 +502,12 @@ private fun ZoomControlsRow(
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold
                     ),
-                    color = AccentTeal
+                    color = AccentTeal.color
                 )
                 Text(
                     text = stringResource(R.string.current_zoom_label),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -521,7 +525,7 @@ private fun ZoomControlsRow(
 private fun ZoomButton(
     icon: ImageVector,
     onClick: () -> Unit,
-    accentColor: Color,
+    accentColor: AccentTone,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -530,11 +534,11 @@ private fun ZoomButton(
             .clip(CircleShape)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             ),
         shape = CircleShape,
-        color = accentColor.copy(alpha = 0.12f)
+        color = accentColor.container
     ) {
         Box(
             contentAlignment = Alignment.Center,
@@ -545,7 +549,7 @@ private fun ZoomButton(
                 contentDescription = stringResource(
                     if (icon == Icons.Rounded.Add) R.string.cd_zoom_in else R.string.cd_zoom_out
                 ),
-                tint = accentColor,
+                tint = accentColor.color,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -557,7 +561,7 @@ private fun ZoomPresetChip(
     icon: ImageVector,
     label: String,
     isSelected: Boolean,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     animationDelay: Int = 0
@@ -576,21 +580,21 @@ private fun ZoomPresetChip(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
+        targetValue = if (isSelected) accentColor.container
         else MaterialTheme.colorScheme.surfaceContainerHigh,
         animationSpec = tween(200),
         label = "preset bg"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
+        targetValue = if (isSelected) accentColor.color
         else Color.Transparent,
         animationSpec = tween(200),
         label = "preset border"
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor
+        targetValue = if (isSelected) accentColor.color
         else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(200),
         label = "preset content"
@@ -602,7 +606,7 @@ private fun ZoomPresetChip(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             )
             .then(
@@ -625,7 +629,7 @@ private fun ZoomPresetChip(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .background(accentColor.copy(alpha = 0.1f)),
+                    .background(accentColor.container),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -654,7 +658,7 @@ private fun OrientationChip(
     icon: ImageVector,
     label: String,
     isSelected: Boolean,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     animationDelay: Int = 0
@@ -673,21 +677,21 @@ private fun OrientationChip(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
+        targetValue = if (isSelected) accentColor.container
         else MaterialTheme.colorScheme.surfaceContainerHigh,
         animationSpec = tween(200),
         label = "orientation bg"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
+        targetValue = if (isSelected) accentColor.color
         else Color.Transparent,
         animationSpec = tween(200),
         label = "orientation border"
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor
+        targetValue = if (isSelected) accentColor.color
         else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(200),
         label = "orientation content"
@@ -699,7 +703,7 @@ private fun OrientationChip(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             )
             .then(
@@ -723,7 +727,7 @@ private fun OrientationChip(
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.1f)),
+                        .background(accentColor.container),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -741,14 +745,14 @@ private fun OrientationChip(
                             .align(Alignment.TopEnd)
                             .size(14.dp)
                             .clip(CircleShape)
-                            .background(accentColor),
+                            .background(accentColor.color),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Check,
                             contentDescription = stringResource(R.string.option_selected),
                             modifier = Modifier.size(8.dp),
-                            tint = Color.White
+                            tint = accentColor.onColor
                         )
                     }
                 }
@@ -771,7 +775,7 @@ private fun OrientationChip(
 private fun DoubleTapZoomSlider(
     currentValue: Float,
     onValueChange: (Float) -> Unit,
-    accentColor: Color,
+    accentColor: AccentTone,
     modifier: Modifier = Modifier
 ) {
     var sliderValue by remember(currentValue) {
@@ -797,17 +801,17 @@ private fun DoubleTapZoomSlider(
                 Text(
                     text = "1.1×",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "${displayValue}×",
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                    color = accentColor
+                    color = accentColor.color
                 )
                 Text(
                     text = "5.0×",
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Slider(
@@ -815,11 +819,7 @@ private fun DoubleTapZoomSlider(
                 onValueChange = { sliderValue = it },
                 onValueChangeFinished = { onValueChange((sliderValue * 10f).toInt() / 10f) },
                 valueRange = 1.1f..5f,
-                colors = SliderDefaults.colors(
-                    thumbColor = accentColor,
-                    activeTrackColor = accentColor,
-                    inactiveTrackColor = accentColor.copy(alpha = 0.2f)
-                )
+                colors = accentSliderColors(accentColor)
             )
         }
     }

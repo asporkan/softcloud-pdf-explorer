@@ -6,7 +6,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -34,10 +33,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -58,10 +55,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlin.math.roundToInt
 
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 @Composable
 fun ReaderSidebar(
@@ -75,8 +74,7 @@ fun ReaderSidebar(
     onKeepScreenOnChange: (Boolean) -> Unit,
     onRotationLockChange: () -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-    isDarkMode: Boolean = isSystemInDarkTheme()
+    modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
     val sidebarWidth = 280.dp
@@ -110,7 +108,7 @@ fun ReaderSidebar(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = scrimAlpha))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = scrimAlpha))
                     .pointerInput(Unit) {
                         detectHorizontalDragGestures(
                             onDragEnd = {
@@ -163,7 +161,6 @@ fun ReaderSidebar(
                     }
                     dragOffset = 0f
                 },
-                isDarkMode = isDarkMode,
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .width(sidebarWidth)
@@ -186,12 +183,11 @@ private fun SidebarContent(
     onRotationLockChange: () -> Unit,
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
-    isDarkMode: Boolean,
     modifier: Modifier = Modifier
 ) {
     val surfaceColor = MaterialTheme.colorScheme.surfaceContainerHigh
     val contentColor = MaterialTheme.colorScheme.onSurface
-    val subtleColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+    val subtleColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     val progress = if (totalPages > 0) currentPage.toFloat() / totalPages else 0f
 
@@ -229,7 +225,7 @@ private fun SidebarContent(
                             .width(4.dp)
                             .height(40.dp)
                             .clip(RoundedCornerShape(2.dp))
-                            .background(AccentPurple.copy(alpha = 0.5f))
+                            .background(AccentPurple.color)
                     )
 
                     Column {
@@ -272,7 +268,7 @@ private fun SidebarContent(
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.SemiBold
                         ),
-                        color = AccentPurple
+                        color = AccentPurple.color
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
@@ -282,8 +278,8 @@ private fun SidebarContent(
                         .fillMaxWidth()
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = AccentPurple,
-                    trackColor = AccentPurple.copy(alpha = 0.15f),
+                    color = AccentPurple.color,
+                    trackColor = AccentPurple.container,
                     strokeCap = StrokeCap.Round
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -307,7 +303,7 @@ private fun SidebarContent(
             Spacer(modifier = Modifier.height(20.dp))
             HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 20.dp),
-                color = subtleColor.copy(alpha = 0.2f)
+                color = MaterialTheme.colorScheme.outlineVariant
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -323,7 +319,7 @@ private fun SidebarContent(
                 ) {
                     Surface(
                         shape = CircleShape,
-                        color = AccentBlue.copy(alpha = 0.15f),
+                        color = AccentBlue.container,
                         modifier = Modifier.size(36.dp)
                     ) {
                         Box(
@@ -334,7 +330,7 @@ private fun SidebarContent(
                                 imageVector = Icons.Outlined.WbSunny,
                                 contentDescription = stringResource(R.string.cd_decorative),
                                 modifier = Modifier.size(18.dp),
-                                tint = AccentBlue
+                                tint = AccentBlue.color
                             )
                         }
                     }
@@ -362,11 +358,7 @@ private fun SidebarContent(
                         onValueChange = onBrightnessChange,
                         valueRange = 0.1f..1f,
                         modifier = Modifier.weight(1f),
-                        colors = SliderDefaults.colors(
-                            thumbColor = AccentBlue,
-                            activeTrackColor = AccentBlue,
-                            inactiveTrackColor = AccentBlue.copy(alpha = 0.2f)
-                        )
+                        colors = accentSliderColors(AccentBlue)
                     )
                     Icon(
                         imageVector = Icons.Filled.Brightness6,
@@ -417,7 +409,7 @@ private fun SidebarContent(
                 Text(
                     text = stringResource(R.string.swipe_to_close),
                     style = MaterialTheme.typography.labelSmall,
-                    color = subtleColor.copy(alpha = 0.5f)
+                    color = subtleColor
                 )
             }
         }
@@ -431,7 +423,7 @@ private fun SettingToggleItem(
     icon: ImageVector,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    accentColor: Color,
+    accentColor: AccentTone,
     contentColor: Color,
     subtleColor: Color,
     modifier: Modifier = Modifier
@@ -444,7 +436,7 @@ private fun SettingToggleItem(
     ) {
         Surface(
             shape = CircleShape,
-            color = accentColor.copy(alpha = 0.15f),
+            color = accentColor.container,
             modifier = Modifier.size(36.dp)
         ) {
             Box(
@@ -455,7 +447,7 @@ private fun SettingToggleItem(
                     imageVector = icon,
                     contentDescription = stringResource(R.string.cd_decorative),
                     modifier = Modifier.size(18.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
         }
@@ -477,12 +469,7 @@ private fun SettingToggleItem(
         Switch(
             checked = isChecked,
             onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = accentColor,
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = subtleColor.copy(alpha = 0.3f)
-            )
+            colors = accentSwitchColors(accentColor)
         )
     }
 }

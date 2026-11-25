@@ -47,15 +47,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
-private val AccentPink = Color(0xFFF48FB1)
+private val AccentPink: AccentTone @Composable get() = MaterialTheme.accents.pink
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,7 +80,8 @@ private fun RemoveFavoriteBottomSheet(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last rows sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -91,7 +93,9 @@ private fun RemoveFavoriteBottomSheet(
         RemoveFavoriteContent(
             onConfirm = onConfirm,
             onDismiss = onDismiss,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -116,7 +120,7 @@ private fun RemoveFavoriteSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -177,7 +181,7 @@ private fun RemoveFavoriteContent(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentPink.copy(alpha = 0.12f)
+                color = AccentPink.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.HeartBroken,
@@ -185,7 +189,7 @@ private fun RemoveFavoriteContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentPink
+                    tint = AccentPink.color
                 )
             }
 
@@ -202,7 +206,7 @@ private fun RemoveFavoriteContent(
                 Text(
                     text = stringResource(R.string.remove_from_list_message),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -225,7 +229,10 @@ private fun RemoveFavoriteContent(
                 onClick = onConfirm,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AccentPink)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AccentPink.color,
+                    contentColor = AccentPink.onColor
+                )
             ) {
                 Text(stringResource(R.string.remove), style = MaterialTheme.typography.labelMedium)
             }

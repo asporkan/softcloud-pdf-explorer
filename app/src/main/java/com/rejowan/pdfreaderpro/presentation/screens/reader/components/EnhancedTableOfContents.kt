@@ -73,11 +73,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -175,7 +177,7 @@ private fun TocSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -261,7 +263,7 @@ private fun TocSheetContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentPurple.copy(alpha = 0.12f)
+                color = AccentPurple.container
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.MenuBook,
@@ -269,7 +271,7 @@ private fun TocSheetContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentPurple
+                    tint = AccentPurple.color
                 )
             }
 
@@ -293,7 +295,7 @@ private fun TocSheetContent(
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -312,8 +314,8 @@ private fun TocSheetContent(
                     onClick = { selectedTab = 0 },
                     shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
                     colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = AccentPurple.copy(alpha = 0.15f),
-                        activeContentColor = AccentPurple
+                        activeContainerColor = AccentPurple.container,
+                        activeContentColor = AccentPurple.color
                     )
                 ) {
                     Text(stringResource(R.string.toc_contents_tab), style = MaterialTheme.typography.labelSmall)
@@ -323,8 +325,8 @@ private fun TocSheetContent(
                     onClick = { selectedTab = 1 },
                     shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
                     colors = SegmentedButtonDefaults.colors(
-                        activeContainerColor = AccentTeal.copy(alpha = 0.15f),
-                        activeContentColor = AccentTeal
+                        activeContainerColor = AccentTeal.container,
+                        activeContentColor = AccentTeal.color
                     )
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -431,18 +433,18 @@ private fun TocItem(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isCurrentSection) AccentPurple.copy(alpha = 0.1f) else Color.Transparent,
+        targetValue = if (isCurrentSection) AccentPurple.container else Color.Transparent,
         animationSpec = spring(stiffness = Spring.StiffnessLow),
         label = "toc item background"
     )
 
     val indicatorColor by animateColorAsState(
-        targetValue = if (isCurrentSection) AccentPurple else MaterialTheme.colorScheme.outlineVariant,
+        targetValue = if (isCurrentSection) AccentPurple.color else MaterialTheme.colorScheme.outlineVariant,
         label = "indicator color"
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isCurrentSection) AccentPurple else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (isCurrentSection) AccentPurple.color else MaterialTheme.colorScheme.onSurface,
         label = "toc text color"
     )
 
@@ -456,7 +458,7 @@ private fun TocItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = AccentPurple),
+                indication = ripple(color = AccentPurple.color),
                 onClick = onClick
             ),
         shape = RoundedCornerShape(8.dp),
@@ -496,7 +498,7 @@ private fun TocItem(
             // Page number chip
             Surface(
                 shape = RoundedCornerShape(6.dp),
-                color = if (isCurrentSection) AccentPurple else MaterialTheme.colorScheme.surfaceContainerHigh
+                color = if (isCurrentSection) AccentPurple.color else MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
@@ -507,7 +509,7 @@ private fun TocItem(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium
                         ),
-                        color = if (isCurrentSection) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                        color = if (isCurrentSection) AccentPurple.onColor else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (isCurrentSection) {
                         Spacer(modifier = Modifier.width(2.dp))
@@ -515,7 +517,7 @@ private fun TocItem(
                             imageVector = Icons.Rounded.ChevronRight,
                             contentDescription = stringResource(R.string.cd_current_page),
                             modifier = Modifier.size(12.dp),
-                            tint = Color.White
+                            tint = AccentPurple.onColor
                         )
                     }
                 }
@@ -537,7 +539,7 @@ private fun EmptyTocState(
     ) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = AccentBlue.copy(alpha = 0.1f),
+            color = AccentBlue.container,
             modifier = Modifier.size(56.dp)
         ) {
             Box(
@@ -547,7 +549,7 @@ private fun EmptyTocState(
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.MenuBook,
                     contentDescription = stringResource(R.string.cd_decorative),
-                    tint = AccentBlue,
+                    tint = AccentBlue.color,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -568,7 +570,7 @@ private fun EmptyTocState(
         Text(
             text = stringResource(R.string.no_toc_message),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -604,7 +606,7 @@ private fun AttachmentListItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = AccentTeal),
+                indication = ripple(color = AccentTeal.color),
                 onClick = onOpen
             ),
         shape = RoundedCornerShape(8.dp),
@@ -619,7 +621,7 @@ private fun AttachmentListItem(
             // File icon
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentTeal.copy(alpha = 0.12f)
+                color = AccentTeal.container
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Rounded.InsertDriveFile,
@@ -627,7 +629,7 @@ private fun AttachmentListItem(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentTeal
+                    tint = AccentTeal.color
                 )
             }
 
@@ -654,7 +656,7 @@ private fun AttachmentListItem(
                         stringResource(R.string.reader_attachment_tap_open)
                     },
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -663,12 +665,12 @@ private fun AttachmentListItem(
             // Download button
             Surface(
                 shape = RoundedCornerShape(6.dp),
-                color = AccentTeal.copy(alpha = 0.12f),
+                color = AccentTeal.container,
                 modifier = Modifier
                     .clip(RoundedCornerShape(6.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(color = AccentTeal, bounded = true),
+                        indication = ripple(color = AccentTeal.color, bounded = true),
                         onClick = onDownload
                     )
             ) {
@@ -678,7 +680,7 @@ private fun AttachmentListItem(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentTeal
+                    tint = AccentTeal.color
                 )
             }
         }
@@ -698,7 +700,7 @@ private fun EmptyAttachmentsState(
     ) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = AccentTeal.copy(alpha = 0.1f),
+            color = AccentTeal.container,
             modifier = Modifier.size(56.dp)
         ) {
             Box(
@@ -708,7 +710,7 @@ private fun EmptyAttachmentsState(
                 Icon(
                     imageVector = Icons.Rounded.AttachFile,
                     contentDescription = stringResource(R.string.cd_decorative),
-                    tint = AccentTeal,
+                    tint = AccentTeal.color,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -729,7 +731,7 @@ private fun EmptyAttachmentsState(
         Text(
             text = stringResource(R.string.no_attachments_message),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(16.dp))

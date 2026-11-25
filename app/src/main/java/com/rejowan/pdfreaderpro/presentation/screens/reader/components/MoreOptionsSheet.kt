@@ -59,7 +59,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -67,14 +66,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 
 // Design colors
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentAmber = Color(0xFFFFB74D)
-private val AccentPink = Color(0xFFF48FB1)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val AccentPink: AccentTone @Composable get() = MaterialTheme.accents.pink
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,7 +129,8 @@ private fun MoreOptionsBottomSheet(
     onDeleteClick: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last rows sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -179,7 +181,7 @@ private fun MoreOptionsSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -341,7 +343,7 @@ private fun MoreOptionsSheetContent(
             icon = Icons.Rounded.Info,
             title = stringResource(R.string.document_info),
             subtitle = stringResource(R.string.view_file_details),
-            accentColor = MaterialTheme.colorScheme.primary,
+            accentColor = AccentPurple,
             onClick = {
                 onDismiss()
                 onDocumentInfoClick()
@@ -364,7 +366,7 @@ private fun MoreOptionsSheetContent(
             icon = Icons.Rounded.DeleteForever,
             title = stringResource(R.string.delete),
             subtitle = stringResource(R.string.delete_file_permanently),
-            accentColor = MaterialTheme.colorScheme.error,
+            accentColor = MaterialTheme.accents.red,
             isDestructive = true,
             onClick = {
                 onDismiss()
@@ -385,7 +387,7 @@ private fun MoreOptionsHeader(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+            color = MaterialTheme.colorScheme.primaryContainer
         ) {
             Icon(
                 imageVector = Icons.Rounded.MoreHoriz,
@@ -393,7 +395,7 @@ private fun MoreOptionsHeader(
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
-                tint = MaterialTheme.colorScheme.primary
+                tint = MaterialTheme.colorScheme.onPrimaryContainer
             )
         }
 
@@ -410,7 +412,7 @@ private fun MoreOptionsHeader(
             Text(
                 text = stringResource(R.string.additional_tools),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -426,7 +428,7 @@ private fun SectionLabel(
         style = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.Medium
         ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier.padding(start = 4.dp)
     )
 }
@@ -436,7 +438,7 @@ private fun OptionItem(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     animationDelay: Int,
     modifier: Modifier = Modifier,
@@ -462,7 +464,7 @@ private fun OptionItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             ),
         shape = RoundedCornerShape(8.dp),
@@ -478,7 +480,7 @@ private fun OptionItem(
             // Icon
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -486,7 +488,7 @@ private fun OptionItem(
                     modifier = Modifier
                         .padding(7.dp)
                         .size(18.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -499,12 +501,12 @@ private fun OptionItem(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = if (isDestructive) accentColor else MaterialTheme.colorScheme.onSurface
+                    color = if (isDestructive) accentColor.color else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -513,7 +515,7 @@ private fun OptionItem(
                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = stringResource(R.string.cd_decorative),
                 modifier = Modifier.size(18.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

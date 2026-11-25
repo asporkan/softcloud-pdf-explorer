@@ -66,14 +66,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.data.local.database.entity.BookmarkEntity
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val AccentRed = Color(0xFFEF5350)
-private val AccentPurple = Color(0xFF9575CD)
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -156,7 +158,7 @@ private fun BookmarksSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -221,7 +223,7 @@ private fun BookmarksSheetContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentRed.copy(alpha = 0.12f)
+                color = AccentRed.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Bookmark,
@@ -229,7 +231,7 @@ private fun BookmarksSheetContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentRed
+                    tint = AccentRed.color
                 )
             }
 
@@ -248,7 +250,7 @@ private fun BookmarksSheetContent(
                         text = if (bookmarks.size == 1) stringResource(R.string.bookmark_count, bookmarks.size)
                                else stringResource(R.string.bookmarks_count, bookmarks.size),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -313,13 +315,13 @@ private fun BookmarkItem(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isCurrentPage) AccentRed.copy(alpha = 0.1f) else Color.Transparent,
+        targetValue = if (isCurrentPage) AccentRed.container else Color.Transparent,
         animationSpec = tween(200),
         label = "bookmark item background"
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isCurrentPage) AccentRed else MaterialTheme.colorScheme.onSurface,
+        targetValue = if (isCurrentPage) AccentRed.color else MaterialTheme.colorScheme.onSurface,
         label = "bookmark text color"
     )
 
@@ -331,7 +333,7 @@ private fun BookmarkItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = AccentRed),
+                indication = ripple(color = AccentRed.color),
                 onClick = onClick
             ),
         shape = RoundedCornerShape(8.dp),
@@ -346,7 +348,7 @@ private fun BookmarkItem(
             // Bookmark icon
             Surface(
                 shape = CircleShape,
-                color = if (isCurrentPage) AccentRed.copy(alpha = 0.15f)
+                color = if (isCurrentPage) AccentRed.container
                        else MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Icon(
@@ -355,7 +357,7 @@ private fun BookmarkItem(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(14.dp),
-                    tint = if (isCurrentPage) AccentRed
+                    tint = if (isCurrentPage) AccentRed.color
                           else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -376,14 +378,14 @@ private fun BookmarkItem(
                 Text(
                     text = formatDate(bookmark.createdAt),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             // Page number chip
             Surface(
                 shape = RoundedCornerShape(6.dp),
-                color = if (isCurrentPage) AccentRed
+                color = if (isCurrentPage) AccentRed.color
                        else MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Row(
@@ -395,7 +397,7 @@ private fun BookmarkItem(
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Medium
                         ),
-                        color = if (isCurrentPage) Color.White
+                        color = if (isCurrentPage) AccentRed.onColor
                                else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     if (isCurrentPage) {
@@ -404,7 +406,7 @@ private fun BookmarkItem(
                             imageVector = Icons.Rounded.ChevronRight,
                             contentDescription = stringResource(R.string.cd_current_page),
                             modifier = Modifier.size(12.dp),
-                            tint = Color.White
+                            tint = AccentRed.onColor
                         )
                     }
                 }
@@ -418,7 +420,7 @@ private fun BookmarkItem(
                 Icon(
                     imageVector = Icons.Rounded.Delete,
                     contentDescription = stringResource(R.string.delete_bookmark),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(16.dp)
                 )
             }
@@ -439,7 +441,7 @@ private fun EmptyBookmarksState(
     ) {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = AccentPurple.copy(alpha = 0.1f),
+            color = AccentPurple.container,
             modifier = Modifier.size(56.dp)
         ) {
             Box(
@@ -449,7 +451,7 @@ private fun EmptyBookmarksState(
                 Icon(
                     imageVector = Icons.Rounded.BookmarkBorder,
                     contentDescription = stringResource(R.string.cd_decorative),
-                    tint = AccentPurple,
+                    tint = AccentPurple.color,
                     modifier = Modifier.size(28.dp)
                 )
             }
@@ -470,7 +472,7 @@ private fun EmptyBookmarksState(
         Text(
             text = stringResource(R.string.bookmark_hint),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Spacer(modifier = Modifier.height(16.dp))

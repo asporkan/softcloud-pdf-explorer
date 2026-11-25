@@ -56,7 +56,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -64,15 +63,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import kotlinx.coroutines.delay
 
 // Design colors
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentPink = Color(0xFFF48FB1)
-private val AccentAmber = Color(0xFFFFB74D)
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentRed = Color(0xFFEF5350)
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentPink: AccentTone @Composable get() = MaterialTheme.accents.pink
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @Composable
 fun TopBarMenuPanel(
@@ -105,7 +106,7 @@ fun TopBarMenuPanel(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -315,7 +316,7 @@ private fun MenuHeader(
         Text(
             text = stringResource(R.string.share_print_manage),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -344,7 +345,7 @@ private fun SectionLabel(
         style = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.SemiBold
         ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f * alpha),
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
         modifier = modifier.padding(start = 2.dp)
     )
 }
@@ -354,7 +355,7 @@ private fun MenuOptionItem(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     animationDelay: Int,
     isDestructive: Boolean = false,
@@ -380,7 +381,7 @@ private fun MenuOptionItem(
             .clip(RoundedCornerShape(10.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             ),
         shape = RoundedCornerShape(10.dp),
@@ -395,7 +396,7 @@ private fun MenuOptionItem(
             // Icon
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -403,7 +404,7 @@ private fun MenuOptionItem(
                     modifier = Modifier
                         .padding(7.dp)
                         .size(16.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -416,15 +417,12 @@ private fun MenuOptionItem(
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Medium
                     ),
-                    color = if (isDestructive) accentColor else MaterialTheme.colorScheme.onSurface
+                    color = if (isDestructive) accentColor.color else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (isDestructive)
-                        accentColor.copy(alpha = 0.7f)
-                    else
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -433,10 +431,7 @@ private fun MenuOptionItem(
                 imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                 contentDescription = stringResource(R.string.cd_decorative),
                 modifier = Modifier.size(16.dp),
-                tint = if (isDestructive)
-                    accentColor.copy(alpha = 0.5f)
-                else
-                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

@@ -34,12 +34,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
-// Design system colors
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentBlue = Color(0xFF64B5F6)
-private val AccentTeal = Color(0xFF4DB6AC)
-private val AccentAmber = Color(0xFFFFB74D)
+// Theme-aware accents: icon = tone.color on tone.container (contrast holds in Light/Dark/Black)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 
 @Composable
 fun FloatingControlBar(
@@ -50,19 +52,17 @@ fun FloatingControlBar(
     onDisplayClick: () -> Unit,
     onBookmarkClick: () -> Unit,
     onMoreClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isDarkMode: Boolean = true
+    modifier: Modifier = Modifier
 ) {
     val surfaceColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.95f)
-    val barContentColor = MaterialTheme.colorScheme.onSurface
 
     Surface(
         modifier = modifier
             .shadow(
                 elevation = 20.dp,
                 shape = RoundedCornerShape(32.dp),
-                ambientColor = AccentPurple.copy(alpha = 0.15f),
-                spotColor = AccentPurple.copy(alpha = 0.25f)
+                ambientColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.25f),
+                spotColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.35f)
             ),
         shape = RoundedCornerShape(32.dp),
         color = surfaceColor,
@@ -78,8 +78,7 @@ fun FloatingControlBar(
                 icon = Icons.AutoMirrored.Rounded.MenuBook,
                 contentDescription = stringResource(R.string.cd_table_of_contents),
                 onClick = onTocClick,
-                tint = AccentPurple,
-                isDarkMode = isDarkMode
+                tone = AccentPurple
             )
 
             // View Mode
@@ -87,8 +86,7 @@ fun FloatingControlBar(
                 icon = Icons.Rounded.ViewDay,
                 contentDescription = stringResource(R.string.view_options),
                 onClick = onViewClick,
-                tint = AccentBlue,
-                isDarkMode = isDarkMode
+                tone = AccentBlue
             )
 
             // Zoom
@@ -96,8 +94,7 @@ fun FloatingControlBar(
                 icon = Icons.Rounded.ZoomIn,
                 contentDescription = stringResource(R.string.zoom),
                 onClick = onZoomClick,
-                tint = AccentTeal,
-                isDarkMode = isDarkMode
+                tone = AccentTeal
             )
 
             // Display Settings (Theme, Brightness)
@@ -105,15 +102,13 @@ fun FloatingControlBar(
                 icon = Icons.Rounded.Palette,
                 contentDescription = stringResource(R.string.display_settings),
                 onClick = onDisplayClick,
-                tint = AccentAmber,
-                isDarkMode = isDarkMode
+                tone = AccentAmber
             )
 
             // Bookmark
             BookmarkButton(
                 isBookmarked = isBookmarked,
-                onClick = onBookmarkClick,
-                isDarkMode = isDarkMode
+                onClick = onBookmarkClick
             )
 
             // More Options
@@ -121,8 +116,7 @@ fun FloatingControlBar(
                 icon = Icons.Rounded.MoreHoriz,
                 contentDescription = stringResource(R.string.more_options),
                 onClick = onMoreClick,
-                tint = barContentColor.copy(alpha = 0.7f),
-                isDarkMode = isDarkMode
+                tone = MaterialTheme.accents.gray
             )
         }
     }
@@ -133,11 +127,11 @@ private fun ControlBarButton(
     icon: ImageVector,
     contentDescription: String,
     onClick: () -> Unit,
-    tint: Color,
-    isDarkMode: Boolean,
+    tone: AccentTone,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = tint.copy(alpha = 0.12f)
+    val tint = tone.color
+    val backgroundColor = tone.container
 
     Box(
         modifier = modifier
@@ -164,12 +158,11 @@ private fun ControlBarButton(
 private fun BookmarkButton(
     isBookmarked: Boolean,
     onClick: () -> Unit,
-    isDarkMode: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val accentRed = Color(0xFFEF5350)
-    val tint = if (isBookmarked) accentRed else if (isDarkMode) Color.White.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.5f)
-    val backgroundColor = if (isBookmarked) accentRed.copy(alpha = 0.12f) else Color.Transparent
+    val red = MaterialTheme.accents.red
+    val tint = if (isBookmarked) red.color else MaterialTheme.colorScheme.onSurfaceVariant
+    val backgroundColor = if (isBookmarked) red.container else Color.Transparent
 
     Box(
         modifier = modifier
@@ -178,7 +171,7 @@ private fun BookmarkButton(
             .background(backgroundColor)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentRed, bounded = true),
+                indication = ripple(color = red.color, bounded = true),
                 onClick = onClick
             ),
         contentAlignment = Alignment.Center

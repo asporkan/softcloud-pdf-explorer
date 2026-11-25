@@ -46,7 +46,7 @@ fun AutoScrollOverlay(
     modifier: Modifier = Modifier
 ) {
     val surfaceColor = MaterialTheme.colorScheme.surfaceContainerHigh
-    val iconColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    val iconColor = MaterialTheme.colorScheme.onSurface
 
     AnimatedVisibility(
         visible = isVisible,

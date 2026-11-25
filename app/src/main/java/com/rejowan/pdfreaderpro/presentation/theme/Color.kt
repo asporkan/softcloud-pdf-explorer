@@ -176,6 +176,21 @@ object ReaderThemes {
 }
 
 /**
+ * Preview swatch for a reading theme (page colour + sample text colour), shown in the
+ * Display sheet. These are document-content colours: they intentionally stay the same in
+ * every app theme because they preview what the PDF page will look like.
+ * Each pair has >= 7:1 contrast.
+ */
+data class ReaderSwatch(val page: Color, val text: Color)
+
+object ReaderSwatches {
+    val Light = ReaderSwatch(page = Color(0xFFFAFAFA), text = Color(0xFF212121))
+    val Dark = ReaderSwatch(page = Color(0xFF1E1E1E), text = Color(0xFFE0E0E0))
+    val Sepia = ReaderSwatch(page = Color(0xFFF5E6D3), text = Color(0xFF5D4037))
+    val Black = ReaderSwatch(page = Color(0xFF000000), text = Color(0xFFB0B0B0))
+}
+
+/**
  * Enum for reader theme selection
  */
 enum class ReaderTheme {

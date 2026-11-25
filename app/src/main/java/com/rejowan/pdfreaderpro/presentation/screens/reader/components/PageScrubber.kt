@@ -11,6 +11,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -26,6 +27,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.GenericShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,7 +51,35 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 
-private val AccentPurple = Color(0xFF9575CD)
+/**
+ * The scrubber floats over the PDF page, whose colour is set by the reading theme
+ * (Light / Sepia / Dark / Black) and can be anything. Every part of it therefore sits on a
+ * translucent `inverseSurface` chip with `inverseOnSurface` content (>= 4.5:1) and a thin
+ * outline so the chip itself stays visible on both light and dark pages.
+ */
+private const val ChipAlpha = 0.9f
+
+@Composable
+private fun chipColor(): Color = MaterialTheme.colorScheme.inverseSurface.copy(alpha = ChipAlpha)
+
+/** "1" / total page count label on its own chip. */
+@Composable
+private fun PageCountChip(text: String, modifier: Modifier = Modifier) {
+    val shape = RoundedCornerShape(8.dp)
+    Text(
+        text = text,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.inverseOnSurface,
+        textAlign = TextAlign.Center,
+        maxLines = 1,
+        modifier = modifier
+            .clip(shape)
+            .background(chipColor())
+            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.6f), shape)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    )
+}
 
 /**
  * Page scrubber that adapts to scroll direction.
@@ -64,7 +94,6 @@ fun PageScrubber(
     onPageChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
     isHorizontal: Boolean = false,
-    isDarkMode: Boolean = true,
     bottomClearance: Dp = 80.dp
 ) {
     if (isHorizontal) {
@@ -73,8 +102,7 @@ fun PageScrubber(
             totalPages = totalPages,
             isVisible = isVisible,
             onPageChange = onPageChange,
-            modifier = modifier,
-            isDarkMode = isDarkMode
+            modifier = modifier
         )
     } else {
         VerticalPageScrubber(
@@ -83,7 +111,6 @@ fun PageScrubber(
             isVisible = isVisible,
             onPageChange = onPageChange,
             modifier = modifier,
-            isDarkMode = isDarkMode,
             bottomClearance = bottomClearance
         )
     }
@@ -96,7 +123,6 @@ private fun VerticalPageScrubber(
     isVisible: Boolean,
     onPageChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    isDarkMode: Boolean = true,
     bottomClearance: Dp = 80.dp
 ) {
     val density = LocalDensity.current
@@ -120,9 +146,10 @@ private fun VerticalPageScrubber(
         currentPage + 1
     }
 
-    val trackColor = if (isDarkMode) Color.White.copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.12f)
-    val progressColor = AccentPurple
-    val textColor = if (isDarkMode) Color.White.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.4f)
+    val trackColor = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.3f)
+    val progressColor = MaterialTheme.colorScheme.inversePrimary
+    val railColor = chipColor()
+    val railBorder = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
 
     AnimatedVisibility(
         visible = isVisible && totalPages > 1,
@@ -186,11 +213,23 @@ private fun VerticalPageScrubber(
                 val thumbHeightPx = with(density) { thumbHeight.toPx() }
                 val trackPadding = thumbHeight / 2
 
+                // Rail chip behind the track so it reads on any page colour
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(vertical = trackPadding - 2.dp)
+                        .width(8.dp)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(railColor)
+                        .border(1.dp, railBorder, RoundedCornerShape(4.dp))
+                )
+
                 // Track background
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(vertical = trackPadding)
+                        .padding(vertical = trackPadding, horizontal = 2.dp)
                         .width(4.dp)
                         .fillMaxHeight()
                         .clip(RoundedCornerShape(2.dp))
@@ -201,7 +240,7 @@ private fun VerticalPageScrubber(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(vertical = trackPadding)
+                        .padding(vertical = trackPadding, horizontal = 2.dp)
                         .width(4.dp)
                         .fillMaxHeight(animatedProgress.coerceIn(0.001f, 1f))
                         .clip(RoundedCornerShape(2.dp))
@@ -227,14 +266,7 @@ private fun VerticalPageScrubber(
             }
 
             // Total pages at bottom
-            Text(
-                text = "$totalPages",
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-                color = textColor,
-                modifier = Modifier.padding(top = 0.dp, end = 0.dp),
-                textAlign = TextAlign.End
-            )
+            PageCountChip(text = "$totalPages", modifier = Modifier.padding(top = 4.dp))
         }
     }
 
@@ -258,8 +290,7 @@ private fun HorizontalPageScrubber(
     totalPages: Int,
     isVisible: Boolean,
     onPageChange: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    isDarkMode: Boolean = true
+    modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
 
@@ -282,9 +313,10 @@ private fun HorizontalPageScrubber(
         currentPage + 1
     }
 
-    val trackColor = if (isDarkMode) Color.White.copy(alpha = 0.2f) else Color.Black.copy(alpha = 0.12f)
-    val progressColor = AccentPurple
-    val textColor = if (isDarkMode) Color.White.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.4f)
+    val trackColor = MaterialTheme.colorScheme.inverseOnSurface.copy(alpha = 0.3f)
+    val progressColor = MaterialTheme.colorScheme.inversePrimary
+    val railColor = chipColor()
+    val railBorder = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
 
     // Thumb dimensions - must match HorizontalDropletThumb size
     val thumbWidth = 36.dp
@@ -309,14 +341,7 @@ private fun HorizontalPageScrubber(
             verticalAlignment = Alignment.Bottom
         ) {
             // Page 1 indicator
-            Text(
-                text = "1",
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-                color = textColor,
-                modifier = Modifier.padding(end = 4.dp, bottom = 4.dp),
-                textAlign = TextAlign.Start
-            )
+            PageCountChip(text = "1", modifier = Modifier.padding(end = 4.dp))
 
             // Track area with droplet
             Box(
@@ -356,11 +381,23 @@ private fun HorizontalPageScrubber(
                     },
                 contentAlignment = Alignment.BottomStart
             ) {
+                // Rail chip behind the track so it reads on any page colour
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(horizontal = trackPadding - 2.dp)
+                        .height(8.dp)
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(railColor)
+                        .border(1.dp, railBorder, RoundedCornerShape(4.dp))
+                )
+
                 // Track background - shorter so thumb tip aligns at edges
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(horizontal = trackPadding)
+                        .padding(horizontal = trackPadding, vertical = 2.dp)
                         .height(4.dp)
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(2.dp))
@@ -371,7 +408,7 @@ private fun HorizontalPageScrubber(
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomStart)
-                        .padding(horizontal = trackPadding)
+                        .padding(horizontal = trackPadding, vertical = 2.dp)
                         .height(4.dp)
                         .fillMaxWidth(animatedProgress.coerceIn(0.001f, 1f))
                         .clip(RoundedCornerShape(2.dp))
@@ -397,14 +434,7 @@ private fun HorizontalPageScrubber(
             }
 
             // Total pages indicator
-            Text(
-                text = "$totalPages",
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-                color = textColor,
-                modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
-                textAlign = TextAlign.End
-            )
+            PageCountChip(text = "$totalPages", modifier = Modifier.padding(start = 4.dp))
         }
     }
 
@@ -507,7 +537,8 @@ private fun VerticalDropletThumb(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val bgColor = if (isDragging) AccentPurple else AccentPurple.copy(alpha = 0.95f)
+    val primary = MaterialTheme.colorScheme.primary
+    val bgColor = if (isDragging) primary else primary.copy(alpha = 0.95f)
 
     Surface(
         modifier = modifier
@@ -531,7 +562,7 @@ private fun VerticalDropletThumb(
                 text = "$pageNumber",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
                 maxLines = 1
             )
@@ -546,7 +577,8 @@ private fun HorizontalDropletThumb(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val bgColor = if (isDragging) AccentPurple else AccentPurple.copy(alpha = 0.95f)
+    val primary = MaterialTheme.colorScheme.primary
+    val bgColor = if (isDragging) primary else primary.copy(alpha = 0.95f)
 
     Surface(
         modifier = modifier
@@ -570,7 +602,7 @@ private fun HorizontalDropletThumb(
                 text = "$pageNumber",
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onPrimary,
                 textAlign = TextAlign.Center,
                 maxLines = 1
             )

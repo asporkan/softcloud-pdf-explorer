@@ -38,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +52,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.presentation.components.pdf.PdfViewer
 import com.rejowan.pdfreaderpro.presentation.components.pdf.print.DefaultPdfPrintAdapter
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.DeleteConfirmDialog
@@ -88,7 +88,6 @@ fun ReaderScreen(
     val context = LocalContext.current
     val view = LocalView.current
     val snackbarHostState = remember { SnackbarHostState() }
-    val isDarkMode = com.rejowan.pdfreaderpro.presentation.theme.LocalIsDarkTheme.current
 
     // SAF launcher for saving document
     val saveDocumentLauncher = rememberLauncherForActivityResult(
@@ -376,7 +375,7 @@ fun ReaderScreen(
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator(
-                    color = Color(0xFF9575CD)
+                    color = MaterialTheme.accents.purple.color
                 )
             }
         }
@@ -391,7 +390,6 @@ fun ReaderScreen(
                     onBackClick = { navController.popBackStack() },
                     onSearchClick = { viewModel.onAction(ReaderAction.ToggleSearch) },
                     onMenuClick = { viewModel.onAction(ReaderAction.ShowTopBarMenu) },
-                    isDarkMode = isDarkMode,
                     modifier = Modifier.align(Alignment.TopCenter)
                 )
 
@@ -421,8 +419,7 @@ fun ReaderScreen(
                         onClose = {
                             viewModel.onAction(ReaderAction.ClearSearch)
                             viewModel.onAction(ReaderAction.ToggleSearch)
-                        },
-                        isDarkMode = isDarkMode
+                        }
                     )
                 }
 
@@ -441,7 +438,6 @@ fun ReaderScreen(
                     isVisible = showScrubber,
                     onPageChange = { viewModel.onAction(ReaderAction.GoToPage(it)) },
                     isHorizontal = isHorizontalScroll,
-                    isDarkMode = isDarkMode,
                     // Vertical track keeps clear of the system bars and the floating control bar
                     // (bar 66dp + 16dp margin + nav inset) so the page bubble never overlaps it.
                     bottomClearance = if (toolbarVisible) 96.dp else 16.dp,
@@ -480,8 +476,7 @@ fun ReaderScreen(
                         onZoomClick = { viewModel.onAction(ReaderAction.ShowZoomSheet) },
                         onDisplayClick = { viewModel.onAction(ReaderAction.ShowDisplaySheet) },
                         onBookmarkClick = { viewModel.onAction(ReaderAction.TogglePageBookmark) },
-                        onMoreClick = { viewModel.onAction(ReaderAction.ShowMoreOptionsSheet) },
-                        isDarkMode = isDarkMode
+                        onMoreClick = { viewModel.onAction(ReaderAction.ShowMoreOptionsSheet) }
                     )
                 }
             }
@@ -498,8 +493,7 @@ fun ReaderScreen(
             onBrightnessChange = { viewModel.onAction(ReaderAction.SetBrightness(it)) },
             onKeepScreenOnChange = { viewModel.onAction(ReaderAction.SetKeepScreenOn(it)) },
             onRotationLockChange = { viewModel.onAction(ReaderAction.ToggleRotationLock) },
-            onDismiss = { viewModel.onAction(ReaderAction.HideSettingsPanel) },
-            isDarkMode = isDarkMode
+            onDismiss = { viewModel.onAction(ReaderAction.HideSettingsPanel) }
         )
 
         // Snackbar host

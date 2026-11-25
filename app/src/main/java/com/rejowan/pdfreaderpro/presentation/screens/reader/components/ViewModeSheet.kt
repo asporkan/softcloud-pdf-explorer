@@ -48,7 +48,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
@@ -70,12 +69,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ScrollMode
 import kotlinx.coroutines.delay
 
 // Design colors
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentTeal = Color(0xFF4DB6AC)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -125,7 +126,8 @@ private fun ViewModeBottomSheet(
     onAutoHideToolbarToggle: (Boolean) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last rows sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -141,7 +143,9 @@ private fun ViewModeBottomSheet(
             onScrollModeChange = onScrollModeChange,
             onSnapToggle = onSnapToggle,
             onAutoHideToolbarToggle = onAutoHideToolbarToggle,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -171,7 +175,7 @@ private fun ViewModeSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -309,7 +313,7 @@ private fun SheetHeader(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    accentColor: Color,
+    accentColor: AccentTone,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -318,7 +322,7 @@ private fun SheetHeader(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = accentColor.copy(alpha = 0.12f)
+            color = accentColor.container
         ) {
             Icon(
                 imageVector = icon,
@@ -326,7 +330,7 @@ private fun SheetHeader(
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
-                tint = accentColor
+                tint = accentColor.color
             )
         }
 
@@ -343,7 +347,7 @@ private fun SheetHeader(
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -373,7 +377,7 @@ private fun SectionLabel(
         style = MaterialTheme.typography.labelSmall.copy(
             fontWeight = FontWeight.Medium
         ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f * alpha),
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
         modifier = modifier.padding(start = 4.dp)
     )
 }
@@ -383,7 +387,7 @@ private fun ModeChip(
     icon: ImageVector,
     label: String,
     isSelected: Boolean,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     animationDelay: Int = 0
@@ -402,21 +406,21 @@ private fun ModeChip(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
+        targetValue = if (isSelected) accentColor.container
         else MaterialTheme.colorScheme.surfaceContainerHigh,
         animationSpec = tween(200),
         label = "chip bg"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
+        targetValue = if (isSelected) accentColor.color
         else Color.Transparent,
         animationSpec = tween(200),
         label = "chip border"
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor
+        targetValue = if (isSelected) accentColor.color
         else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(200),
         label = "chip content"
@@ -428,7 +432,7 @@ private fun ModeChip(
             .clip(RoundedCornerShape(14.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             )
             .then(
@@ -471,14 +475,14 @@ private fun ModeChip(
                     modifier = Modifier
                         .size(16.dp)
                         .clip(CircleShape)
-                        .background(accentColor),
+                        .background(accentColor.color),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
                         contentDescription = null,
                         modifier = Modifier.size(10.dp),
-                        tint = Color.White
+                        tint = accentColor.onColor
                     )
                 }
             }
@@ -493,7 +497,7 @@ private fun ToggleRow(
     description: String,
     isEnabled: Boolean,
     onToggle: (Boolean) -> Unit,
-    accentColor: Color,
+    accentColor: AccentTone,
     animationDelay: Int,
     modifier: Modifier = Modifier
 ) {
@@ -525,7 +529,7 @@ private fun ToggleRow(
         ) {
             Surface(
                 shape = RoundedCornerShape(10.dp),
-                color = accentColor.copy(alpha = 0.12f)
+                color = accentColor.container
             ) {
                 Icon(
                     imageVector = icon,
@@ -533,7 +537,7 @@ private fun ToggleRow(
                     modifier = Modifier
                         .padding(8.dp)
                         .size(18.dp),
-                    tint = accentColor
+                    tint = accentColor.color
                 )
             }
 
@@ -550,19 +554,14 @@ private fun ToggleRow(
                 Text(
                     text = description,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Switch(
                 checked = isEnabled,
                 onCheckedChange = onToggle,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = Color.White,
-                    checkedTrackColor = accentColor,
-                    uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
-                )
+                colors = accentSwitchColors(accentColor)
             )
         }
     }

@@ -49,10 +49,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
@@ -73,11 +71,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ReadingTheme
+import com.rejowan.pdfreaderpro.presentation.theme.ReaderSwatches
 import kotlinx.coroutines.delay
 
 // Design colors
-private val AccentAmber = Color(0xFFFFB74D)
+private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -129,7 +130,8 @@ private fun DisplayBottomSheet(
     onThemeChange: (ReadingTheme) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last rows sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -145,7 +147,9 @@ private fun DisplayBottomSheet(
             onBrightnessChange = onBrightnessChange,
             onKeepScreenOnChange = onKeepScreenOnChange,
             onThemeChange = onThemeChange,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -178,7 +182,7 @@ private fun DisplaySideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -298,7 +302,7 @@ private fun DisplaySheetHeader(
     ) {
         Surface(
             shape = RoundedCornerShape(8.dp),
-            color = AccentAmber.copy(alpha = 0.12f)
+            color = AccentAmber.container
         ) {
             Icon(
                 imageVector = Icons.Rounded.Palette,
@@ -306,7 +310,7 @@ private fun DisplaySheetHeader(
                 modifier = Modifier
                     .padding(6.dp)
                     .size(16.dp),
-                tint = AccentAmber
+                tint = AccentAmber.color
             )
         }
 
@@ -323,7 +327,7 @@ private fun DisplaySheetHeader(
             Text(
                 text = stringResource(R.string.theme_brightness_options),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -353,7 +357,7 @@ private fun SectionLabel(
         style = MaterialTheme.typography.labelMedium.copy(
             fontWeight = FontWeight.Medium
         ),
-        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f * alpha),
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = alpha),
         modifier = modifier.padding(start = 4.dp)
     )
 }
@@ -392,8 +396,8 @@ private fun ThemeSelector(
             ThemeOption(
                 theme = ReadingTheme.LIGHT,
                 label = stringResource(R.string.light_theme),
-                backgroundColor = Color(0xFFFAFAFA),
-                textColor = Color(0xFF212121),
+                backgroundColor = ReaderSwatches.Light.page,
+                textColor = ReaderSwatches.Light.text,
                 isSelected = currentTheme == ReadingTheme.LIGHT,
                 onClick = { onThemeChange(ReadingTheme.LIGHT) },
                 modifier = Modifier.weight(1f)
@@ -402,8 +406,8 @@ private fun ThemeSelector(
             ThemeOption(
                 theme = ReadingTheme.DARK,
                 label = stringResource(R.string.dark_theme),
-                backgroundColor = Color(0xFF1E1E1E),
-                textColor = Color(0xFFE0E0E0),
+                backgroundColor = ReaderSwatches.Dark.page,
+                textColor = ReaderSwatches.Dark.text,
                 isSelected = currentTheme == ReadingTheme.DARK,
                 onClick = { onThemeChange(ReadingTheme.DARK) },
                 modifier = Modifier.weight(1f)
@@ -418,8 +422,8 @@ private fun ThemeSelector(
             ThemeOption(
                 theme = ReadingTheme.SEPIA,
                 label = stringResource(R.string.sepia_theme),
-                backgroundColor = Color(0xFFF5E6D3),
-                textColor = Color(0xFF5D4037),
+                backgroundColor = ReaderSwatches.Sepia.page,
+                textColor = ReaderSwatches.Sepia.text,
                 isSelected = currentTheme == ReadingTheme.SEPIA,
                 onClick = { onThemeChange(ReadingTheme.SEPIA) },
                 modifier = Modifier.weight(1f)
@@ -428,8 +432,8 @@ private fun ThemeSelector(
             ThemeOption(
                 theme = ReadingTheme.BLACK,
                 label = stringResource(R.string.black_theme),
-                backgroundColor = Color(0xFF000000),
-                textColor = Color(0xFFB0B0B0),
+                backgroundColor = ReaderSwatches.Black.page,
+                textColor = ReaderSwatches.Black.text,
                 isSelected = currentTheme == ReadingTheme.BLACK,
                 onClick = { onThemeChange(ReadingTheme.BLACK) },
                 modifier = Modifier.weight(1f)
@@ -449,7 +453,7 @@ private fun ThemeOption(
     modifier: Modifier = Modifier
 ) {
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) AccentAmber else MaterialTheme.colorScheme.outlineVariant,
+        targetValue = if (isSelected) AccentAmber.color else MaterialTheme.colorScheme.outlineVariant,
         animationSpec = tween(200),
         label = "theme border"
     )
@@ -466,7 +470,7 @@ private fun ThemeOption(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = AccentAmber),
+                indication = ripple(color = AccentAmber.color),
                 onClick = onClick
             )
     ) {
@@ -522,13 +526,13 @@ private fun ThemeOption(
                         .padding(4.dp)
                         .size(16.dp)
                         .clip(CircleShape)
-                        .background(AccentAmber),
+                        .background(AccentAmber.color),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
                         contentDescription = stringResource(R.string.cd_selected),
-                        tint = Color.White,
+                        tint = AccentAmber.onColor,
                         modifier = Modifier.size(10.dp)
                     )
                 }
@@ -542,7 +546,7 @@ private fun ThemeOption(
             style = MaterialTheme.typography.labelLarge.copy(
                 fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
             ),
-            color = if (isSelected) AccentAmber else MaterialTheme.colorScheme.onSurfaceVariant
+            color = if (isSelected) AccentAmber.color else MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -615,7 +619,7 @@ private fun BrightnessOptionItem(
     title: String,
     subtitle: String,
     isSelected: Boolean,
-    accentColor: Color,
+    accentColor: AccentTone,
     onClick: () -> Unit,
     animationDelay: Int,
     modifier: Modifier = Modifier
@@ -634,14 +638,14 @@ private fun BrightnessOptionItem(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.12f)
+        targetValue = if (isSelected) accentColor.container
         else MaterialTheme.colorScheme.surfaceContainerLow,
         animationSpec = tween(200),
         label = "brightness option bg"
     )
 
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) accentColor.copy(alpha = 0.5f)
+        targetValue = if (isSelected) accentColor.color
         else Color.Transparent,
         animationSpec = tween(200),
         label = "brightness option border"
@@ -654,7 +658,7 @@ private fun BrightnessOptionItem(
             .clip(RoundedCornerShape(8.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(color = accentColor),
+                indication = ripple(color = accentColor.color),
                 onClick = onClick
             )
             .then(
@@ -676,7 +680,7 @@ private fun BrightnessOptionItem(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = if (isSelected) accentColor.copy(alpha = 0.2f)
+                color = if (isSelected) accentColor.container
                 else MaterialTheme.colorScheme.surfaceContainerHigh
             ) {
                 Icon(
@@ -685,7 +689,7 @@ private fun BrightnessOptionItem(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = if (isSelected) accentColor
+                    tint = if (isSelected) accentColor.color
                     else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -698,12 +702,12 @@ private fun BrightnessOptionItem(
                     style = MaterialTheme.typography.bodySmall.copy(
                         fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                     ),
-                    color = if (isSelected) accentColor else MaterialTheme.colorScheme.onSurface
+                    color = if (isSelected) accentColor.color else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = subtitle,
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -712,14 +716,14 @@ private fun BrightnessOptionItem(
                     modifier = Modifier
                         .size(18.dp)
                         .clip(CircleShape)
-                        .background(accentColor),
+                        .background(accentColor.color),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
                         contentDescription = stringResource(R.string.cd_selected),
                         modifier = Modifier.size(12.dp),
-                        tint = Color.White
+                        tint = accentColor.onColor
                     )
                 }
             }
@@ -774,11 +778,7 @@ private fun BrightnessSlider(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 8.dp),
-                colors = SliderDefaults.colors(
-                    thumbColor = AccentAmber,
-                    activeTrackColor = AccentAmber,
-                    inactiveTrackColor = AccentAmber.copy(alpha = 0.24f)
-                )
+                colors = accentSliderColors(AccentAmber)
             )
 
             Icon(
@@ -826,7 +826,7 @@ private fun KeepScreenOnRow(
         ) {
             Surface(
                 shape = CircleShape,
-                color = AccentAmber.copy(alpha = 0.12f),
+                color = AccentAmber.container,
                 modifier = Modifier.size(32.dp)
             ) {
                 Box(
@@ -836,7 +836,7 @@ private fun KeepScreenOnRow(
                     Icon(
                         imageVector = Icons.Rounded.BrightnessMedium,
                         contentDescription = stringResource(R.string.cd_decorative),
-                        tint = AccentAmber,
+                        tint = AccentAmber.color,
                         modifier = Modifier.size(16.dp)
                     )
                 }
@@ -855,17 +855,14 @@ private fun KeepScreenOnRow(
                 Text(
                     text = stringResource(R.string.prevent_screen_off),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
             Switch(
                 checked = keepScreenOn,
                 onCheckedChange = onKeepScreenOnChange,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = AccentAmber,
-                    checkedTrackColor = AccentAmber.copy(alpha = 0.5f)
-                )
+                colors = accentSwitchColors(AccentAmber)
             )
         }
     }

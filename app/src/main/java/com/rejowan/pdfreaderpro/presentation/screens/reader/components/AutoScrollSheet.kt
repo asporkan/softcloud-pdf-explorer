@@ -41,7 +41,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -54,15 +53,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
-private val AccentBlue = Color(0xFF64B5F6)
+private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
 
 enum class SpeedPreset(@StringRes val labelRes: Int, val speed: Float) {
     SLOW(R.string.slow, 30f),
@@ -103,7 +103,8 @@ private fun AutoScrollBottomSheet(
     onStartAutoScroll: (Float) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully so the last row is not left under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var selectedSpeed by remember { mutableFloatStateOf(currentSpeed) }
 
     ModalBottomSheet(
@@ -117,7 +118,9 @@ private fun AutoScrollBottomSheet(
             selectedSpeed = selectedSpeed,
             onSpeedChange = { selectedSpeed = it },
             onStartAutoScroll = onStartAutoScroll,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -144,7 +147,7 @@ private fun AutoScrollSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -210,7 +213,7 @@ private fun AutoScrollSheetContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentBlue.copy(alpha = 0.12f)
+                color = AccentBlue.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.PlayArrow,
@@ -218,7 +221,7 @@ private fun AutoScrollSheetContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentBlue
+                    tint = AccentBlue.color
                 )
             }
 
@@ -235,7 +238,7 @@ private fun AutoScrollSheetContent(
                 Text(
                     text = stringResource(R.string.hands_free_reading),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -248,7 +251,7 @@ private fun AutoScrollSheetContent(
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.Medium
             ),
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 4.dp)
         )
 
@@ -270,8 +273,8 @@ private fun AutoScrollSheetContent(
                         )
                     },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = AccentBlue,
-                        selectedLabelColor = Color.White
+                        selectedContainerColor = AccentBlue.container,
+                        selectedLabelColor = AccentBlue.onContainer
                     )
                 )
             }
@@ -296,7 +299,7 @@ private fun AutoScrollSheetContent(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Medium
                 ),
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Spacer(modifier = Modifier.weight(1f))
             Text(
@@ -304,7 +307,7 @@ private fun AutoScrollSheetContent(
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.Medium
                 ),
-                color = AccentBlue
+                color = AccentBlue.color
             )
         }
 
@@ -315,11 +318,7 @@ private fun AutoScrollSheetContent(
             onValueChange = onSpeedChange,
             valueRange = 10f..200f,
             steps = 18,
-            colors = SliderDefaults.colors(
-                thumbColor = AccentBlue,
-                activeTrackColor = AccentBlue,
-                inactiveTrackColor = AccentBlue.copy(alpha = 0.2f)
-            ),
+            colors = accentSliderColors(AccentBlue),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -330,12 +329,12 @@ private fun AutoScrollSheetContent(
             Text(
                 text = stringResource(R.string.slower),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = stringResource(R.string.faster),
                 style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
 
@@ -346,8 +345,8 @@ private fun AutoScrollSheetContent(
             onClick = { onStartAutoScroll(selectedSpeed) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = AccentBlue,
-                contentColor = Color.White
+                containerColor = AccentBlue.color,
+                contentColor = AccentBlue.onColor
             ),
             shape = RoundedCornerShape(8.dp)
         ) {
@@ -371,7 +370,7 @@ private fun AutoScrollSheetContent(
         Text(
             text = stringResource(R.string.auto_scroll_hint),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
     }

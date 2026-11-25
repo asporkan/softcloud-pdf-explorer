@@ -102,7 +102,8 @@ private fun PageJumpBottomSheet(
     onPageSelected: (Int) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last rows sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -116,7 +117,9 @@ private fun PageJumpBottomSheet(
             totalPages = totalPages,
             onPageSelected = onPageSelected,
             onDismiss = onDismiss,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -143,7 +146,7 @@ private fun PageJumpSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -229,7 +232,7 @@ private fun PageJumpContent(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
+                color = MaterialTheme.colorScheme.primaryContainer
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Numbers,
@@ -237,7 +240,7 @@ private fun PageJumpContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
 
@@ -254,7 +257,7 @@ private fun PageJumpContent(
                 Text(
                     text = stringResource(R.string.enter_page_range, totalPages),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -275,7 +278,7 @@ private fun PageJumpContent(
             placeholder = {
                 Text(
                     text = stringResource(R.string.page_number_placeholder),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             },
             keyboardOptions = KeyboardOptions(

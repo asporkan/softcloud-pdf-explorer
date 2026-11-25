@@ -53,10 +53,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
-private val AccentPurple = Color(0xFF9575CD)
-private val AccentGreen = Color(0xFF81C784)
-private val SurfaceDark = Color(0xFF1C1C1E)
+private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
+private val AccentGreen: AccentTone @Composable get() = MaterialTheme.accents.green
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @Composable
 fun FloatingSearchBar(
@@ -68,12 +70,12 @@ fun FloatingSearchBar(
     onPreviousResult: () -> Unit,
     onNextResult: () -> Unit,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier,
-    isDarkMode: Boolean = true
+    modifier: Modifier = Modifier
 ) {
-    val surfaceColor = if (isDarkMode) SurfaceDark.copy(alpha = 0.95f) else Color.White.copy(alpha = 0.95f)
-    val contentColor = if (isDarkMode) Color.White else Color.Black
-    val subtleColor = if (isDarkMode) Color.White.copy(alpha = 0.5f) else Color.Black.copy(alpha = 0.5f)
+    // Follows the app theme (not the reading theme): opaque-ish surface with matching content.
+    val surfaceColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.95f)
+    val contentColor = MaterialTheme.colorScheme.onSurface
+    val subtleColor = MaterialTheme.colorScheme.onSurfaceVariant
 
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -89,8 +91,8 @@ fun FloatingSearchBar(
             .shadow(
                 elevation = 16.dp,
                 shape = RoundedCornerShape(24.dp),
-                ambientColor = AccentPurple.copy(alpha = 0.1f),
-                spotColor = AccentPurple.copy(alpha = 0.2f)
+                ambientColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.2f),
+                spotColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f)
             ),
         shape = RoundedCornerShape(24.dp),
         color = surfaceColor,
@@ -107,13 +109,13 @@ fun FloatingSearchBar(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(AccentPurple.copy(alpha = 0.15f)),
+                    .background(AccentPurple.container),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Search,
                     contentDescription = stringResource(R.string.cd_search),
-                    tint = AccentPurple,
+                    tint = AccentPurple.color,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -132,7 +134,7 @@ fun FloatingSearchBar(
                     fontSize = 16.sp
                 ),
                 singleLine = true,
-                cursorBrush = SolidColor(AccentPurple),
+                cursorBrush = SolidColor(AccentPurple.color),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                 keyboardActions = KeyboardActions(
                     onSearch = { keyboardController?.hide() }
@@ -171,7 +173,7 @@ fun FloatingSearchBar(
                         if (searching) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(20.dp),
-                                color = AccentPurple,
+                                color = AccentPurple.color,
                                 strokeWidth = 2.dp
                             )
                         } else if (resultCount > 0) {
@@ -184,7 +186,7 @@ fun FloatingSearchBar(
                             ResultCountChip(
                                 current = 0,
                                 total = 0,
-                                accentColor = Color(0xFFE57373) // Soft red for no results
+                                accentColor = AccentRed
                             )
                         }
                     }
@@ -232,20 +234,20 @@ fun FloatingSearchBar(
 private fun ResultCountChip(
     current: Int,
     total: Int,
-    accentColor: Color,
+    accentColor: AccentTone,
     modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
-        color = accentColor.copy(alpha = 0.15f)
+        color = accentColor.container
     ) {
         Text(
             text = if (total > 0) "$current/$total" else "0",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.SemiBold
             ),
-            color = accentColor,
+            color = accentColor.onContainer,
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
         )
     }
@@ -272,7 +274,7 @@ private fun SearchNavButton(
         Icon(
             imageVector = icon,
             contentDescription = stringResource(R.string.cd_decorative),
-            tint = if (enabled) contentColor else contentColor.copy(alpha = 0.3f),
+            tint = if (enabled) contentColor else contentColor.copy(alpha = 0.38f),
             modifier = Modifier.size(22.dp)
         )
     }

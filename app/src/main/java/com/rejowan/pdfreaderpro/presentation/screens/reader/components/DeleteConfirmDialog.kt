@@ -47,7 +47,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -55,8 +54,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
-private val AccentRed = Color(0xFFEF5350)
+private val AccentRed: AccentTone @Composable get() = MaterialTheme.accents.red
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +91,8 @@ private fun DeleteConfirmBottomSheet(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    // Open fully: half-expanded, the last rows sat under the navigation bar.
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -103,7 +105,9 @@ private fun DeleteConfirmBottomSheet(
             fileName = fileName,
             onConfirm = onConfirm,
             onDismiss = onDismiss,
-            modifier = Modifier.padding(bottom = 24.dp)
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp)
         )
     }
 }
@@ -129,7 +133,7 @@ private fun DeleteConfirmSideSheet(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.4f))
                     .pointerInput(Unit) {
                         detectTapGestures { onDismiss() }
                     }
@@ -192,7 +196,7 @@ private fun DeleteConfirmContent(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = AccentRed.copy(alpha = 0.12f)
+                color = AccentRed.container
             ) {
                 Icon(
                     imageVector = Icons.Rounded.DeleteForever,
@@ -200,7 +204,7 @@ private fun DeleteConfirmContent(
                     modifier = Modifier
                         .padding(6.dp)
                         .size(16.dp),
-                    tint = AccentRed
+                    tint = AccentRed.color
                 )
             }
 
@@ -217,7 +221,7 @@ private fun DeleteConfirmContent(
                 Text(
                     text = stringResource(R.string.action_cannot_undo),
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -258,7 +262,10 @@ private fun DeleteConfirmContent(
                 onClick = onConfirm,
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = AccentRed)
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = AccentRed.color,
+                    contentColor = AccentRed.onColor
+                )
             ) {
                 Text(stringResource(R.string.delete), style = MaterialTheme.typography.labelMedium)
             }

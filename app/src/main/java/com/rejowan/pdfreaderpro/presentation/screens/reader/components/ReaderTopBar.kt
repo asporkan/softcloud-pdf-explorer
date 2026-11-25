@@ -39,8 +39,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
 
-private val AccentPurple = Color(0xFF9575CD)
-
 @Composable
 fun ReaderTopBar(
     title: String,
@@ -48,8 +46,7 @@ fun ReaderTopBar(
     onBackClick: () -> Unit,
     onSearchClick: () -> Unit,
     onMenuClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isDarkMode: Boolean = true
+    modifier: Modifier = Modifier
 ) {
     AnimatedVisibility(
         visible = isVisible,
@@ -68,19 +65,12 @@ fun ReaderTopBar(
                 .fillMaxWidth()
                 .background(
                     Brush.verticalGradient(
-                        colors = if (isDarkMode) {
-                            listOf(
-                                Color.Black.copy(alpha = 0.7f),
-                                Color.Black.copy(alpha = 0.5f),
-                                Color.Transparent
-                            )
-                        } else {
-                            listOf(
-                                Color.White.copy(alpha = 0.9f),
-                                Color.White.copy(alpha = 0.7f),
-                                Color.Transparent
-                            )
-                        }
+                        // Fade in the app theme background: dark in Dark/Black, light in Light.
+                        colors = listOf(
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.85f),
+                            MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                            Color.Transparent
+                        )
                     )
                 )
                 .windowInsetsPadding(WindowInsets.statusBars)
@@ -90,8 +80,7 @@ fun ReaderTopBar(
                 title = title,
                 onBackClick = onBackClick,
                 onSearchClick = onSearchClick,
-                onMenuClick = onMenuClick,
-                isDarkMode = isDarkMode
+                onMenuClick = onMenuClick
             )
         }
     }
@@ -102,8 +91,7 @@ private fun TopBarContent(
     title: String,
     onBackClick: () -> Unit,
     onSearchClick: () -> Unit,
-    onMenuClick: () -> Unit,
-    isDarkMode: Boolean
+    onMenuClick: () -> Unit
 ) {
     val surfaceColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.95f)
     val contentColor = MaterialTheme.colorScheme.onSurface
@@ -114,8 +102,8 @@ private fun TopBarContent(
             .shadow(
                 elevation = 8.dp,
                 shape = RoundedCornerShape(16.dp),
-                ambientColor = AccentPurple.copy(alpha = 0.1f),
-                spotColor = AccentPurple.copy(alpha = 0.15f)
+                ambientColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.2f),
+                spotColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.3f)
             ),
         shape = RoundedCornerShape(16.dp),
         color = surfaceColor,

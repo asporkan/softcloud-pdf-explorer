@@ -22,14 +22,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.presentation.theme.accents
 
-private val SoftRed = Color(0xFFE57373)
 
 @Composable
 fun ErrorState(
@@ -38,6 +37,7 @@ fun ErrorState(
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val red = MaterialTheme.accents.red
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -51,7 +51,7 @@ fun ErrorState(
             modifier = Modifier
                 .size(100.dp)
                 .background(
-                    color = SoftRed.copy(alpha = 0.12f),
+                    color = red.container,
                     shape = RoundedCornerShape(28.dp)
                 )
         ) {
@@ -59,7 +59,7 @@ fun ErrorState(
                 imageVector = Icons.Outlined.ErrorOutline,
                 contentDescription = stringResource(R.string.cd_error),
                 modifier = Modifier.size(48.dp),
-                tint = SoftRed
+                tint = red.color
             )
         }
 
@@ -79,7 +79,7 @@ fun ErrorState(
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
@@ -91,7 +91,8 @@ fun ErrorState(
                 onClick = onRetry,
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SoftRed
+                    containerColor = red.color,
+                    contentColor = red.onColor
                 ),
                 contentPadding = PaddingValues(horizontal = 28.dp, vertical = 12.dp)
             ) {
