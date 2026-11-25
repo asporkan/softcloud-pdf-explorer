@@ -1,74 +1,68 @@
 package com.rejowan.pdfreaderpro.util
 
 import android.content.Context
-import com.rejowan.pdfreaderpro.presentation.ErrorActivity
+import android.os.Process
 import kotlinx.coroutines.CoroutineExceptionHandler
 import timber.log.Timber
+import java.io.File
 import kotlin.system.exitProcess
 
 /**
- * Global error handler for uncaught exceptions.
- * Shows a user-friendly error screen instead of crashing.
+ * Records a short crash report and then lets the system handle the crash.
+ *
+ * The previous default handler (Android's own) is always invoked afterwards so the crash is
+ * reported to Play Console / Android vitals and the process terminates cleanly. The record
+ * is shown to the user once on the next launch (see [CrashReportStore]).
  */
 object GlobalErrorHandler {
 
-    private var applicationContext: Context? = null
+    fun crashReportStore(context: Context): CrashReportStore =
+        CrashReportStore(File(context.applicationContext.noBackupFilesDir, CrashReportStore.FILE_NAME))
 
     fun setup(context: Context) {
-        applicationContext = context.applicationContext
+        val store = crashReportStore(context)
+        val previous = Thread.getDefaultUncaughtExceptionHandler()
+        // Avoid wrapping ourselves twice if setup is called again.
+        if (previous is CrashRecordingHandler) return
 
-        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            Timber.e(throwable, "Uncaught exception in thread: ${thread.name}")
-
-            // Log crash details for debugging
-            logCrashDetails(throwable)
-
-            // Show error activity instead of crashing
-            try {
-                showErrorActivity(throwable)
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to show error activity")
-                // If we can't show error activity, exit gracefully
-                exitProcess(1)
-            }
-        }
-
+        Thread.setDefaultUncaughtExceptionHandler(
+            CrashRecordingHandler(
+                store = store,
+                previous = previous,
+                terminate = {
+                    Process.killProcess(Process.myPid())
+                    exitProcess(10)
+                }
+            )
+        )
         Timber.d("Global error handler initialized")
     }
+}
 
-    private fun showErrorActivity(throwable: Throwable) {
-        val context = applicationContext ?: return
+/**
+ * [Thread.UncaughtExceptionHandler] that writes a crash record synchronously and delegates to
+ * [previous]; if there is none it calls [terminate]. Nothing here may throw.
+ */
+class CrashRecordingHandler(
+    private val store: CrashReportStore,
+    private val previous: Thread.UncaughtExceptionHandler?,
+    private val terminate: () -> Unit,
+    private val clock: () -> Long = System::currentTimeMillis
+) : Thread.UncaughtExceptionHandler {
 
-        val errorMessage = when {
-            throwable.message?.isNotBlank() == true -> requireNotNull(throwable.message)
-            else -> "An unexpected error occurred: ${throwable.javaClass.simpleName}"
+    override fun uncaughtException(thread: Thread, throwable: Throwable) {
+        try {
+            Timber.e(throwable, "Uncaught exception in thread: ${thread.name}")
+            store.save(CrashReportFormatter.format(throwable, thread.name, clock()))
+        } catch (_: Throwable) {
+            // The crash must still reach the system handler.
         }
 
-        val errorDetails = buildString {
-            appendLine("Exception: ${throwable.javaClass.simpleName}")
-            throwable.stackTrace.take(5).forEach { element ->
-                appendLine("  at $element")
-            }
+        if (previous != null) {
+            previous.uncaughtException(thread, throwable)
+        } else {
+            terminate()
         }
-
-        val intent = ErrorActivity.createIntent(context, errorMessage, errorDetails)
-        context.startActivity(intent)
-
-        // Don't kill process - let user navigate back to previous screen
-    }
-
-    private fun logCrashDetails(throwable: Throwable) {
-        Timber.e("=== CRASH REPORT ===")
-        Timber.e("Exception: ${throwable.javaClass.simpleName}")
-        Timber.e("Message: ${throwable.message}")
-        Timber.e("Stack trace:")
-        throwable.stackTrace.take(10).forEach { element ->
-            Timber.e("  at $element")
-        }
-        throwable.cause?.let { cause ->
-            Timber.e("Caused by: ${cause.javaClass.simpleName}: ${cause.message}")
-        }
-        Timber.e("=== END CRASH REPORT ===")
     }
 }
 

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="crash_notice_title">The app closed unexpectedly</string>
+    <string name="crash_notice_message">An error caused the app to close during your last session. If it keeps happening, try restarting the app.</string>
+    <string name="crash_notice_show_details">Details</string>
+    <string name="crash_notice_hide_details">Hide details</string>
+    <string name="crash_notice_details_note">This record contains no file names or paths.</string>
+    <string name="crash_notice_ok">OK</string>
+</resources>

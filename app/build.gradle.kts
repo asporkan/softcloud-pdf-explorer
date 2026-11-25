@@ -160,9 +160,6 @@ dependencies {
     // Logging
     implementation(libs.timber)
 
-    // Animation
-    implementation(libs.lottie.compose)
-
     // Reorderable List (drag-to-reorder)
     implementation(libs.reorderable)
 

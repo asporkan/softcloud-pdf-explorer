@@ -1,8 +1,6 @@
 package com.rejowan.pdfreaderpro.appClasses
 
 import android.app.Application
-import android.os.Handler
-import android.os.Looper
 import com.itextpdf.kernel.utils.XmlProcessorCreator
 import com.rejowan.pdfreaderpro.BuildConfig
 import com.rejowan.pdfreaderpro.di.dataStoreModule
@@ -35,6 +33,10 @@ class MyApplication : Application() {
         // Critical path: Initialize Timber first for error logging
         initTimber()
 
+        // Crash recorder must be in place before anything else can fail; it only stores the
+        // previous handler and writes a file when a crash happens (no startup cost)
+        GlobalErrorHandler.setup(this)
+
         // iText XMP on Android — before any PDF tool opens a document
         XmlProcessorCreator.setXmlParserFactory(AndroidSafeXmlParserFactory())
 
@@ -47,12 +49,7 @@ class MyApplication : Application() {
             AppLocaleManager.apply(language)
         }
 
-        // Defer non-critical initialization to avoid blocking startup
-        Handler(Looper.getMainLooper()).post {
-            // Setup global error handler (can be deferred)
-            GlobalErrorHandler.setup(this)
-            Timber.d("Application initialized successfully")
-        }
+        Timber.d("Application initialized successfully")
     }
 
     private fun initTimber() {

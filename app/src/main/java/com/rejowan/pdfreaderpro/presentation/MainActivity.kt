@@ -28,6 +28,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
 import com.rejowan.pdfreaderpro.presentation.components.PermissionBottomSheet
+import com.rejowan.pdfreaderpro.presentation.components.dialogs.CrashNoticeDialog
 import com.rejowan.pdfreaderpro.presentation.navigation.Home
 import com.rejowan.pdfreaderpro.presentation.navigation.Onboarding
 import com.rejowan.pdfreaderpro.presentation.navigation.PdfReaderNavGraph
@@ -35,6 +36,7 @@ import com.rejowan.pdfreaderpro.presentation.navigation.Reader
 import com.rejowan.pdfreaderpro.presentation.theme.PdfExplorerTheme
 import com.rejowan.pdfreaderpro.presentation.theme.ThemeMode
 import com.rejowan.pdfreaderpro.util.FileOperations
+import com.rejowan.pdfreaderpro.util.GlobalErrorHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -62,6 +64,7 @@ class MainActivity : AppCompatActivity() {
     private var startDestination: Any by mutableStateOf(Home)
     private var showPermissionSheet by mutableStateOf(false)
     private var hasCompletedOnboarding by mutableStateOf(false)
+    private var pendingCrashReport by mutableStateOf<String?>(null)
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,6 +78,11 @@ class MainActivity : AppCompatActivity() {
         // Clean up old cached PDFs in background
         lifecycleScope.launch(Dispatchers.IO) {
             FileOperations.cleanupOldCachedPdfs(this@MainActivity)
+        }
+
+        // Previous session crashed? Read the short record; it is deleted when the user dismisses the notice
+        lifecycleScope.launch(Dispatchers.IO) {
+            pendingCrashReport = GlobalErrorHandler.crashReportStore(this@MainActivity).read()
         }
 
         // Determine start destination (check for incoming intent first)
@@ -144,6 +152,18 @@ class MainActivity : AppCompatActivity() {
                                     sheetState = sheetState,
                                     onDismiss = { showPermissionSheet = false },
                                     onGrantClick = { /* Settings will open, permission checked on resume */ }
+                                )
+                            }
+
+                            pendingCrashReport?.let { report ->
+                                CrashNoticeDialog(
+                                    details = report,
+                                    onDismiss = {
+                                        pendingCrashReport = null
+                                        lifecycleScope.launch(Dispatchers.IO) {
+                                            GlobalErrorHandler.crashReportStore(this@MainActivity).clear()
+                                        }
+                                    }
                                 )
                             }
                         }

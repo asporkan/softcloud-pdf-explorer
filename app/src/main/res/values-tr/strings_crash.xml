@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="crash_notice_title">Uygulama beklenmedik şekilde kapandı</string>
+    <string name="crash_notice_message">Son kullanımınızda bir hata nedeniyle uygulama kapandı. Sorun tekrarlanırsa uygulamayı yeniden başlatmayı deneyin.</string>
+    <string name="crash_notice_show_details">Ayrıntılar</string>
+    <string name="crash_notice_hide_details">Ayrıntıları gizle</string>
+    <string name="crash_notice_details_note">Bu kayıt dosya adı veya yol içermez.</string>
+    <string name="crash_notice_ok">Tamam</string>
+</resources>

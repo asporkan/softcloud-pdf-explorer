@@ -1,5 +1,6 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · F2-18: B31 çökmeler önceki handler'a iletiliyor (Play vitals görür), yol/ad içermeyen kayıt sonraki açılışta dialogla gösteriliyor; ErrorActivity, 7 renk, 2 dizi, lottie-compose kaldırıldı · testDebugUnitTest 936/936 (11 yeni), assembleRelease (R8) temiz; cihazda çökme testi F2-7'de (debug receiver)
 - 2026-11-26 · F2-15 release küçültme: iText/BC/Room/serialization keep kuralları daraltıldı, localeFilters en+tr, packaging excludes, ndk SYMBOL_TABLE, anim_next.json silindi · AAB 23,08→17,80 MB, APK 16,31→11,46 MB, tek dex 8,28 MB; 925/925 test, bundle+assembleRelease başarılı, lintRelease 0 Error; cihaz duman testi F2-7'de
 - 2026-11-26 · F2-14 kullanılmayan 365 string anahtarı EN+TR'den kontrollü silindi (1337→972) · 5 partide mergeDebugResources + compileDebugKotlin hatasız, TR doğrulama PASS, 925/925 test, lint MissingTranslation/ExtraTranslation 0
 - 2026-11-26 · F2-16 Play Console: veri güvenliği formu "veri toplanmıyor/paylaşılmıyor" olarak kaydedildi (incelemeye gönderim 0.6.1 ile); vitals son 28 gün 0 çökme/ANR; lansman öncesi rapor 0 kararlılık/performans, 26 erişilebilirlik; paket R8 optimizasyonu %38, 86 yerelleştirme · Console sayfaları okundu, önizleme doğrulandı

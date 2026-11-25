@@ -69,12 +69,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".presentation.ErrorActivity"
-            android:exported="false"
-            android:theme="@style/Theme.PdfExplorer"
-            android:configChanges="orientation|screenSize" />
-
         <!-- Persist AppCompatDelegate.setApplicationLocales across process death -->
         <service
             android:name="androidx.appcompat.app.AppLocalesMetadataHolderService"
