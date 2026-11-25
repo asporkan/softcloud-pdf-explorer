@@ -25,6 +25,7 @@ Kotlin · Jetpack Compose · Material 3 · Koin · Room · DataStore · PDF.js (
 - 2026-11-26: Son Açılanlar kalıcıdır (yeniden başlatmada korunur). Araç çıktıları: ilk kayıtta klasör sorulur, sonra sormadan oraya kaydedilir; araç ekranında "Kayıt yeri · Değiştir" her zaman görünür, Ayarlar'da değiştirme ve "her seferinde sor" seçeneği vardır; geçersiz klasörde yeniden sorulur.
 - 2026-11-26: INTERNET izni şimdilik kaldırılır (uygulama tamamen çevrimdışı). İleride reklam ve ücretli özellik gelecek; o zaman yeniden eklenir, gizlilik metni ve Play veri güvenliği formu güncellenir.
 - 2026-11-26: İmzalama: kökteki git dışı `keystore.properties` → `C:/Workspace/Android/pdf/keystore/pdf_explorer.jks`, alias `key0` (şifreler yalnızca o dosyada).
+- 2026-11-26: Play "Reklam içerir" beyanı reklam gelecek olduğu için olduğu gibi kalır.
 - 2026-11-26: Koyu temada koyu zemin üstündeki yazı/simge açık renk olur; renkler `presentation/theme/` token'larından gelir, bileşende sabit `Color(0xFF…)` kullanılmaz.
 
 ## Yerel araçlar

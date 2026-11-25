@@ -258,7 +258,7 @@
     <string name="retry">Yeniden Dene</string>
 
     <!-- Reader Screen -->
-    <string name="page_of">Sayfa %d / %d</string>
+    <string name="page_of">Sayfa %1$d / %2$d</string>
     <string name="bookmarks">Yer İmleri</string>
     <string name="no_bookmarks">Yer imi yok</string>
     <string name="add_bookmark">Yer İmi Ekle</string>
@@ -282,7 +282,7 @@
     <string name="find_in_document">Belgede Ara</string>
     <string name="search_text">Metin ara…</string>
     <string name="no_matches">Eşleşme yok</string>
-    <string name="match_count">%d / %d</string>
+    <string name="match_count">%1$d / %2$d</string>
 
     <!-- Remove Favorite -->
     <string name="remove_favorite">Favoriyi Kaldır</string>
@@ -502,9 +502,6 @@
     <string name="cd_refresh">Yenile</string>
     <string name="cd_search">Ara</string>
     <string name="cd_clear_search">Aramayı temizle</string>
-    <string name="cd_close_search">Aramayı kapat</string>
-    <string name="cd_previous_result">Önceki sonuç</string>
-    <string name="cd_next_result">Sonraki sonuç</string>
     <string name="cd_select">Seç</string>
     <string name="cd_deselect">Seçimi kaldır</string>
     <string name="cd_select_all">Tümünü seç</string>
@@ -695,7 +692,7 @@
     <!-- Recent Items -->
     <string name="item_selected">Seçili</string>
     <string name="item_not_selected">Seçili değil</string>
-    <string name="page_progress">Sayfa %d/%d</string>
+    <string name="page_progress">Sayfa %1$d/%2$d</string>
     <string name="page_progress_time">Sayfa %1$d / %2$d • %3$s</string>
     <string name="just_now">Az önce</string>
     <string name="minutes_ago">%d dk önce</string>
@@ -888,7 +885,6 @@
     <string name="page_by_page">Sayfa Sayfa</string>
     <string name="remove_favorite_title">Favorilerden kaldırılsın mı?</string>
     <string name="remove_favorite_message">Bu dosya favori listenizden kaldırılacak</string>
-    <string name="pdf_information">PDF Bilgileri</string>
     <string name="document_title">Başlık</string>
     <string name="author">Yazar</string>
     <string name="subject">Konu</string>
@@ -929,10 +925,6 @@
     <string name="no_attachments_message">Bu PDF\'de gömülü dosya yok</string>
 
     <!-- Settings Panel (Reader) -->
-    <string name="reading_settings">Okuma Ayarları</string>
-    <string name="full_screen_mode">Tam Ekran Modu</string>
-    <string name="auto_rotate_enabled">Otomatik döndürme açık</string>
-    <string name="delete_pdf">PDF\'yi Sil</string>
 
     <!-- Folder Detail Screen -->
     <string name="delete_files_count">%d dosya silinsin mi?</string>
@@ -1171,7 +1163,7 @@
     <string name="pdf_saved_new_order">PDF\'niz yeni sayfa sırasıyla kaydedildi</string>
     <string name="pdf_password_protected">PDF\'niz artık şifre korumalı</string>
     <string name="password_protection_removed">Şifre koruması kaldırıldı</string>
-    <string name="images_created_count">%d %s görsel oluşturuldu</string>
+    <string name="images_created_count">%1$d %2$s görsel oluşturuldu</string>
     <string name="images_converted_count">%d görsel dönüştürüldü</string>
     <string name="pages_removed_count">%d sayfa silindi</string>
 
@@ -1207,7 +1199,7 @@
 
     <!-- Page Selection -->
     <string name="all_pages_count">Tüm %d sayfa</string>
-    <string name="selected_of_count">%d / %d seçildi</string>
+    <string name="selected_of_count">%1$d / %2$d seçildi</string>
     <string name="pages_modified">%d sayfa • Değiştirildi</string>
     <string name="page_numbers_label">Sayfa numaraları</string>
     <string name="page_numbers_hint">örn. 1-5, 8, 10-12</string>
@@ -1227,7 +1219,7 @@
     <string name="format_jpg">JPG</string>
     <string name="format_lossless">Kayıpsız kalite</string>
     <string name="format_smaller_size">Daha küçük dosya boyutu</string>
-    <string name="will_create_images">%d %s görsel oluşturulacak</string>
+    <string name="will_create_images">%1$d %2$s görsel oluşturulacak</string>
 
     <!-- Compression Levels -->
     <string name="compression_low">Düşük</string>
@@ -1283,7 +1275,7 @@
     <string name="select_pages_to_remove_hint">Silmek için sayfalara dokunun</string>
 
     <!-- File Info in Results -->
-    <string name="pages_size_format">%d sayfa • %s</string>
+    <string name="pages_size_format">%1$d sayfa • %2$s</string>
 
     <!-- Merge Screen -->
     <string name="pdf_extension">.pdf</string>
