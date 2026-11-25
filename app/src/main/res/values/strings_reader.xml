@@ -9,7 +9,6 @@
     <string name="reader_msg_no_app_for_attachment">No app found to open this file. Saving to Downloads…</string>
     <string name="reader_err_open_external">Failed to open with external app: %1$s</string>
     <string name="reader_err_open_link">Failed to open link: %1$s</string>
-    <string name="reader_err_save_document">Failed to save document: %1$s</string>
     <string name="reader_err_delete_file">Failed to delete file</string>
     <string name="reader_err_save">Failed to save: %1$s</string>
     <string name="reader_err_save_attachment">Failed to save attachment: %1$s</string>

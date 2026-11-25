@@ -9,7 +9,6 @@
     <string name="reader_msg_no_app_for_attachment">Bu dosyayı açacak uygulama bulunamadı. İndirilenler klasörüne kaydediliyor…</string>
     <string name="reader_err_open_external">Harici uygulamayla açılamadı: %1$s</string>
     <string name="reader_err_open_link">Bağlantı açılamadı: %1$s</string>
-    <string name="reader_err_save_document">Belge kaydedilemedi: %1$s</string>
     <string name="reader_err_delete_file">Dosya silinemedi</string>
     <string name="reader_err_save">Kaydedilemedi: %1$s</string>
     <string name="reader_err_save_attachment">Ek kaydedilemedi: %1$s</string>

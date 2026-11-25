@@ -22,8 +22,8 @@ import com.rejowan.pdfreaderpro.presentation.components.pdf.addListener
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.AttachmentItem
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.OutlineItem
 import com.rejowan.pdfreaderpro.presentation.screens.reader.components.PdfInfo
-import android.os.Environment
 import com.rejowan.pdfreaderpro.presentation.components.pdf.InvalidPDFException
+import com.rejowan.pdfreaderpro.util.DownloadsWriter
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -44,7 +44,9 @@ class ReaderViewModel(
     private val pdfFileRepository: PdfFileRepository,
     private val applicationContext: Context,
     savedStateHandle: SavedStateHandle,
-    private val passwordStorage: PasswordStorage = PasswordStorage(applicationContext)
+    private val passwordStorage: PasswordStorage = PasswordStorage(applicationContext),
+    private val downloadsWriter: DownloadsWriter = DownloadsWriter(applicationContext),
+    private val fileExists: (String) -> Boolean = { File(it).exists() }
 ) : ViewModel() {
 
     val pdfPath: String = savedStateHandle.get<String>("path") ?: ""
@@ -221,20 +223,7 @@ class ReaderViewModel(
                     }
                 }
             },
-            onPageLoadFailed = { exception ->
-                Timber.w(exception, "PDF load failed")
-                val messageRes = if (exception is InvalidPDFException) {
-                    R.string.error_invalid_pdf
-                } else {
-                    R.string.error_loading_pdf
-                }
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = ReaderError(messageRes)
-                    )
-                }
-            },
+            onPageLoadFailed = { exception -> onLoadFailed(exception) },
             onPageChange = { pageNumber ->
                 // Library uses 1-based indexing, our state uses 0-based
                 val page = pageNumber - 1
@@ -343,19 +332,34 @@ class ReaderViewModel(
                 _state.update { it.copy(attachments = attachmentItems) }
             },
             onDownload = { fileBytes, fileName, mimeType ->
-                viewModelScope.launch {
-                    when (pendingAttachmentAction) {
-                        AttachmentAction.OPEN -> openAttachmentFile(fileBytes, fileName, mimeType)
-                        AttachmentAction.DOWNLOAD -> saveAttachmentFile(fileBytes, fileName)
-                        null -> saveAttachmentFile(fileBytes, fileName) // Default to save
-                    }
-                    pendingAttachmentAction = null
-                }
+                onAttachmentBytes(fileBytes, fileName, mimeType)
             },
             onLinkClick = { link ->
                 onAction(ReaderAction.OpenLink(link))
             }
         )
+    }
+
+    internal fun onLoadFailed(exception: Throwable) {
+        Timber.w(exception, "PDF load failed")
+        val messageRes = if (exception is InvalidPDFException) {
+            R.string.error_invalid_pdf
+        } else {
+            R.string.error_loading_pdf
+        }
+        _state.update { it.copy(isLoading = false, error = ReaderError(messageRes)) }
+    }
+
+    /** PDF.js handed over the bytes of an attachment; open or save them depending on what the user asked for. */
+    internal fun onAttachmentBytes(fileBytes: ByteArray, fileName: String?, mimeType: String?) {
+        viewModelScope.launch {
+            when (pendingAttachmentAction) {
+                AttachmentAction.OPEN -> openAttachmentFile(fileBytes, fileName, mimeType)
+                AttachmentAction.DOWNLOAD -> saveAttachmentFile(fileBytes, fileName, mimeType)
+                null -> saveAttachmentFile(fileBytes, fileName, mimeType) // Default to save
+            }
+            pendingAttachmentAction = null
+        }
     }
 
     /**
@@ -609,7 +613,7 @@ class ReaderViewModel(
             is ReaderAction.ShareDocument -> viewModelScope.launch { _events.send(ReaderEvent.ShareDocument) }
             is ReaderAction.PrintDocument -> printDocument()
             is ReaderAction.OpenWithExternal -> openWithExternal()
-            is ReaderAction.SaveDocument -> saveDocument()
+            is ReaderAction.Retry -> retryLoad()
             is ReaderAction.SaveDocumentWithPicker -> viewModelScope.launch { _events.send(ReaderEvent.SaveDocumentPicker) }
             is ReaderAction.CloseDocument -> viewModelScope.launch { _events.send(ReaderEvent.DocumentClosed) }
             is ReaderAction.OpenLink -> openLink(action.url)
@@ -814,28 +818,27 @@ class ReaderViewModel(
         }
     }
 
-    private fun saveDocument() {
-        viewModelScope.launch {
-            try {
-                val sourceFile = File(pdfPath)
-                val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                val destFile = File(downloadsDir, sourceFile.name)
-
-                // If file already exists, add number suffix
-                var finalFile = destFile
-                var counter = 1
-                while (finalFile.exists()) {
-                    val nameWithoutExt = sourceFile.nameWithoutExtension
-                    val ext = sourceFile.extension
-                    finalFile = File(downloadsDir, "${nameWithoutExt}_$counter.$ext")
-                    counter++
-                }
-
-                sourceFile.copyTo(finalFile)
-                _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_saved_to_downloads, listOf(finalFile.name)))
-            } catch (e: Exception) {
-                _events.send(ReaderEvent.Error(R.string.reader_err_save_document, listOf(e.detail())))
-            }
+    /**
+     * Error screen "Try again": clears the error and shows the loading state. The error screen
+     * leaves the composition, so the viewer is created and loads the file again when the reader
+     * is shown. A file that is gone keeps the error screen, with a "file not found" message.
+     */
+    private fun retryLoad() {
+        if (!fileExists(pdfPath)) {
+            _state.update { it.copy(isLoading = false, error = ReaderError(R.string.error_file_not_found)) }
+            return
+        }
+        pdfViewer = null
+        triedStoredPassword = false
+        awaitingStoredPasswordResult = false
+        _state.update {
+            it.copy(
+                isLoading = true,
+                error = null,
+                isPasswordRequired = false,
+                isPasswordError = false,
+                passwordSubmitted = false
+            )
         }
     }
 
@@ -856,17 +859,15 @@ class ReaderViewModel(
         }
     }
 
-    private suspend fun saveAttachmentFile(fileBytes: ByteArray, fileName: String?) {
-        try {
-            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val finalFileName = fileName ?: "attachment_${System.currentTimeMillis()}"
-            val file = File(downloadsDir, finalFileName)
-
-            file.writeBytes(fileBytes)
-            _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_saved_to_downloads, listOf(finalFileName)))
-        } catch (e: Exception) {
-            _events.send(ReaderEvent.Error(R.string.reader_err_save_attachment, listOf(e.detail())))
-        }
+    private suspend fun saveAttachmentFile(fileBytes: ByteArray, fileName: String?, mimeType: String?) {
+        val name = fileName ?: "attachment_${System.currentTimeMillis()}"
+        downloadsWriter.save(fileBytes, name, mimeType)
+            .onSuccess { storedName ->
+                _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_saved_to_downloads, listOf(storedName)))
+            }
+            .onFailure { e ->
+                _events.send(ReaderEvent.Error(R.string.reader_err_save_attachment, listOf(e.detail())))
+            }
     }
 
     private suspend fun openAttachmentFile(fileBytes: ByteArray, fileName: String?, mimeType: String?) {
@@ -875,7 +876,7 @@ class ReaderViewModel(
             val cacheDir = File(applicationContext.cacheDir, "attachments")
             if (!cacheDir.exists()) cacheDir.mkdirs()
 
-            val finalFileName = fileName ?: "attachment_${System.currentTimeMillis()}"
+            val finalFileName = DownloadsWriter.sanitizeFileName(fileName ?: "attachment_${System.currentTimeMillis()}")
             val file = File(cacheDir, finalFileName)
             file.writeBytes(fileBytes)
 
@@ -905,7 +906,7 @@ class ReaderViewModel(
             } else {
                 // No app found, offer to save instead
                 _events.send(ReaderEvent.ShowMessage(R.string.reader_msg_no_app_for_attachment))
-                saveAttachmentFile(fileBytes, fileName)
+                saveAttachmentFile(fileBytes, fileName, mimeType)
             }
         } catch (e: Exception) {
             _events.send(ReaderEvent.Error(R.string.reader_err_open_attachment, listOf(e.detail())))

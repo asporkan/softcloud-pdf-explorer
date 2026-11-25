@@ -8,10 +8,10 @@
 
 ## Faz 2 — Onaylanan düzeltmeler (v0.6.1)
 ### Dalga 2
-- [ ] @android-dev · F2-9. Okuyucu ve manifest: B28 ek kaydetme MediaStore Downloads'a, B29 "Tekrar dene" çalışır, B30 ölü okuyucu bileşenleri ve SaveDocument silinir; manifest: INTERNET kaldırılır, WRITE `maxSdkVersion=29`, READ `maxSdkVersion=32`, `requestLegacyExternalStorage` Android 10 için kalır
 - [ ] @android-dev · F2-6a. Koyu tema token'ları + B4 kontrast (okuyucu hariç tüm ekranlar) + B6 alt menüler (okuyucu hariç) + B7 seçim çubuğu + B8 sekme + Ayarlar: "Varsayılan kayıt klasörü" (OutputFolderStore) ve "Vertical/Light" Türkçesi + `FileOperations` paylaşım başlığı i18n + kullanılmayan `tool_category_*` anahtarları
-- [ ] @android-dev · F2-6b. Okuyucu kontrastı + okuyucu alt menüleri (Diğer Seçenekler, Yakınlaştırma, Görüntüleme) (bekler: F2-9, F2-6a)
+- [ ] @android-dev · F2-6b. Okuyucu kontrastı + okuyucu alt menüleri (Diğer Seçenekler, Yakınlaştırma, Görüntüleme) (bekler: F2-6a)
 - [ ] @ana-denetleyici · F2-10. Play Console kontrolü (Edge): All files access beyanı, veri güvenliği formu, gizlilik politikası URL'si
+- [ ] @content · F2-11. Kullanılmayan strings.xml anahtarları: cd_next_result, cd_close_search, cd_previous_result, auto_rotate_enabled, full_screen_mode, pdf_information, delete_pdf, reading_settings (bekler: F2-6a)
 ### Kapanış
-- [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon (bekler: F2-6b, F2-9)
+- [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon (bekler: F2-6b)
 - [ ] @devops · F2-8. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F2-7, TODO-Faruk #1 keystore)

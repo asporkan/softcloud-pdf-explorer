@@ -1,5 +1,6 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · F2-9 okuyucu ve manifest: B28 ek kaydetme MediaStore Downloads (DownloadsWriter, ad temizleme), B29 "Tekrar dene" çalışıyor, B30 4 ölü bileşen + SaveDocument silindi, INTERNET kaldırıldı, WRITE max 29, READ max 32 · 898/898 birim test (17 yeni), birleşik manifest kontrol edildi; cihaz doğrulaması F2-7'de
 - 2026-11-26 · F2-2 Okuyucu: B9 sayaç 1/1, B12 PDF.js şifre penceresi gizlendi, B21 baloncuk/araç çubuğu, B26 Sil ⋯ menüsünde, okuyucu i18n EN+TR, okuyucu silmesi repository'ye bağlandı · testDebugUnitTest 881/881, assembleDebug temiz; cihaz doğrulaması F2-7'de
 - 2026-11-26 · F2-3 Araçlar: B2 yanlış şifrede yetim dosya yok, B3 beyaz küçük resim, B13 gerçek ad/konum, B14 kayıt klasörü hatırlanıyor + "Kayıt yeri · Değiştir", B11/B16/B17/B18/B20, araç i18n, B22 testler onarıldı · testDebugUnitTest 879/879, assembleDebug temiz, TR doğrulama PASS; cihaz doğrulaması F2-7'de
 - 2026-11-26 · F2-1 veri/dosya: arama silme/rename listeyi yeniliyor (B1), MediaStore observer ile liste yenileme (B5), Son Açılanlar/Favori temizliği erişim yokken silmiyor (B15), silme/rename IO thread'inde (B23), silme tek yerde PdfFileRepository.deletePdf(path) + MediaStore yedeği (B24) · compileDebugKotlin temiz, 285 birim testi geçti (tools testleri hariç kopyada); cihaz doğrulaması F2-7'de

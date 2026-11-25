@@ -237,7 +237,6 @@ sealed class ReaderAction {
     data object ShareDocument : ReaderAction()
     data object PrintDocument : ReaderAction()
     data object OpenWithExternal : ReaderAction()
-    data object SaveDocument : ReaderAction()
     data object CloseDocument : ReaderAction()
 
     // Top bar menu
@@ -285,4 +284,7 @@ sealed class ReaderAction {
 
     // Save with picker
     data object SaveDocumentWithPicker : ReaderAction()
+
+    // Error screen
+    data object Retry : ReaderAction()
 }

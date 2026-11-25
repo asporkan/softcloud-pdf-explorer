@@ -13,8 +13,12 @@ import com.rejowan.pdfreaderpro.domain.repository.FavoriteRepository
 import com.rejowan.pdfreaderpro.domain.repository.PdfFileRepository
 import com.rejowan.pdfreaderpro.domain.repository.PreferencesRepository
 import com.rejowan.pdfreaderpro.domain.repository.RecentRepository
+import com.rejowan.pdfreaderpro.R
+import com.rejowan.pdfreaderpro.util.DownloadsWriter
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ReaderAction
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ReaderEvent
+import com.rejowan.pdfreaderpro.presentation.screens.reader.ReaderError
+import com.rejowan.pdfreaderpro.presentation.screens.reader.components.AttachmentItem
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ReaderViewModel
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ReadingTheme
 import com.rejowan.pdfreaderpro.presentation.screens.reader.ScrollMode
@@ -52,6 +56,8 @@ class ReaderViewModelTest {
     private lateinit var applicationContext: Context
     private lateinit var savedStateHandle: SavedStateHandle
     private lateinit var passwordStorage: PasswordStorage
+    private lateinit var downloadsWriter: DownloadsWriter
+    private var pdfExists = true
     private lateinit var viewModel: ReaderViewModel
 
     private val testPdfPath = "/storage/test.pdf"
@@ -68,6 +74,8 @@ class ReaderViewModelTest {
         pdfFileRepository = mockk(relaxed = true)
         applicationContext = mockk(relaxed = true)
         passwordStorage = mockk(relaxed = true)
+        downloadsWriter = mockk(relaxed = true)
+        pdfExists = true
 
         savedStateHandle = SavedStateHandle(mapOf("path" to testPdfPath, "initialPage" to 0))
 
@@ -97,7 +105,9 @@ class ReaderViewModelTest {
             pdfFileRepository = pdfFileRepository,
             applicationContext = applicationContext,
             savedStateHandle = savedStateHandle,
-            passwordStorage = passwordStorage
+            passwordStorage = passwordStorage,
+            downloadsWriter = downloadsWriter,
+            fileExists = { pdfExists }
         )
     }
 
@@ -702,4 +712,131 @@ class ReaderViewModelTest {
         coVerify(exactly = 0) { recentRepository.removeRecent(testPdfPath) }
         coVerify(exactly = 0) { favoriteRepository.removeFavorite(testPdfPath) }
     }
+
+    // region Attachment save (B28)
+    private val attachment = AttachmentItem(title = "a.txt", id = "att1", dest = null)
+
+    @Test
+    fun `downloaded attachment is saved through the writer and reports the stored name`() = runTest {
+        coEvery { downloadsWriter.save(any(), "report.txt", "text/plain") } returns Result.success("report (1).txt")
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onAction(ReaderAction.DownloadAttachment(attachment))
+
+        viewModel.events.test {
+            viewModel.onAttachmentBytes(byteArrayOf(1, 2, 3), "report.txt", "text/plain")
+            advanceUntilIdle()
+
+            val event = awaitItem() as ReaderEvent.ShowMessage
+            assertEquals(R.string.reader_msg_saved_to_downloads, event.messageRes)
+            // The real (MediaStore-assigned) name is shown, not the requested one
+            assertEquals(listOf<Any>("report (1).txt"), event.args)
+            cancelAndIgnoreRemainingEvents()
+        }
+        coVerify(exactly = 1) {
+            downloadsWriter.save(match { it.contentEquals(byteArrayOf(1, 2, 3)) }, "report.txt", "text/plain")
+        }
+    }
+
+    @Test
+    fun `download without a pending action still saves`() = runTest {
+        coEvery { downloadsWriter.save(any(), any(), any()) } returns Result.success("x.bin")
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onAttachmentBytes(byteArrayOf(9), "x.bin", null)
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { downloadsWriter.save(any(), "x.bin", null) }
+    }
+
+    @Test
+    fun `attachment without a name gets a generated name`() = runTest {
+        val nameSlot = slot<String?>()
+        coEvery { downloadsWriter.save(any(), captureNullable(nameSlot), any()) } returns Result.success("attachment")
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onAction(ReaderAction.DownloadAttachment(attachment))
+
+        viewModel.onAttachmentBytes(byteArrayOf(1), null, null)
+        advanceUntilIdle()
+
+        assertTrue(nameSlot.captured!!.startsWith("attachment_"))
+    }
+
+    @Test
+    fun `failed attachment save sends an error event instead of a success message`() = runTest {
+        coEvery { downloadsWriter.save(any(), any(), any()) } returns Result.failure(java.io.IOException("disk full"))
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onAction(ReaderAction.DownloadAttachment(attachment))
+
+        viewModel.events.test {
+            viewModel.onAttachmentBytes(byteArrayOf(1), "a.txt", "text/plain")
+            advanceUntilIdle()
+
+            val event = awaitItem() as ReaderEvent.Error
+            assertEquals(R.string.reader_err_save_attachment, event.messageRes)
+            assertEquals(listOf<Any>("disk full"), event.args)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+    // endregion
+
+    // region Retry (B29)
+    @Test
+    fun `load failure shows the error screen state`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+
+        viewModel.onLoadFailed(java.io.IOException("boom"))
+
+        assertEquals(ReaderError(R.string.error_loading_pdf), viewModel.state.value.error)
+        assertFalse(viewModel.state.value.isLoading)
+    }
+
+    @Test
+    fun `retry clears the error and shows loading again`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onLoadFailed(java.io.IOException("boom"))
+        assertNotNull(viewModel.state.value.error)
+        assertFalse(viewModel.state.value.isLoading)
+
+        viewModel.onAction(ReaderAction.Retry)
+        advanceUntilIdle()
+
+        assertNull(viewModel.state.value.error)
+        assertTrue(viewModel.state.value.isLoading)
+    }
+
+    @Test
+    fun `retry with a missing file keeps the error screen with a not found message`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onLoadFailed(java.io.IOException("boom"))
+        pdfExists = false
+
+        viewModel.onAction(ReaderAction.Retry)
+        advanceUntilIdle()
+
+        assertEquals(ReaderError(R.string.error_file_not_found), viewModel.state.value.error)
+        assertFalse(viewModel.state.value.isLoading)
+    }
+
+    @Test
+    fun `retry resets password flags`() = runTest {
+        viewModel = createViewModel()
+        advanceUntilIdle()
+        viewModel.onLoadFailed(java.io.IOException("boom"))
+
+        viewModel.onAction(ReaderAction.Retry)
+        advanceUntilIdle()
+
+        val state = viewModel.state.value
+        assertFalse(state.isPasswordRequired)
+        assertFalse(state.isPasswordError)
+        assertFalse(state.passwordSubmitted)
+    }
+    // endregion
 }
