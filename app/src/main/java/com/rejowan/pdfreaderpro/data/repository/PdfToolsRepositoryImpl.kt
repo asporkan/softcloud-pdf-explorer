@@ -8,6 +8,7 @@ import android.graphics.pdf.PdfRenderer
 import android.media.MediaScannerConnection
 import android.os.ParcelFileDescriptor
 import com.itextpdf.io.image.ImageDataFactory
+import com.rejowan.pdfreaderpro.data.pdf.UnicodePdfFont
 import com.itextpdf.kernel.geom.PageSize
 import com.itextpdf.kernel.pdf.PdfDocument
 import com.itextpdf.kernel.pdf.PdfReader
@@ -17,7 +18,6 @@ import com.itextpdf.kernel.pdf.WriterProperties
 import com.itextpdf.kernel.pdf.EncryptionConstants
 import com.itextpdf.kernel.colors.ColorConstants
 import com.itextpdf.kernel.colors.DeviceRgb
-import com.itextpdf.kernel.font.PdfFontFactory
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas
 import com.itextpdf.kernel.pdf.extgstate.PdfExtGState
 import com.itextpdf.kernel.utils.PdfMerger
@@ -744,7 +744,7 @@ class PdfToolsRepositoryImpl(
             val blue = (config.color and 0xFF) / 255f
 
             val color = DeviceRgb(red, green, blue)
-            val font = PdfFontFactory.createFont()
+            val font = UnicodePdfFont.create()
 
             // Calculate effective opacity (config opacity * color alpha)
             val effectiveOpacity = (config.opacity / 100f) * alpha
@@ -1004,7 +1004,7 @@ class PdfToolsRepositoryImpl(
             val blue = (config.color and 0xFF) / 255f
 
             val color = DeviceRgb(red, green, blue)
-            val font = PdfFontFactory.createFont()
+            val font = UnicodePdfFont.create()
 
             pagesToNumber.forEachIndexed { index, pageNum ->
                 val page = destDoc.getPage(pageNum)
