@@ -206,7 +206,7 @@ fun PdfThumbnailGrid(
                                 color = PdfRed.container
                             ) {
                                 Text(
-                                    text = "$pageCount pages",
+                                    text = stringResource(R.string.pages_count, pageCount),
                                     style = MaterialTheme.typography.labelSmall,
                                     color = PdfRed.color,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)

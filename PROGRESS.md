@@ -9,5 +9,6 @@
 ## Faz 2 — Onaylanan düzeltmeler (v0.6.1)
 ### Dalga 2
 ### Kapanış
+- [~] @ana-denetleyici · F2-21. KRİTİK: release'te iText araçları çalışmıyordu ("AbstractITextEvent is only for internal usage", R8 sınıf adını değiştiriyor) → 2. hata Supplier.get() null (RegisterDefaultDiContainer R8 ile silinmiş). 15 iText jar'ı (2.877 sınıf) tarandı: -keepnames class com.itextpdf.** + 2 RegisterDefaultDiContainer keep; release APK'da 13 araçlık tur bekliyor
 - [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon — release APK ile; iText/BC daraltması için şifreli PDF, kilitle/kilit aç, birleştir, görsel→PDF, sayfa no/filigran, okuyucu JS köprüsü mutlaka denenir
 - [ ] @devops · F2-8. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F2-7, TODO-Faruk #1 keystore)

@@ -9,7 +9,7 @@
     <string name="settings_output_change_folder_desc">Yeni dosyalar için klasörü seçin</string>
     <string name="settings_output_ask_desc">Her kayıtta hedefi siz seçin</string>
     <string name="settings_output_reset">Sıfırla</string>
-    <string name="settings_output_reset_desc">Klasörü unutur; sonraki kayıtta yeniden sorulur</string>
+    <string name="settings_output_reset_desc">Klasörü unutur, Her seferinde sor seçeneğini kapatır; sonraki kayıtta yeniden sorulur</string>
     <string name="settings_output_folder_failed">Bu klasör kullanılamıyor. Lütfen başka bir klasör seçin.</string>
 
     <!-- Sharing -->
@@ -20,4 +20,8 @@
     <string name="share_failed">Dosya paylaşılamadı.</string>
     <string name="cd_previous_search_result">Önceki arama sonucu</string>
     <string name="cd_next_search_result">Sonraki arama sonucu</string>
+
+    <!-- Tek liste/ızgara düğmesi: etiket yapılacak eylemi söyler -->
+    <string name="view_mode_switch_to_grid">Izgara görünümüne geç</string>
+    <string name="view_mode_switch_to_list">Liste görünümüne geç</string>
 </resources>

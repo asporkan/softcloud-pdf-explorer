@@ -6,38 +6,34 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ViewList
-import androidx.compose.material.icons.outlined.GridView
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipAnchorPosition
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
 import androidx.compose.material3.minimumInteractiveComponentSize
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * Home tab strip with the list/grid switch on the right.
+ *
+ * Tab widths are proportional to the measured width of their labels (not equal), so the longest
+ * label ("Son Açılanlar") gets the room it needs and none is cut at 360dp. Only when the labels
+ * cannot fit at all (very large font scale) do they shrink together and ellipsize.
+ */
 @Composable
 fun CompactTabRow(
     tabs: List<String>,
@@ -48,19 +44,30 @@ fun CompactTabRow(
     modifier: Modifier = Modifier
 ) {
     val softPurple = MaterialTheme.accents.purple
+    val textMeasurer = rememberTextMeasurer()
+    val boldStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold)
+    val innerPaddingPx = with(LocalDensity.current) { (TabTextPadding * 2).toPx() }
+    val tabWeights = remember(tabs, boldStyle, innerPaddingPx) {
+        tabs.map { title ->
+            val textWidth = textMeasurer.measure(
+                text = title,
+                style = boldStyle,
+                maxLines = 1,
+                softWrap = false
+            ).size.width
+            (textWidth + innerPaddingPx).coerceAtLeast(1f)
+        }
+    }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Tabs share the free width equally, so every label stays fully visible (360dp included).
-        // The view-mode toggle sits to the right and never overlaps a tab.
         Row(
-            modifier = Modifier
-                .weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             tabs.forEachIndexed { index, title ->
@@ -69,59 +76,20 @@ fun CompactTabRow(
                     isSelected = index == selectedIndex,
                     accentColor = softPurple,
                     onClick = { onTabSelected(index) },
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(tabWeights[index])
                 )
             }
         }
 
-        // View Mode Toggle - Right aligned. Each icon has a 48dp touch target, so no extra gap.
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(0.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-                tooltip = {
-                    PlainTooltip {
-                        Text(stringResource(R.string.list_view))
-                    }
-                },
-                state = rememberTooltipState()
-            ) {
-                ViewModeIcon(
-                    isSelected = !isGridView,
-                    onClick = { if (isGridView) onViewModeToggle() }
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ViewList,
-                        contentDescription = stringResource(R.string.list_view),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-                tooltip = {
-                    PlainTooltip {
-                        Text(stringResource(R.string.grid_view))
-                    }
-                },
-                state = rememberTooltipState()
-            ) {
-                ViewModeIcon(
-                    isSelected = isGridView,
-                    onClick = { if (!isGridView) onViewModeToggle() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.GridView,
-                        contentDescription = stringResource(R.string.grid_view),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-        }
+        // One button switches list <-> grid; its 48dp touch target is the only fixed width.
+        ViewModeToggleButton(
+            isGridView = isGridView,
+            onToggle = onViewModeToggle
+        )
     }
 }
+
+private val TabTextPadding = 4.dp
 
 @Composable
 private fun CompactTab(
@@ -160,47 +128,7 @@ private fun CompactTab(
             textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 6.dp, vertical = 8.dp)
+                .padding(horizontal = TabTextPadding, vertical = 8.dp)
         )
-    }
-}
-
-@Composable
-private fun ViewModeIcon(
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected)
-            MaterialTheme.colorScheme.surfaceContainerHighest
-        else
-            Color.Transparent,
-        label = "view mode background"
-    )
-    val tint by animateColorAsState(
-        targetValue = if (isSelected)
-            MaterialTheme.colorScheme.onSurface
-        else
-            MaterialTheme.colorScheme.onSurfaceVariant,
-        label = "view mode tint"
-    )
-
-    Surface(
-        modifier = modifier
-            .minimumInteractiveComponentSize()
-            .clip(RoundedCornerShape(6.dp))
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(6.dp),
-        color = backgroundColor,
-        contentColor = tint
-    ) {
-        Row(
-            modifier = Modifier.padding(5.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            content()
-        }
     }
 }

@@ -122,6 +122,7 @@ import org.koin.androidx.compose.koinViewModel
 import java.io.File
 import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 import androidx.compose.material3.minimumInteractiveComponentSize
+import com.rejowan.pdfreaderpro.presentation.components.formatFileSize
 
 // Accent colors - consistent with app design system
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple    // Primary actions (merge)
@@ -1060,13 +1061,6 @@ private fun SuccessState(
     }
 }
 
-private fun formatFileSize(bytes: Long): String {
-    return when {
-        bytes < 1024 -> "$bytes B"
-        bytes < 1024 * 1024 -> "%.1f KB".format(bytes / 1024.0)
-        else -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
-    }
-}
 
 // ============================================================================
 // Page Selection Sheet - Hybrid Pattern

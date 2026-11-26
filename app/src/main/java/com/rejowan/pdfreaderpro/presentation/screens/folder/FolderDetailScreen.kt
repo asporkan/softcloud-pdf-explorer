@@ -40,9 +40,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.automirrored.outlined.ViewList
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.GridView
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -71,6 +69,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -104,6 +103,8 @@ import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
 import androidx.compose.material3.minimumInteractiveComponentSize
+import com.rejowan.pdfreaderpro.presentation.components.ViewModeToggleButton
+import com.rejowan.pdfreaderpro.presentation.components.formatFileSize
 
 private val FolderAmber: AccentTone @Composable get() = MaterialTheme.accents.amber
 private val SoftBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
@@ -525,14 +526,6 @@ private fun BatchDeleteConfirmSheet(
     }
 }
 
-private fun formatSize(bytes: Long): String {
-    return when {
-        bytes >= 1_073_741_824 -> String.format("%.1f GB", bytes / 1_073_741_824.0)
-        bytes >= 1_048_576 -> String.format("%.1f MB", bytes / 1_048_576.0)
-        bytes >= 1024 -> String.format("%.1f KB", bytes / 1024.0)
-        else -> "$bytes B"
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -573,7 +566,7 @@ private fun FolderDetailHeader(
                         tint = SoftBlue.color
                     )
                     Text(
-                        text = "$fileCount PDF${if (fileCount != 1) "s" else ""}",
+                        text = pluralStringResource(R.plurals.folder_pdf_count, fileCount, fileCount),
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
@@ -599,7 +592,7 @@ private fun FolderDetailHeader(
                         tint = FolderAmber.color
                     )
                     Text(
-                        text = formatSize(totalSize),
+                        text = formatFileSize(totalSize),
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Medium
                         ),
@@ -614,40 +607,11 @@ private fun FolderDetailHeader(
             horizontalArrangement = Arrangement.spacedBy(0.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // List view
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-                tooltip = { PlainTooltip { Text(stringResource(R.string.list_view)) } },
-                state = rememberTooltipState()
-            ) {
-                ViewModeButton(
-                    isSelected = !isGridView,
-                    onClick = { if (isGridView) onViewModeToggle() }
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ViewList,
-                        contentDescription = stringResource(R.string.cd_list_view),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
-            // Grid view
-            TooltipBox(
-                positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),
-                tooltip = { PlainTooltip { Text(stringResource(R.string.grid_view)) } },
-                state = rememberTooltipState()
-            ) {
-                ViewModeButton(
-                    isSelected = isGridView,
-                    onClick = { if (!isGridView) onViewModeToggle() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.GridView,
-                        contentDescription = stringResource(R.string.cd_grid_view),
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
-            }
+            // One button switches list <-> grid (icon shows the view you switch to)
+            ViewModeToggleButton(
+                isGridView = isGridView,
+                onToggle = onViewModeToggle
+            )
             // Sort
             TooltipBox(
                 positionProvider = TooltipDefaults.rememberTooltipPositionProvider(TooltipAnchorPosition.Above),

@@ -252,8 +252,6 @@
     <!-- Content Descriptions - Accessibility -->
     <string name="sort_files_desc">Dosyaları sırala</string>
     <string name="library_stats_desc">Kitaplık istatistikleri</string>
-    <string name="grid_view">Izgara görünümü</string>
-    <string name="list_view">Liste görünümü</string>
 
     <!-- Content Descriptions - Navigation -->
     <string name="cd_close">Kapat</string>
@@ -691,8 +689,6 @@
     <string name="cd_sort">Sırala</string>
     <string name="cd_low">Düşük</string>
     <string name="cd_high">Yüksek</string>
-    <string name="cd_list_view">Liste görünümü</string>
-    <string name="cd_grid_view">Izgara görünümü</string>
     <string name="cd_drag_to_reorder">Sıralamak için sürükleyin</string>
     <string name="cd_watermark_image">Filigran görseli</string>
     <string name="cd_watermark_preview">Filigran önizlemesi</string>

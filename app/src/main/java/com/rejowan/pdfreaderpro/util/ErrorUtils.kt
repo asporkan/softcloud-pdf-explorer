@@ -237,7 +237,7 @@ object ErrorUtils {
     fun formatAvailableStorage(context: Context): String {
         val bytes = getAvailableStorageBytes()
         return if (bytes >= 0) {
-            FormattingUtils.formattedFileSize(bytes)
+            FormattingUtils.formattedFileSize(bytes, context.resources.configuration.locales[0])
         } else {
             context.getString(R.string.unknown)
         }

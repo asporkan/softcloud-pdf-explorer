@@ -61,11 +61,11 @@ import androidx.compose.ui.unit.dp
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
-import com.rejowan.pdfreaderpro.util.FormattingUtils
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import com.rejowan.pdfreaderpro.presentation.components.formatFileSize
 
 // Accent colors matching UI guide
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
@@ -243,7 +243,7 @@ private fun FileInfoContent(
                 modifier = Modifier.weight(1f)
             )
             StatChip(
-                label = FormattingUtils.formattedFileSize(pdfFile.size),
+                label = formatFileSize(pdfFile.size),
                 tone = AccentTeal,
                 modifier = Modifier.weight(1f)
             )

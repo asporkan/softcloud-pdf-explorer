@@ -13,15 +13,23 @@ import java.util.Locale
 
 object FormattingUtils {
 
-    fun formattedFileSize(length: Long): String {
-        val kb = 1024
+    /**
+     * Human readable size (base 1024) with the decimal separator of [locale]: "520,0 KB" in Turkish,
+     * "520.0 KB" in English. This is the single size formatter of the app; UI code uses the
+     * composable `formatFileSize` (presentation/components/FileSizeText.kt), which passes the
+     * locale the app is currently shown in.
+     */
+    fun formattedFileSize(length: Long, locale: Locale = Locale.getDefault()): String {
+        val kb = 1024.0
         val mb = kb * 1024
         val gb = mb * 1024
+        val tb = gb * 1024
         return when {
-            length >= gb -> String.format(Locale.US, "%.1f GB", length / gb.toFloat())
-            length >= mb -> String.format(Locale.US, "%.1f MB", length / mb.toFloat())
-            length >= kb -> String.format(Locale.US, "%.1f KB", length / kb.toFloat())
-            else -> String.format(Locale.US, "%d B", length)
+            length >= tb -> String.format(locale, "%.1f TB", length / tb)
+            length >= gb -> String.format(locale, "%.1f GB", length / gb)
+            length >= mb -> String.format(locale, "%.1f MB", length / mb)
+            length >= kb -> String.format(locale, "%.1f KB", length / kb)
+            else -> String.format(locale, "%d B", length)
         }
     }
 

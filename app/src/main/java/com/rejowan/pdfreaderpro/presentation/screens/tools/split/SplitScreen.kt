@@ -103,6 +103,7 @@ import androidx.compose.ui.res.stringResource
 import com.rejowan.pdfreaderpro.R
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import com.rejowan.pdfreaderpro.presentation.components.formatFileSize
 
 // Accent colors - consistent with app design system
 private val AccentAmber: AccentTone @Composable get() = MaterialTheme.accents.amber     // Split theme color
@@ -1178,13 +1179,6 @@ private fun SplitResultFileItem(
     }
 }
 
-private fun formatFileSize(bytes: Long): String {
-    return when {
-        bytes < 1024 -> "$bytes B"
-        bytes < 1024 * 1024 -> "%.1f KB".format(bytes / 1024.0)
-        else -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
-    }
-}
 
 private fun calculateParts(totalPages: Int, everyN: Int): Int {
     if (totalPages == 0 || everyN == 0) return 0

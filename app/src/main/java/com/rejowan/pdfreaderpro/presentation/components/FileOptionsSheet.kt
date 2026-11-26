@@ -72,7 +72,6 @@ import com.rejowan.pdfreaderpro.R
 import com.rejowan.pdfreaderpro.domain.model.PdfFile
 import com.rejowan.pdfreaderpro.presentation.theme.AccentTone
 import com.rejowan.pdfreaderpro.presentation.theme.accents
-import com.rejowan.pdfreaderpro.util.FormattingUtils
 import kotlinx.coroutines.delay
 
 // Accent colors matching UI guide
@@ -411,7 +410,7 @@ private fun FileOptionsHeader(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = FormattingUtils.formattedFileSize(pdfFile.size),
+                    text = formatFileSize(pdfFile.size),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

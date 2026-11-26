@@ -8,69 +8,91 @@ import java.util.Locale
 
 class FormattingUtilsTest {
 
+    private val turkish = Locale.forLanguageTag("tr-TR")
+
+    /** English output, independent of the machine's default locale. */
+    private fun fileSize(length: Long, locale: Locale = Locale.US) =
+        FormattingUtils.formattedFileSize(length, locale)
+
     // region formattedFileSize Tests
     @Test
     fun `formattedFileSize formats bytes correctly`() {
-        assertEquals("0 B", FormattingUtils.formattedFileSize(0))
-        assertEquals("1 B", FormattingUtils.formattedFileSize(1))
-        assertEquals("512 B", FormattingUtils.formattedFileSize(512))
-        assertEquals("1023 B", FormattingUtils.formattedFileSize(1023))
+        assertEquals("0 B", fileSize(0))
+        assertEquals("1 B", fileSize(1))
+        assertEquals("512 B", fileSize(512))
+        assertEquals("1023 B", fileSize(1023))
     }
 
     @Test
     fun `formattedFileSize formats kilobytes correctly`() {
-        assertEquals("1.0 KB", FormattingUtils.formattedFileSize(1024))
-        assertEquals("1.5 KB", FormattingUtils.formattedFileSize(1536))
-        assertEquals("10.0 KB", FormattingUtils.formattedFileSize(10240))
-        assertEquals("100.0 KB", FormattingUtils.formattedFileSize(102400))
-        assertEquals("1023.0 KB", FormattingUtils.formattedFileSize(1024 * 1023))
+        assertEquals("1.0 KB", fileSize(1024))
+        assertEquals("1.5 KB", fileSize(1536))
+        assertEquals("10.0 KB", fileSize(10240))
+        assertEquals("100.0 KB", fileSize(102400))
+        assertEquals("1023.0 KB", fileSize(1024 * 1023))
     }
 
     @Test
     fun `formattedFileSize formats megabytes correctly`() {
-        assertEquals("1.0 MB", FormattingUtils.formattedFileSize(1024 * 1024))
-        assertEquals("1.5 MB", FormattingUtils.formattedFileSize((1.5 * 1024 * 1024).toLong()))
-        assertEquals("10.0 MB", FormattingUtils.formattedFileSize(10 * 1024 * 1024))
-        assertEquals("100.0 MB", FormattingUtils.formattedFileSize(100L * 1024 * 1024))
-        assertEquals("500.0 MB", FormattingUtils.formattedFileSize(500L * 1024 * 1024))
+        assertEquals("1.0 MB", fileSize(1024 * 1024))
+        assertEquals("1.5 MB", fileSize((1.5 * 1024 * 1024).toLong()))
+        assertEquals("10.0 MB", fileSize(10 * 1024 * 1024))
+        assertEquals("100.0 MB", fileSize(100L * 1024 * 1024))
+        assertEquals("500.0 MB", fileSize(500L * 1024 * 1024))
     }
 
     @Test
     fun `formattedFileSize formats gigabytes correctly`() {
-        assertEquals("1.0 GB", FormattingUtils.formattedFileSize(1024L * 1024 * 1024))
-        assertEquals("1.5 GB", FormattingUtils.formattedFileSize((1.5 * 1024 * 1024 * 1024).toLong()))
-        assertEquals("10.0 GB", FormattingUtils.formattedFileSize(10L * 1024 * 1024 * 1024))
-        assertEquals("100.0 GB", FormattingUtils.formattedFileSize(100L * 1024 * 1024 * 1024))
+        assertEquals("1.0 GB", fileSize(1024L * 1024 * 1024))
+        assertEquals("1.5 GB", fileSize((1.5 * 1024 * 1024 * 1024).toLong()))
+        assertEquals("10.0 GB", fileSize(10L * 1024 * 1024 * 1024))
+        assertEquals("100.0 GB", fileSize(100L * 1024 * 1024 * 1024))
     }
 
     @Test
     fun `formattedFileSize handles boundary values`() {
         // Just below KB
-        assertEquals("1023 B", FormattingUtils.formattedFileSize(1023))
+        assertEquals("1023 B", fileSize(1023))
         // Exactly KB
-        assertEquals("1.0 KB", FormattingUtils.formattedFileSize(1024))
+        assertEquals("1.0 KB", fileSize(1024))
         // Just below MB
-        assertEquals("1024.0 KB", FormattingUtils.formattedFileSize(1024 * 1024 - 1))
+        assertEquals("1024.0 KB", fileSize(1024 * 1024 - 1))
         // Exactly MB
-        assertEquals("1.0 MB", FormattingUtils.formattedFileSize(1024 * 1024))
+        assertEquals("1.0 MB", fileSize(1024 * 1024))
         // Just below GB
-        assertEquals("1024.0 MB", FormattingUtils.formattedFileSize(1024L * 1024 * 1024 - 1024))
+        assertEquals("1024.0 MB", fileSize(1024L * 1024 * 1024 - 1024))
         // Exactly GB
-        assertEquals("1.0 GB", FormattingUtils.formattedFileSize(1024L * 1024 * 1024))
+        assertEquals("1.0 GB", fileSize(1024L * 1024 * 1024))
     }
 
     @Test
     fun `formattedFileSize handles large values`() {
         // 1 TB
         val oneTB = 1024L * 1024 * 1024 * 1024
-        assertEquals("1024.0 GB", FormattingUtils.formattedFileSize(oneTB))
+        assertEquals("1.0 TB", fileSize(oneTB))
+        assertEquals("1024.0 GB", fileSize(oneTB - 1024L * 1024))
     }
 
     @Test
-    fun `formattedFileSize uses US locale for decimal point`() {
-        val result = FormattingUtils.formattedFileSize(1536)
-        assertTrue(result.contains("."))
-        assertFalse(result.contains(","))
+    fun `formattedFileSize uses decimal point in English`() {
+        assertEquals("1.5 KB", fileSize(1536, Locale.US))
+        assertEquals("1.5 KB", fileSize(1536, Locale.UK))
+    }
+
+    @Test
+    fun `formattedFileSize uses decimal comma in Turkish`() {
+        assertEquals("1,5 KB", fileSize(1536, turkish))
+        assertEquals("520,0 KB", fileSize(520L * 1024, turkish))
+        assertEquals("1,5 MB", fileSize((1.5 * 1024 * 1024).toLong(), turkish))
+        assertEquals("2,0 GB", fileSize(2L * 1024 * 1024 * 1024, turkish))
+        assertEquals("512 B", fileSize(512, turkish))
+    }
+
+    @Test
+    fun `same size differs only by separator between locales`() {
+        val en = fileSize(251L * 1024 + 100, Locale.US)
+        val tr = fileSize(251L * 1024 + 100, turkish)
+        assertEquals(en.replace('.', ','), tr)
     }
     // endregion
 
@@ -314,7 +336,7 @@ class FormattingUtilsTest {
     @Test
     fun `formattedFileSize handles negative values`() {
         // Negative file sizes shouldn't happen but function should handle gracefully
-        val result = FormattingUtils.formattedFileSize(-1)
+        val result = fileSize(-1)
         // Could be "-1 B" or handled differently
         assertNotNull(result)
     }

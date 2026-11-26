@@ -1,5 +1,6 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · F2-20: B8 tek görünüm düğmesi + orantılı sekmeler (360dp'de ~23dp pay), klasör detay çipi çoğul, yerel ayara uygun tek boyut biçimi (20 ekran), kayıt klasörü Sıfırla her şeyi varsayılana alır · 942/942 test, lint Error 0, TR doğrulama PASS; cihaz görsel doğrulaması F2-7 tur 3'te
 - 2026-11-26 · F2-19 temizlik: Lottie lisans satırı ve AGENTS.md bağımlılık satırı, kullanılmaz kalan 3 metin anahtarı, kullanılmayan coroutineExceptionHandler silindi · testDebugUnitTest 936/936, lintRelease Error 0 / Warning 181, assembleRelease 11,5 MB, TR doğrulama PASS
 - 2026-11-26 · F2-17 lint Error 41→0, dokunma hedefleri ≥48dp (31 sheet tutamacı, IconButton/clickable düzeltmeleri), Ayarlar anahtarları toggleable, liste sonları alt gezinme boşluğu, içerik etiketleri, 60 kullanılmayan string silindi · testDebugUnitTest 936/936, TR doğrulama PASS (912=912), lintDebug Error 0; cihaz doğrulaması F2-7'de
 - 2026-11-26 · F2-18: B31 çökmeler önceki handler'a iletiliyor (Play vitals görür), yol/ad içermeyen kayıt sonraki açılışta dialogla gösteriliyor; ErrorActivity, 7 renk, 2 dizi, lottie-compose kaldırıldı · testDebugUnitTest 936/936 (11 yeni), assembleRelease (R8) temiz; cihazda çökme testi F2-7'de (debug receiver)

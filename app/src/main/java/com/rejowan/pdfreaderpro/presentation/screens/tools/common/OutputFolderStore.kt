@@ -14,7 +14,7 @@ import timber.log.Timber
  * Remembers the folder PDF tool outputs are saved to (persistable SAF tree grant).
  *
  * Public API for other screens (e.g. Settings): [getFolder], [setFolder], [clear],
- * [askEveryTime], [folderLabel].
+ * [resetToDefaults], [askEveryTime], [folderLabel].
  */
 class OutputFolderStore(context: Context) {
 
@@ -56,6 +56,18 @@ class OutputFolderStore(context: Context) {
     fun clear() {
         prefs.getString(KEY_TREE, null)?.let { releaseQuietly(Uri.parse(it)) }
         prefs.edit { remove(KEY_TREE) }
+    }
+
+    /**
+     * Back to factory state (Settings "Reset"): forgets the folder, its grant and the saved-document
+     * hint, and turns [askEveryTime] off. Unlike [clear], which only drops an unusable folder.
+     */
+    fun resetToDefaults() {
+        clear()
+        prefs.edit {
+            remove(KEY_HINT)
+            putBoolean(KEY_ASK, false)
+        }
     }
 
     /** Readable folder name (e.g. `Download/Belgeler`), or null when no usable folder is stored. */

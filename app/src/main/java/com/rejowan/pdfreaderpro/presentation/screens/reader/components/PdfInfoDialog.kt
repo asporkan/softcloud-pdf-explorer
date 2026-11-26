@@ -69,6 +69,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.rejowan.pdfreaderpro.presentation.components.AppDragHandle
+import com.rejowan.pdfreaderpro.presentation.components.formatFileSize
 
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
 private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blue
@@ -502,14 +503,6 @@ private fun FeatureTag(
     }
 }
 
-private fun formatFileSize(bytes: Long): String {
-    return when {
-        bytes < 1024 -> "$bytes B"
-        bytes < 1024 * 1024 -> "${bytes / 1024} KB"
-        bytes < 1024 * 1024 * 1024 -> String.format("%.1f MB", bytes / (1024.0 * 1024.0))
-        else -> String.format("%.2f GB", bytes / (1024.0 * 1024.0 * 1024.0))
-    }
-}
 
 private fun formatDate(timestamp: Long): String {
     val sdf = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault())

@@ -73,13 +73,6 @@ private val AccentBlue: AccentTone @Composable get() = MaterialTheme.accents.blu
 private val AccentPink: AccentTone @Composable get() = MaterialTheme.accents.pink
 private val AccentTeal: AccentTone @Composable get() = MaterialTheme.accents.teal
 
-private fun formatFileSize(bytes: Long): String {
-    if (bytes <= 0) return "0 B"
-    val units = arrayOf("B", "KB", "MB", "GB", "TB")
-    val digitGroups = (Math.log10(bytes.toDouble()) / Math.log10(1024.0)).toInt()
-    val value = bytes / Math.pow(1024.0, digitGroups.toDouble())
-    return String.format(Locale.US, "%.1f %s", value, units[digitGroups])
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

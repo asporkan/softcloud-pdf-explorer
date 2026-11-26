@@ -105,6 +105,7 @@ import com.rejowan.pdfreaderpro.util.FileOperations
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import androidx.compose.material3.minimumInteractiveComponentSize
+import com.rejowan.pdfreaderpro.presentation.components.formatFileSize
 
 // Accent colors
 private val SoftPurple: AccentTone @Composable get() = MaterialTheme.accents.purple
@@ -881,7 +882,7 @@ private fun SearchResultItem(
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
-                            text = com.rejowan.pdfreaderpro.util.FormattingUtils.formattedFileSize(pdfFile.size),
+                            text = formatFileSize(pdfFile.size),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)

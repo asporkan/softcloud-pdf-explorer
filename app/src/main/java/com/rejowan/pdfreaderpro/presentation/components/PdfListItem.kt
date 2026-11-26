@@ -161,7 +161,7 @@ fun PdfListItem(
                         color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Text(
-                            text = FormattingUtils.formattedFileSize(pdfFile.size),
+                            text = formatFileSize(pdfFile.size),
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)

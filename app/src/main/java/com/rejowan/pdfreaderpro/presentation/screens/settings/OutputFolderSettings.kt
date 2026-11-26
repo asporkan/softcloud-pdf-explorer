@@ -129,7 +129,7 @@ internal fun OutputFolderSetting(
         OutputFolderSheet(
             accentColor = accentColor,
             folderLabel = currentLabel,
-            hasFolder = folderLabel != null,
+            canReset = folderLabel != null || askEveryTime,
             askEveryTime = askEveryTime,
             onChangeFolder = {
                 showSheet = false
@@ -140,7 +140,8 @@ internal fun OutputFolderSetting(
                 askEveryTime = it
             },
             onReset = {
-                store.clear()
+                store.resetToDefaults()
+                askEveryTime = false
                 refreshTick++
                 showSheet = false
             },
@@ -176,7 +177,7 @@ internal fun OutputFolderSetting(
 private fun OutputFolderSheet(
     accentColor: AccentTone,
     folderLabel: String,
-    hasFolder: Boolean,
+    canReset: Boolean,
     askEveryTime: Boolean,
     onChangeFolder: () -> Unit,
     onAskEveryTimeChange: (Boolean) -> Unit,
@@ -255,7 +256,7 @@ private fun OutputFolderSheet(
                 title = stringResource(R.string.settings_output_reset),
                 description = stringResource(R.string.settings_output_reset_desc),
                 accentColor = MaterialTheme.accents.red,
-                enabled = hasFolder,
+                enabled = canReset,
                 onClick = onReset
             )
         }

@@ -104,6 +104,7 @@ import com.rejowan.pdfreaderpro.presentation.screens.tools.common.rememberOutput
 import com.rejowan.pdfreaderpro.util.FileOperations
 import org.koin.androidx.compose.koinViewModel
 import java.io.File
+import com.rejowan.pdfreaderpro.presentation.components.formatFileSize
 
 // Accent colors - consistent with app design system
 private val AccentPurple: AccentTone @Composable get() = MaterialTheme.accents.purple   // Compress theme color
@@ -1103,10 +1104,3 @@ private fun ProcessingOverlay(progress: Float) {
     }
 }
 
-private fun formatFileSize(bytes: Long): String {
-    return when {
-        bytes >= 1024 * 1024 -> "%.1f MB".format(bytes / (1024.0 * 1024.0))
-        bytes >= 1024 -> "%.1f KB".format(bytes / 1024.0)
-        else -> "$bytes B"
-    }
-}

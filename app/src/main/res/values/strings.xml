@@ -251,8 +251,6 @@
     <!-- Content Descriptions - Accessibility -->
     <string name="sort_files_desc">Sort files</string>
     <string name="library_stats_desc">Library statistics</string>
-    <string name="grid_view">Grid view</string>
-    <string name="list_view">List view</string>
 
     <!-- Content Descriptions - Navigation -->
     <string name="cd_close">Close</string>
@@ -690,8 +688,6 @@
     <string name="cd_sort">Sort</string>
     <string name="cd_low">Low</string>
     <string name="cd_high">High</string>
-    <string name="cd_list_view">List view</string>
-    <string name="cd_grid_view">Grid view</string>
     <string name="cd_drag_to_reorder">Drag to reorder</string>
     <string name="cd_watermark_image">Watermark image</string>
     <string name="cd_watermark_preview">Watermark preview</string>
