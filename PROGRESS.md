@@ -9,4 +9,4 @@
 ## Faz 2 — Onaylanan düzeltmeler (v0.6.1)
 ### Dalga 2
 ### Kapanış
-- [ ] @devops · F2-8. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F2-7, TODO-Faruk #1 keystore)
+- [ ] @kullanıcı · F2-8. 0.6.1 Play yüklemesi: kullanıcı onayı bekleniyor (AAB hazır: app/build/outputs/bundle/release/app-release.aab). Yüklemeyle birlikte bekleyen veri güvenliği değişikliği incelemeye gönderilecek

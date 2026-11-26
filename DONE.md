@@ -1,5 +1,6 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · Sürüm 0.6.1 (code 7) + CHANGELOG; imzalı AAB 18,2 MB ve APK 11,6 MB üretildi · imza SHA-256 Play anahtarıyla eşleşti, 946/946 test, cihaza güncelleme olarak kuruldu, açılış + okuyucu duman testi temiz
 - 2026-11-26 · Filigran ve sayfa numarası Türkçe karakter: Unicode sistem yazı tipi (RobotoStatic → NotoSans → DroidSans → Roboto → Helvetica) alt küme gömülü · 946/946 test (UnicodePdfFontTest), release APK cihazda "GİZLİ ŞĞÜÖÇ ığüşöç" görüldü, /FontFile2 + Identity-H, +14 KB, crash logu temiz
 - 2026-11-26 · F2-22: Dosya Bilgisi çökmesi (iç içe verticalScroll; tarama betiğiyle 3 yer bulunup düzeltildi), Son Açılanlar ⋮ menüsü medya listesinde olmayan dosyada da açılıyor, araç geçici kopyaları Son Açılanlar'a eklenmiyor, küçük resim "6 sf." · 944/944 test, lint Error 0; release APK cihazda: Dosya Bilgisi iki kaynaktan açıldı, crash logu 0
 - 2026-11-26 · F2-7 cihaz testi (3 tur, release APK): silme 5 yerden, B1/B5/B9/B12/B13/B14/B15/B21/B26/B29/B31, 13 iText aracı, kilitli PDF, sekmeler, koyu/açık tema, ≥48dp dokunma hedefleri geçti · Redmi K20 Pro/Android 16, adb + uiautomator ölçümü

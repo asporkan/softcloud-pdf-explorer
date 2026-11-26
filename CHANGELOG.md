@@ -9,6 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.6.1] - 2026-11-26
+
+### Fixed
+- Deleting a PDF did nothing: the confirm button cancelled its own delete action (customer report)
+- "Delete" in the file menu sat under the navigation bar on 3-button navigation
+- Deleted or renamed files stayed in search results and opened an error screen
+- Files created by tools did not appear in the list until a manual refresh
+- Recent files were wiped on restart when storage access was briefly unavailable
+- Unlock with a wrong password left an empty output file behind
+- PDF.js showed a second, English password dialog behind the app's own
+- In-document search counter showed "2/1" for a single match
+- Page bubble overlapped the reader toolbar; reader "Retry" button did nothing
+- Saving PDF attachments failed on Android 10+ (now uses MediaStore Downloads)
+- File Info sheet crashed (nested scrolling)
+- Watermark and page numbers dropped Turkish characters (İ, Ş, Ğ …); a Unicode system font is embedded
+- Crashes were swallowed by a custom handler, so Android vitals never saw them and the app could freeze
+
+### Changed
+- Dark theme: icons and text on tinted backgrounds now use light, high-contrast colors (WCAG ≥ 4.5:1)
+- Bottom sheets open fully; touch targets are at least 48 dp; settings switches are single accessible rows
+- Tools remember the last output folder ("Save to: … · Change"); Settings has a default folder option
+- Single list/grid toggle so Home tabs fit; sizes use the locale's decimal separator
+- PDF→Images and Split support a file name prefix
+- Turkish translations completed; "şifre" used consistently
+
+### Removed
+- INTERNET permission (the app is fully offline); legacy storage permissions limited to old Android versions
+- Unused code, resources, 425 unused strings and the Lottie dependency
+
+### Build
+- R8 rules narrowed (iText names kept, DI registrations kept), en/tr locale filter: AAB 23.1 → ~17.9 MB
+- Native debug symbols (SYMBOL_TABLE) packaged for Play
+
+---
+
 ## [0.6] - 2026-07-15
 
 ### Added
