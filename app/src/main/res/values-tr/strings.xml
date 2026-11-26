@@ -417,11 +417,8 @@
     <string name="not_now">Şimdi değil</string>
 
     <!-- Error Activity -->
-    <string name="unexpected_error">Beklenmeyen bir hata oluştu</string>
     <string name="something_went_wrong">Bir şeyler ters gitti</string>
     <string name="go_back">Geri Dön</string>
-    <string name="restart_app">Uygulamayı Yeniden Başlat</string>
-    <string name="close_app">Uygulamayı Kapat</string>
 
     <!-- Password Dialog -->
     <string name="password_required">Şifre Gerekli</string>

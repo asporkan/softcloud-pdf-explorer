@@ -416,11 +416,8 @@
     <string name="not_now">Not now</string>
 
     <!-- Error Activity -->
-    <string name="unexpected_error">An unexpected error occurred</string>
     <string name="something_went_wrong">Oops! Something went wrong</string>
     <string name="go_back">Go Back</string>
-    <string name="restart_app">Restart App</string>
-    <string name="close_app">Close App</string>
 
     <!-- Password Dialog -->
     <string name="password_required">Password Required</string>

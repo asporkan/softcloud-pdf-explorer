@@ -2096,12 +2096,6 @@ private fun LicensesContent() {
                 url = "https://github.com/JakeWharton/timber"
             ),
             LicenseContent(
-                title = "Lottie",
-                author = "Airbnb",
-                license = Licenses.APACHE_2_0,
-                url = "https://airbnb.io/lottie/"
-            ),
-            LicenseContent(
                 title = "Reorderable",
                 author = "Calvin Liang",
                 license = Licenses.APACHE_2_0,

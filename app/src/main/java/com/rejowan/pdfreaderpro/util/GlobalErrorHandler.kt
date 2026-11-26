@@ -2,7 +2,6 @@ package com.rejowan.pdfreaderpro.util
 
 import android.content.Context
 import android.os.Process
-import kotlinx.coroutines.CoroutineExceptionHandler
 import timber.log.Timber
 import java.io.File
 import kotlin.system.exitProcess
@@ -66,10 +65,3 @@ class CrashRecordingHandler(
     }
 }
 
-/**
- * CoroutineExceptionHandler for structured concurrency.
- * Use this in CoroutineScope to catch and log exceptions.
- */
-val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-    Timber.e(throwable, "Coroutine exception")
-}

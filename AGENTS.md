@@ -75,7 +75,6 @@ Agents must **not** assume license compatibility, Play Store clearance, or compl
 | `io.insert-koin:koin-android` | 4.2.0 | **Apache License 2.0** | POM |
 | `io.coil-kt:coil-compose` | 2.7.0 | **Apache License 2.0** | POM |
 | `com.jakewharton.timber:timber` | 5.0.1 | **Apache License 2.0** | POM |
-| `com.airbnb.android:lottie-compose` | 6.7.1 | **Apache-2.0** | POM |
 | `sh.calvin.reorderable:reorderable` | 3.0.0 | **Apache License 2.0** | POM |
 | `com.rejowan:licensy-compose` | 1.1.0 | **Apache License 2.0** | POM |
 | `io.ktor:ktor-client-android` | 3.4.2 | **Apache License 2.0** | POM |

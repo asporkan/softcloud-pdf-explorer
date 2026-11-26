@@ -8,7 +8,6 @@
 
 ## Faz 2 — Onaylanan düzeltmeler (v0.6.1)
 ### Dalga 2
-- [ ] @ana-denetleyici · F2-19. F2-17 sonrası: Lottie lisans bloğu (SettingsScreenContent, title="Lottie"), AGENTS.md lottie satırı, kullanılmaz kalan unexpected_error/restart_app/close_app anahtarları, kullanılmayan coroutineExceptionHandler
 ### Kapanış
-- [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon (bekler: F2-17, F2-19) — release APK ile; iText/BC daraltması için şifreli PDF, kilitle/kilit aç, birleştir, görsel→PDF, sayfa no/filigran, okuyucu JS köprüsü mutlaka denenir
+- [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon — release APK ile; iText/BC daraltması için şifreli PDF, kilitle/kilit aç, birleştir, görsel→PDF, sayfa no/filigran, okuyucu JS köprüsü mutlaka denenir
 - [ ] @devops · F2-8. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F2-7, TODO-Faruk #1 keystore)
