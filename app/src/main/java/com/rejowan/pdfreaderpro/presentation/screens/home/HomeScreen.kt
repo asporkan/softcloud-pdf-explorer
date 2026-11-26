@@ -1,5 +1,7 @@
 package com.rejowan.pdfreaderpro.presentation.screens.home
 
+import com.rejowan.pdfreaderpro.util.pdfFileFromDisk
+import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.verticalScroll
@@ -380,12 +382,23 @@ fun HomeScreen(
                                             navController.navigateToReader(recent.path, recent.lastPage)
                                         },
                                         onFileOptionsClick = { recent ->
-                                            allFiles.find { it.path == recent.path }?.let { pdf ->
+                                            // Not every recent is in MediaStore (e.g. PDFs shared from other apps),
+                                            // so fall back to the file on disk instead of silently doing nothing.
+                                            val pdf = allFiles.find { it.path == recent.path }
+                                                ?: pdfFileFromDisk(recent.path)?.copy(pageCount = recent.totalPages)
+                                            if (pdf != null) {
                                                 selectedFile = pdf
                                                 selectedFileFromRecent = true
                                                 scope.launch {
                                                     selectedFileFavorite = viewModel.isFavorite(pdf.path)
                                                 }
+                                            } else {
+                                                viewModel.removeFromRecent(recent.path)
+                                                Toast.makeText(
+                                                    context,
+                                                    R.string.recent_file_missing_removed,
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                         },
                                         onBrowseClick = {

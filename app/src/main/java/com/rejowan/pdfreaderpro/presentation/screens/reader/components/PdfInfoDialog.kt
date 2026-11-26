@@ -196,7 +196,6 @@ private fun PdfInfoSideSheet(
                             top = systemBarsPadding.calculateTopPadding(),
                             bottom = systemBarsPadding.calculateBottomPadding()
                         )
-                        .verticalScroll(rememberScrollState())
                 )
             }
         }

@@ -9,6 +9,4 @@
 ## Faz 2 — Onaylanan düzeltmeler (v0.6.1)
 ### Dalga 2
 ### Kapanış
-- [ ] @ana-denetleyici · F2-22. Dosya Bilgisi çöküyor (iç içe verticalScroll, FileInfoDialog) + Son Açılanlar ⋮ menüsü ve çift kayıt kontrolü
-- [ ] @qa-tester · F2-7. Tüm bulguların cihazda yeniden doğrulanması + regresyon — release APK ile; iText/BC daraltması için şifreli PDF, kilitle/kilit aç, birleştir, görsel→PDF, sayfa no/filigran, okuyucu JS köprüsü mutlaka denenir
 - [ ] @devops · F2-8. Sürüm 0.6.1 (code 7), CHANGELOG, imzalı AAB + APK, cihaza kurulum (bekler: F2-7, TODO-Faruk #1 keystore)

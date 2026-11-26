@@ -107,7 +107,6 @@ private fun FileInfoBottomSheet(
         FileInfoContent(
             pdfFile = pdfFile,
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
                 .padding(bottom = 24.dp)
         )
     }
@@ -173,7 +172,6 @@ private fun FileInfoSideSheet(
                             top = systemBarsPadding.calculateTopPadding(),
                             bottom = systemBarsPadding.calculateBottomPadding()
                         )
-                        .verticalScroll(rememberScrollState())
                 )
             }
         }

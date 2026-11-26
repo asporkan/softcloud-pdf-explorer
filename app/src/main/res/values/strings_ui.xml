@@ -24,4 +24,6 @@
     <!-- Single list/grid switch: the label names the action -->
     <string name="view_mode_switch_to_grid">Switch to grid view</string>
     <string name="view_mode_switch_to_list">Switch to list view</string>
+    <string name="recent_file_missing_removed">This file no longer exists and was removed from Recent</string>
+    <string name="thumbnail_pages_short">%d pg</string>
 </resources>

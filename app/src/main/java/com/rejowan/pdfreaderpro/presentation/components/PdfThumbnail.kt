@@ -115,7 +115,7 @@ fun PdfThumbnail(
                         )
                         if (pageCount != null) {
                             Text(
-                                text = "$pageCount pg",
+                                text = stringResource(R.string.thumbnail_pages_short, pageCount),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     fontSize = (size.value * 0.16f).sp
                                 ),

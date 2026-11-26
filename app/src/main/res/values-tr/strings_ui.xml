@@ -24,4 +24,6 @@
     <!-- Tek liste/ızgara düğmesi: etiket yapılacak eylemi söyler -->
     <string name="view_mode_switch_to_grid">Izgara görünümüne geç</string>
     <string name="view_mode_switch_to_list">Liste görünümüne geç</string>
+    <string name="recent_file_missing_removed">Bu dosya artık mevcut değil, Son Açılanlar\'dan kaldırıldı</string>
+    <string name="thumbnail_pages_short">%d sf.</string>
 </resources>

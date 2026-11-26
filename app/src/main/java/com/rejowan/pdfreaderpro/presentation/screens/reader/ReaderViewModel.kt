@@ -404,6 +404,9 @@ class ReaderViewModel(
     }
 
     private suspend fun addToRecent() {
+        // Tool "open in app" previews are temporary cache copies; recording them would leave
+        // duplicate recents that later point to deleted files.
+        if (pdfPath.contains("/cache/tool_results/")) return
         val file = File(pdfPath)
         recentRepository.addOrUpdateRecent(
             path = pdfPath,
