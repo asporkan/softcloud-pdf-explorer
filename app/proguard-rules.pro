@@ -61,6 +61,15 @@
 # iText PDF (yalnızca yansımayla yüklenen sınıflar)
 # ==========================================
 # BouncyCastleFactoryCreator fabrikayı Class.forName ile ada göre yükler
+# iText relies on its own class/package names at runtime:
+#  - AbstractITextEvent rejects subclasses whose name does not start with "com.itextpdf".
+#  - ContextManager maps classes to products by package prefix (com.itextpdf.kernel, .forms, ...).
+# Keep names (and packages) only; unused iText classes are still removed and code is still optimized.
+-keepnames class com.itextpdf.**
+# Loaded via Class.forName in DIContainerConfigurations; their static init registers default
+# DIContainer suppliers (otherwise: Supplier.get() on null in every iText tool).
+-keep class com.itextpdf.kernel.utils.RegisterDefaultDiContainer { *; }
+-keep class com.itextpdf.forms.util.RegisterDefaultDiContainer { *; }
 -keep class com.itextpdf.bouncycastle.** { *; }
 -keep class com.itextpdf.bouncycastleconnector.** { *; }
 

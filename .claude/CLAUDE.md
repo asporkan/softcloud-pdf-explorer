@@ -28,6 +28,7 @@ Kotlin · Jetpack Compose · Material 3 · Koin · Room · DataStore · PDF.js (
 - 2026-11-26: Play "Reklam içerir" beyanı reklam gelecek olduğu için olduğu gibi kalır.
 - 2026-11-26: Çökmeler yutulmaz; sisteme iletilir (Play vitals), sonraki açılışta kullanıcıya kısa bilgi verilir.
 - 2026-11-26: R8 daraltması bir şeyi bozarsa geniş kurala dönülmez; eksik sınıf için dar keep kuralı eklenir.
+- 2026-11-26: Ana ekranda liste/ızgara için tek görünüm düğmesi. Ayarlar'da kayıt klasörü "Sıfırla" her şeyi varsayılana alır.
 - 2026-11-26: Koyu temada koyu zemin üstündeki yazı/simge açık renk olur; renkler `presentation/theme/` token'larından gelir, bileşende sabit `Color(0xFF…)` kullanılmaz.
 
 ## Yerel araçlar
