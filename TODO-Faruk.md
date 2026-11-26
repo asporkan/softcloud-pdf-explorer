@@ -5,6 +5,6 @@
 1. (yok)
 
 ## Sonra netleşecekler
+2. Müşteriye yanıt (taslak sohbette) — siz iletirsiniz.
+3. GitHub (origin) push: yerel commit'ler yalnızca D:\Git'e gitti; GitHub'a gönderilsin mi?
 1. Müşterinin Android sürümü ve telefon modeli (silme düzeltmesinin onun cihazında da doğrulanması için).
-2. Play Console Veri güvenliği: Console özetinde "11 veri türü toplanıyor veya paylaşılıyor" yazıyor, herkese açık mağaza sayfası ise "veri toplanmıyor" diyor. Console'da bir kez gözle bakılmalı (salt okuma ile nedeni görülemedi).
-3. strings.xml'de eski şablondan kalan ~390 referanssız anahtar: silinsin mi? (cd_* erişilebilirlik anahtarları ayrıca incelenmeli)

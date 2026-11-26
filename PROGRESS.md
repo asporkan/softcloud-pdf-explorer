@@ -6,7 +6,7 @@
 - Bulgu numaraları (B1–B27) 2026-11-26 QA raporundan; ayrıntı DONE/commit geçmişinde.
 - Paralel çalışmada yeni metinler ajana ait ayrı kaynak dosyasına eklenir (`values/strings_<alan>.xml` + `values-tr/strings_<alan>.xml`); `strings.xml`'e yalnızca @content dokunur.
 
-## Faz 2 — Onaylanan düzeltmeler (v0.6.1)
-### Dalga 2
-### Kapanış
-- [ ] @kullanıcı · F2-8. 0.6.1 Play yüklemesi: kullanıcı onayı bekleniyor (AAB hazır: app/build/outputs/bundle/release/app-release.aab). Yüklemeyle birlikte bekleyen veri güvenliği değişikliği incelemeye gönderilecek
+## Faz 3 — Yayın sonrası (0.6.1)
+- [ ] @ana-denetleyici · F3-1. Play incelemesi sonucu takip (Yayın özeti; red/uyarı gelirse çözüm)
+- [ ] @ana-denetleyici · F3-2. Yayından 2–3 gün sonra Android vitals (çökme/ANR artık raporlanıyor) ve lansman öncesi rapor (erişilebilirlik) kontrolü
+- [ ] @android-dev · F3-3. Sonraki sürüm adayları: Checkbox satırları toggleable, PageScrubber tutamaç boyutu, lint uyarıları (PluralsCandidate, StaticFieldLeak, TrustAllX509TrustManager incelemesi), reklam/ücretli özellik planı
