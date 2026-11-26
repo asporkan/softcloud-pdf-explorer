@@ -1,5 +1,6 @@
 # DONE — biten işler (iş başına tek satır, en yenisi üstte)
 
+- 2026-11-26 · GitHub'a push (kullanıcı isteğiyle): main 745fe3a..438e7ea + v0.6.1 etiketi · öncesinde sır taraması (keystore/şifre/local.properties izlenmiyor; sayısal eşleşmeler GitHub'da zaten olan zaman damgası ve wasm), ls-remote ile doğrulandı
 - 2026-11-26 · 0.6.1 Play Üretim kanalına %100 gönderildi (AAB 7/0.6.1 + veri güvenliği değişikliği incelemede; TR/EN sürüm notları) · Console önizleme: 0 cihaz kaybı, yeni kurulum 10,8 MB (-3,92 MB), tek uyarı native debug sembolleri (AndroidX .so, engel değil)
 - 2026-11-26 · Sürüm 0.6.1 (code 7) + CHANGELOG; imzalı AAB 18,2 MB ve APK 11,6 MB üretildi · imza SHA-256 Play anahtarıyla eşleşti, 946/946 test, cihaza güncelleme olarak kuruldu, açılış + okuyucu duman testi temiz
 - 2026-11-26 · Filigran ve sayfa numarası Türkçe karakter: Unicode sistem yazı tipi (RobotoStatic → NotoSans → DroidSans → Roboto → Helvetica) alt küme gömülü · 946/946 test (UnicodePdfFontTest), release APK cihazda "GİZLİ ŞĞÜÖÇ ığüşöç" görüldü, /FontFile2 + Identity-H, +14 KB, crash logu temiz
